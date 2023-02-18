@@ -42,7 +42,7 @@
 				throw new NullReferenceException($"{valueType.FullName} does not have an empty constructor!");
 			writer.WriteStartElement(name);
 			if (config.includeTypes)
-				writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, valueType.GenericTypeArguments.Single().FullName);
+				writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, valueType.FullName);
 			var enumerator = enumerable.GetEnumerator();
 			while (enumerator.MoveNext())
 				WriteObject("Item", enumerator.Current);

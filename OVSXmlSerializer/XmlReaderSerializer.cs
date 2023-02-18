@@ -39,10 +39,10 @@
 		}
 		public virtual object ReadObject(XmlNode node)
 		{
-			XmlNode? typeNode = node.Attributes!.GetNamedItem(ATTRIBUTE) 
+			XmlNode? attributeNode = node.Attributes!.GetNamedItem(ATTRIBUTE) 
 				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ENUMERABLE) 
 				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ARRAY);
-			string typeValue = typeNode is null ? "" : typeNode.Value!;
+			string typeValue = attributeNode is null ? "" : attributeNode.Value!;
 			Type type = ByName(typeValue);
 			if (TryReadPrimitive(type, node, out object? output))
 				return output!;
@@ -52,7 +52,7 @@
 			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>();
 			FieldInfo[] fieldInfos = type.GetFields(defaultFlags);
 			Array.ForEach(fieldInfos, field => fieldDictionary.Add(field.Name, field));
-			XmlNodeList childNodes = typeNode!.ChildNodes;
+			XmlNodeList childNodes = node!.ChildNodes;
 			for (int i = 0; i < childNodes.Count; i++)
 			{
 				XmlNode childNode = childNodes.Item(i)!;
@@ -91,7 +91,7 @@
 				output = arrayList.ToArray();
 				return true;
 			}
-			if (!type.IsAssignableTo(typeof(IEnumerable)))
+			if (!typeof(ICollection).IsAssignableFrom(type))
 			{
 				output = null;
 				return false;
