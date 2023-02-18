@@ -24,9 +24,9 @@
 
 		public virtual T Deserialize(Stream input)
 		{
-			XmlReader reader = XmlReader.Create(input);
-			Console.WriteLine(reader.Name);
-			return default;
+			XmlDocument document = new XmlDocument();
+			document.Load(input);
+			return (T)new XmlReaderSerializer(config).ReadDocument(document);
 		}
 
 		public virtual MemoryStream Serialize(T item)
@@ -43,10 +43,9 @@
 			return stream;
 		}
 
-		public virtual T Deserialize()
-		{
-
-		}
-		
+		//public virtual (T obj, string rootElementName) Deserialize(Stream stream)
+		//{
+		//
+		//}
 	}
 }

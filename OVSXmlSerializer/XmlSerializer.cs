@@ -30,10 +30,5 @@
 		{
 			activeType = type;
 		}
-
-		public override MemoryStream Serialize(object item)
-		{
-			return base.Serialize(item);
-		}
 	}
 }
