@@ -5,8 +5,6 @@
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
-	using System.Text;
-	using System.Threading.Tasks;
 	using System.Xml;
 	using static XmlSerializer;
 
@@ -39,8 +37,8 @@
 		}
 		public virtual object ReadObject(XmlNode node)
 		{
-			XmlNode? attributeNode = node.Attributes!.GetNamedItem(ATTRIBUTE) 
-				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ENUMERABLE) 
+			XmlNode? attributeNode = node.Attributes!.GetNamedItem(ATTRIBUTE)
+				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ENUMERABLE)
 				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ARRAY);
 			string typeValue = attributeNode is null ? "" : attributeNode.Value!;
 			Type type = ByName(typeValue);
@@ -103,6 +101,21 @@
 					list.Add(ReadObject(nodeList.Item(i)!));
 				return true;
 			}
+			if (output is IDictionary dictionary)
+			{
+				for (int i = 0; i < nodeList.Count; i++)
+				{
+					XmlNode key = nodeList.Item(i)!.SelectSingleNode("key")!;
+					XmlNode value = nodeList.Item(i)!.SelectSingleNode("value")!;
+					dictionary.Add(ReadObject(key), ReadObject(value));
+				}
+				return true;
+			}
+			//MethodInfo? method = type.GetMethod("Add");
+			//if (method is not null)
+			//{
+			//	method.CreateDelegate(type, output).DynamicInvoke()
+			//}
 			throw new NotImplementedException();
 		}
 	}

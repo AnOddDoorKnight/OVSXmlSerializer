@@ -2,11 +2,7 @@
 {
 	using System;
 	using System.Collections;
-	using System.Collections.Generic;
-	using System.Linq;
 	using System.Reflection;
-	using System.Text;
-	using System.Threading.Tasks;
 	using System.Xml;
 	using static XmlSerializer;
 
@@ -27,9 +23,7 @@
 			{
 				writer.WriteStartElement(name);
 				if (config.includeTypes)
-					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.FullName);//valueType.GetElementType().FullName);
-				// Cannot find any other method, since int32[] exist and
-				// - cannot be casted as object[]
+					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.FullName);
 				Array arrValue = (Array)values;
 				for (int i = 0; i < arrValue.Length; i++)
 					WriteObject("Item", arrValue.GetValue(i)!);

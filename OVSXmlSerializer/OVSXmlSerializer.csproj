@@ -7,6 +7,15 @@
     <Title>OVSXmlSerializer</Title>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <Authors>AnOddDoorKnight</Authors>
+    <Description>Odd's Very Special Xml Serializer is a serializer primarily designed for B1NARY, having easy replacement over System.Xml.Serialization .</Description>
+    <Copyright>Falls under the MIT license</Copyright>
+    <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
+    <PackageReleaseNotes>Initial Post</PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,5 +25,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\Readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
