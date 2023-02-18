@@ -3,6 +3,10 @@
 	using System.IO;
 	using System.Xml;
 
+	/// <summary>
+	/// Serializer that converts classes into XML Files and such.
+	/// </summary>
+	/// <typeparam name="T"> A Non-nullable value. </typeparam>
 	public class XmlSerializer<T> where T : notnull
 	{
 		protected XmlSerializerConfig config;
@@ -15,6 +19,7 @@
 			this.config = config;
 		}
 
+		#region Deserialization
 		public virtual T Deserialize(Stream input)
 		{
 			XmlDocument document = new XmlDocument();
@@ -22,7 +27,38 @@
 			object output = new XmlReaderSerializer(config).ReadDocument(document);
 			return (T)output;
 		}
+		public T Deserialize(FileInfo fileLocation)
+		{
+			using (var stream = fileLocation.OpenRead())
+				return Deserialize(fileLocation);
+		}
+		public T Deserialize(string fileLocation)
+		{
+			using (var stream = File.OpenRead(fileLocation))
+				return Deserialize(fileLocation);
+		}
 
+		public virtual T Deserialize(Stream input, out string rootElementName)
+		{
+			XmlDocument document = new XmlDocument();
+			document.Load(input);
+			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1)!.Name;
+			object output = new XmlReaderSerializer(config).ReadDocument(document);
+			return (T)output;
+		}
+		public virtual T Deserialize(string fileLocation, out string rootElementName)
+		{
+			using (var stream = File.OpenRead(fileLocation))
+				return Deserialize(stream, out rootElementName);
+		}
+		public virtual T Deserialize(FileInfo fileLocation, out string rootElementName)
+		{
+			using (var stream = fileLocation.OpenRead())
+				return Deserialize(stream, out rootElementName);
+		}
+		#endregion
+
+		#region Serialization
 		public virtual MemoryStream Serialize(T item)
 		{
 			return Serialize(item, item.GetType().Name);
@@ -36,10 +72,15 @@
 			stream.Position = 0;
 			return stream;
 		}
-
-		//public virtual (T obj, string rootElementName) Deserialize(Stream stream)
-		//{
-		//
-		//}
+		public virtual void Serialize(XmlWriter writer, T item)
+		{
+			Serialize(writer, item, item.GetType().Name);
+		}
+		public virtual void Serialize(XmlWriter writer, T item, string rootElementName)
+		{
+			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, item);
+			writer.Flush();
+		}
+		#endregion
 	}
 }

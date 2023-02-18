@@ -8,7 +8,7 @@
 
 	internal class XmlWriterSerializer
 	{
-		protected XmlWriter writer;
+		internal protected XmlWriter writer;
 		protected XmlSerializerConfig config;
 		public XmlWriterSerializer(XmlSerializerConfig config, XmlWriter writer)
 		{
