@@ -26,7 +26,8 @@
 		{
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
-			return (T)new XmlReaderSerializer(config).ReadDocument(document);
+			object output = new XmlReaderSerializer(config).ReadDocument(document);
+			return (T)output;
 		}
 
 		public virtual MemoryStream Serialize(T item)

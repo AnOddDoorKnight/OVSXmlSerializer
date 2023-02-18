@@ -27,7 +27,7 @@
 			{
 				writer.WriteStartElement(name);
 				if (config.includeTypes)
-					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.GetElementType().FullName);
+					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.FullName);//valueType.GetElementType().FullName);
 				// Cannot find any other method, since int32[] exist and
 				// - cannot be casted as object[]
 				Array arrValue = (Array)values;

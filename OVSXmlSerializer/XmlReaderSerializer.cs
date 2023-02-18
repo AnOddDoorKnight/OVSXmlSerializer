@@ -85,10 +85,10 @@
 			XmlNodeList nodeList = node.ChildNodes;
 			if (type.IsArray)
 			{
-				List<object> arrayList = new(nodeList.Count);
+				Array array = Array.CreateInstance(type.GetElementType()!, nodeList.Count);
 				for (int i = 0; i < nodeList.Count; i++)
-					arrayList.Add(ReadObject(nodeList.Item(i)!));
-				output = arrayList.ToArray();
+					array.SetValue(ReadObject(nodeList.Item(i)!), i);
+				output = array;
 				return true;
 			}
 			if (!typeof(ICollection).IsAssignableFrom(type))
