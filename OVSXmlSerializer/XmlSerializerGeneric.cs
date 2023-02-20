@@ -7,7 +7,7 @@
 	/// Serializer that converts classes into XML Files and such.
 	/// </summary>
 	/// <typeparam name="T"> A Non-nullable value. </typeparam>
-	public class XmlSerializer<T> where T : notnull
+	public class XmlSerializer<T>
 	{
 		protected XmlSerializerConfig config;
 		public XmlSerializer()
@@ -42,7 +42,7 @@
 		{
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
-			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1)!.Name;
+			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
 			object output = new XmlReaderSerializer(config).ReadDocument(document);
 			return (T)output;
 		}

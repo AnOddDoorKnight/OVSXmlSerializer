@@ -26,23 +26,26 @@
 					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.FullName);
 				Array arrValue = (Array)values;
 				for (int i = 0; i < arrValue.Length; i++)
-					WriteObject("Item", arrValue.GetValue(i)!);
+					WriteObject("Item", arrValue.GetValue(i));
 				writer.WriteEndElement();
 				return true;
 			}
-			if (values is not IEnumerable enumerable)
-				return false;
-			if (valueType.GetConstructor(XmlSerializer.defaultFlags, null, Array.Empty<Type>(), null) == null)
-				throw new NullReferenceException($"{valueType.FullName} does not have an empty constructor!");
-			writer.WriteStartElement(name.Replace('`', '_'));
-			if (config.includeTypes)
-				writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, valueType.FullName);
-			var enumerator = enumerable.GetEnumerator();
-			while (enumerator.MoveNext())
-				WriteObject("Item", enumerator.Current);
-			enumerator.Reset();
-			writer.WriteEndElement();
-			return true;
+			if (values is IEnumerable enumerable)
+			{
+				if (valueType.GetConstructor(defaultFlags, null, Array.Empty<Type>(), null) == null)
+					throw new NullReferenceException($"{valueType.FullName} does not have an empty constructor!");
+				writer.WriteStartElement(name.Replace('`', '_'));
+				if (config.includeTypes)
+					writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, valueType.FullName);
+				var enumerator = enumerable.GetEnumerator();
+				while (enumerator.MoveNext())
+					WriteObject("Item", enumerator.Current);
+				enumerator.Reset();
+				writer.WriteEndElement();
+				return true;
+			}
+
+			return false;
 		}
 		internal bool TryWritePrimitive(string name, object primitive)
 		{
@@ -76,7 +79,7 @@
 			for (int i = 0; i < infos.Length; i++)
 			{
 				FieldInfo field = infos[i];
-				object value = field.GetValue(obj)!;
+				object value = field.GetValue(obj);
 				WriteObject(field.Name, value);
 			}
 			writer.WriteEndElement();

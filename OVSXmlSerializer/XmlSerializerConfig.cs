@@ -24,7 +24,6 @@
 
 
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
-
 		/// <summary>
 		/// The single indentation that should occur. This will be repeated as 
 		/// layers are added further.

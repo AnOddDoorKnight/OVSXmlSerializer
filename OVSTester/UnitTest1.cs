@@ -2,9 +2,11 @@ namespace Tester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using OVSXmlSerializer;
+using XmlSerializer = OVSXmlSerializer.XmlSerializer;
 
 [TestClass]
 public class ObjectSerialization

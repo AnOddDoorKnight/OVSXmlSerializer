@@ -32,33 +32,33 @@
 		}
 		public virtual object ReadDocument(XmlDocument document)
 		{
-			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1)!;
+			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
 			return ReadObject(rootNode);
 		}
 		public virtual object ReadObject(XmlNode node)
 		{
-			XmlNode? attributeNode = node.Attributes!.GetNamedItem(ATTRIBUTE)
-				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ENUMERABLE)
-				?? node.Attributes!.GetNamedItem(ATTRIBUTE_ARRAY);
-			string typeValue = attributeNode is null ? "" : attributeNode.Value!;
+			XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE)
+				?? node.Attributes.GetNamedItem(ATTRIBUTE_ENUMERABLE)
+				?? node.Attributes.GetNamedItem(ATTRIBUTE_ARRAY);
+			string typeValue = attributeNode is null ? "" : attributeNode.Value;
 			Type type = ByName(typeValue);
-			if (TryReadPrimitive(type, node, out object? output))
-				return output!;
-			if (TryReadEnumerable(type, node, out object? objectEnumerable))
-				return objectEnumerable!;
-			object obj = Activator.CreateInstance(type, true)!;
+			if (TryReadPrimitive(type, node, out object output))
+				return output;
+			if (TryReadEnumerable(type, node, out object objectEnumerable))
+				return objectEnumerable;
+			object obj = Activator.CreateInstance(type, true);
 			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>();
 			FieldInfo[] fieldInfos = type.GetFields(defaultFlags);
 			Array.ForEach(fieldInfos, field => fieldDictionary.Add(field.Name, field));
-			XmlNodeList childNodes = node!.ChildNodes;
+			XmlNodeList childNodes = node.ChildNodes;
 			for (int i = 0; i < childNodes.Count; i++)
 			{
-				XmlNode childNode = childNodes.Item(i)!;
+				XmlNode childNode = childNodes.Item(i);
 				fieldDictionary[childNode.Name].SetValue(obj, ReadObject(childNode));
 			}
 			return obj;
 		}
-		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object? output)
+		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
 		{
 			if (!type.IsPrimitive && type != typeof(string))
 			{
@@ -78,14 +78,14 @@
 				throw new NotImplementedException(type.ToString());
 			return true;
 		}
-		internal protected virtual bool TryReadEnumerable(Type type, XmlNode node, out object? output)
+		internal protected virtual bool TryReadEnumerable(Type type, XmlNode node, out object output)
 		{
 			XmlNodeList nodeList = node.ChildNodes;
 			if (type.IsArray)
 			{
-				Array array = Array.CreateInstance(type.GetElementType()!, nodeList.Count);
+				Array array = Array.CreateInstance(type.GetElementType(), nodeList.Count);
 				for (int i = 0; i < nodeList.Count; i++)
-					array.SetValue(ReadObject(nodeList.Item(i)!), i);
+					array.SetValue(ReadObject(nodeList.Item(i)), i);
 				output = array;
 				return true;
 			}
@@ -98,15 +98,15 @@
 			if (output is IList list)
 			{
 				for (int i = 0; i < nodeList.Count; i++)
-					list.Add(ReadObject(nodeList.Item(i)!));
+					list.Add(ReadObject(nodeList.Item(i)));
 				return true;
 			}
 			if (output is IDictionary dictionary)
 			{
 				for (int i = 0; i < nodeList.Count; i++)
 				{
-					XmlNode key = nodeList.Item(i)!.SelectSingleNode("key")!;
-					XmlNode value = nodeList.Item(i)!.SelectSingleNode("value")!;
+					XmlNode key = nodeList.Item(i).SelectSingleNode("key");
+					XmlNode value = nodeList.Item(i).SelectSingleNode("value");
 					dictionary.Add(ReadObject(key), ReadObject(value));
 				}
 				return true;
