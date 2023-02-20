@@ -63,6 +63,15 @@
 		{
 			return Serialize(item, item.GetType().Name);
 		}
+		public virtual void Serialize(Stream stream, T item)
+		{
+			Serialize(stream, item, item.GetType().Name);
+		}
+		public virtual void Serialize(Stream stream, T item, string rootElementName)
+		{
+			using (var memoryStream = Serialize(item, rootElementName))
+				memoryStream.CopyTo(stream);
+		}
 		public virtual MemoryStream Serialize(T item, string rootElementName)
 		{
 			var stream = new MemoryStream();

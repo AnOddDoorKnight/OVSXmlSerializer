@@ -5,17 +5,19 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>OVSXmlSerializer</Title>
+    <VersionPrefix>1.0.0</VersionPrefix>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>AnOddDoorKnight</Authors>
     <Description>Odd's Very Special Xml Serializer is a serializer primarily designed for B1NARY, having easy replacement over System.Xml.Serialization .</Description>
-    <Copyright>Falls under the MIT license</Copyright>
+    <Copyright>MIT license</Copyright>
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
     <PackageReleaseNotes>Initial Post</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

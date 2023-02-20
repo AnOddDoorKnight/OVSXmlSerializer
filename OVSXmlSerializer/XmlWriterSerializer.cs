@@ -21,7 +21,7 @@
 			Type valueType = values.GetType();
 			if (valueType.IsArray)
 			{
-				writer.WriteStartElement(name);
+				writer.WriteStartElement(name.TrimEnd('[', ']'));
 				if (config.includeTypes)
 					writer.WriteAttributeString(ATTRIBUTE_ARRAY, valueType.FullName);
 				Array arrValue = (Array)values;
@@ -34,7 +34,7 @@
 				return false;
 			if (valueType.GetConstructor(XmlSerializer.defaultFlags, null, Array.Empty<Type>(), null) == null)
 				throw new NullReferenceException($"{valueType.FullName} does not have an empty constructor!");
-			writer.WriteStartElement(name);
+			writer.WriteStartElement(name.Replace('`', '_'));
 			if (config.includeTypes)
 				writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, valueType.FullName);
 			var enumerator = enumerable.GetEnumerator();
