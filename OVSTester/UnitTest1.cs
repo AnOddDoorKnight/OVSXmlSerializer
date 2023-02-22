@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using OVSXmlSerializer;
 using XmlSerializer = OVSXmlSerializer.XmlSerializer;
+using System.Xml.Serialization;
 
 [TestClass]
 public class ObjectSerialization
@@ -60,6 +61,23 @@ public class ObjectSerialization
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
 		Assert.IsTrue(strings[2].StartsWith("\t"));
 	}
+	[TestMethod("XmlIgnore")]
+	public void XmlIgnore()
+	{
+		const int IGNORED_VALUE = 5;
+		var test = new XmlIgnoreStructTest() { bruh = "bruh", bruhhy = IGNORED_VALUE };
+		XmlSerializer<XmlIgnoreStructTest> serializer = new();
+		MemoryStream stream = serializer.Serialize(test);
+		var result = serializer.Deserialize(stream);
+		Assert.IsFalse(result.bruhhy == IGNORED_VALUE);
+	}
+}
+
+internal struct XmlIgnoreStructTest
+{
+	public string bruh;
+	[XmlIgnore]
+	public int bruhhy;
 }
 
 internal class Program : IEquatable<Program>
