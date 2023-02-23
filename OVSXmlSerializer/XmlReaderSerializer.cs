@@ -37,6 +37,8 @@
 		}
 		public virtual object ReadObject(XmlNode node)
 		{
+			if (node == null)
+				return null;
 			XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE)
 				?? node.Attributes.GetNamedItem(ATTRIBUTE_ENUMERABLE)
 				?? node.Attributes.GetNamedItem(ATTRIBUTE_ARRAY);
@@ -54,7 +56,8 @@
 			for (int i = 0; i < childNodes.Count; i++)
 			{
 				XmlNode childNode = childNodes.Item(i);
-				fieldDictionary[childNode.Name].SetValue(obj, ReadObject(childNode));
+				if (fieldDictionary.ContainsKey(childNode.Name))
+					fieldDictionary[childNode.Name].SetValue(obj, ReadObject(childNode));
 			}
 			return obj;
 		}

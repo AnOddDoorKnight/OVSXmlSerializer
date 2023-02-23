@@ -1,20 +1,49 @@
 ﻿namespace OVSXmlSerializer
 {
 	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
+	using System.Xml.Serialization;
+	using static XmlSerializer;
 
 	internal readonly struct StructuredObject : IEquatable<StructuredObject>
 	{
-		public object Value { get; }
-		public Type ValueType { get; }
-		public bool IsNull { get; }
+		public readonly object value;
+		public readonly string fieldName;
+		public readonly Type valueType;
+		public readonly bool isNull;
+		public readonly object parent;
+		public Type ParentType => parent.GetType();
+		public bool HasAttribute<T>() where T : Attribute
+		{
+			FieldInfo field = ParentType.GetField(fieldName, defaultFlags);
+			IEnumerable<T> attributes = field.GetCustomAttributes<T>(); // For Debug Purposes
+			return !(attributes.FirstOrDefault() is null);
+		}
 
+		public StructuredObject(FieldInfo field, StructuredObject parentObject)
+		{
+			value = field.GetValue(parentObject.value);
+			fieldName = field.Name;
+			parent = parentObject.value;
+			isNull = value is null;
+			valueType = field.FieldType;
+		}
+		public StructuredObject(object value, FieldInfo valueReference, object parentObject) : this(value)
+		{
+			fieldName = valueReference.Name;
+			parent = parentObject;
+		}
 		public StructuredObject(object value)
 		{
-			Value = value;
-			if (!(IsNull = value is null))
-				ValueType = value.GetType();
+			this.value = value;
+			if (!(isNull = value is null))
+				valueType = value.GetType();
 			else
-				ValueType = default;
+				valueType = default;
+			parent = null;
+			fieldName = string.Empty;
 		}
 
 		public override bool Equals(object obj)
@@ -25,7 +54,7 @@
 		}
 		public bool Equals(StructuredObject other)
 		{
-			return Value.Equals(other.Value);
+			return value.Equals(other.value);
 		}
 	}
 }

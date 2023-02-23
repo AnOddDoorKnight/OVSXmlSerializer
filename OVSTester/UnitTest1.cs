@@ -20,6 +20,17 @@ public class ObjectSerialization
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
 	}
+	[TestMethod("Key/Value Pair Serialization")]
+	public void KeyValueSerializer()
+	{
+		KeyValuePair<string, int> value = new ("bruh", 4);
+		XmlSerializer serializer = new(typeof(KeyValuePair<string, int>));
+		var stream = serializer.Serialize(value, "Pair");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		var output = (KeyValuePair<string, int>)serializer.Deserialize(stream);
+		Assert.IsTrue(value.Key == output.Key && value.Value == output.Value);//(value, (KeyValuePair<string, int>)serializer.Deserialize(stream));
+	}
 	[TestMethod("List Serialization")]
 	public void ListSerialization()
 	{
@@ -34,13 +45,16 @@ public class ObjectSerialization
 	[TestMethod("Dictionary Serialization")]
 	public void DictionarySerialization()
 	{
-		Dictionary<int, string> value = new Dictionary<int, string>();
+		Dictionary<int, string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
 		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { includeTypes = true });
 		var stream = serializer.Serialize(value, "Dictionary");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
 		Dictionary<int, string> output = serializer.Deserialize(stream);
-		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key) == value.Count);
+		Assert.IsTrue(output.Count > 0, "output dictionary contains nothing!");
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key) == value.Count, "output doesn't match the contents of the original!");
 	}
 	[TestMethod("Empty Class Serialization")]
 	public void ClassSerialization()
@@ -61,23 +75,61 @@ public class ObjectSerialization
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
 		Assert.IsTrue(strings[2].StartsWith("\t"));
 	}
+	[TestMethod("Class Serialization")]
+	public void StandardSerialization()
+	{
+		StandardClass value = new();
+		XmlSerializer<StandardClass> xmlSerializer = new();
+		using var stream = xmlSerializer.Serialize(value);
+		StandardClass result = xmlSerializer.Deserialize(stream);
+		//Assert.AreEqual(value, result);
+	}
 	[TestMethod("XmlIgnore")]
 	public void XmlIgnore()
 	{
 		const int IGNORED_VALUE = 5;
-		var test = new XmlIgnoreStructTest() { bruh = "bruh", bruhhy = IGNORED_VALUE };
+		var test = new XmlIgnoreStructTest() { bruh = true, bruhhy = IGNORED_VALUE };
 		XmlSerializer<XmlIgnoreStructTest> serializer = new();
 		MemoryStream stream = serializer.Serialize(test);
 		var result = serializer.Deserialize(stream);
 		Assert.IsFalse(result.bruhhy == IGNORED_VALUE);
 	}
+	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]
+	public void DisallowParameterConstructor()
+	{
+		try
+		{
+			XmlSerializer<XmlParameteredClassTest> tester = new();
+			tester.Serialize(new XmlParameteredClassTest("h"));
+		}
+		catch (NullReferenceException ex) when (ex.Message.EndsWith("does not have an empty constructor!"))
+		{
+			return;
+		}
+		Assert.Fail();
+	}
 }
 
-internal struct XmlIgnoreStructTest
+internal class XmlParameteredClassTest
 {
 	public string bruh;
+	public XmlParameteredClassTest(string bruh)
+	{
+		this.bruh = bruh;
+	}
+}
+internal class XmlIgnoreStructTest
+{
+	public bool bruh;
 	[XmlIgnore]
 	public int bruhhy;
+}
+internal class StandardClass
+{
+	public string value = "no";
+	public string sex = "sex";
+	public int values = 2;
+	public int genders = 1032;
 }
 
 internal class Program : IEquatable<Program>
