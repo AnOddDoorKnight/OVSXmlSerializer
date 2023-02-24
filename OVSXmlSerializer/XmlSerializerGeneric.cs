@@ -22,8 +22,16 @@
 		#region Deserialization
 		public virtual T Deserialize(Stream input)
 		{
+
 			XmlDocument document = new XmlDocument();
-			document.Load(input);
+			try
+			{
+				document.Load(input);
+			}
+			catch (XmlException exception) when (exception.Message == "Root element is missing.")
+			{
+				return default;
+			}
 			object output = new XmlReaderSerializer(config).ReadDocument(document);
 			return (T)output;
 		}

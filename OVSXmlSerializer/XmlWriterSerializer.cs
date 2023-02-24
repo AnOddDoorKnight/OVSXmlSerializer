@@ -85,6 +85,18 @@
 				return;
 			if (IgnoreObject(obj))
 				return;
+			if (obj.value is IXmlSerializable serializable)
+			{
+				if (serializable.ShouldWrite == false)
+					return;
+				EnsureParameterlessConstructor(obj.valueType);
+				writer.WriteStartElement(name);
+				if (config.includeTypes)
+					writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+				serializable.Write(writer);
+				writer.WriteEndElement();
+				return;
+			}
 			if (TryWritePrimitive(name, obj))
 				return;
 			if (TryWriteEnumerable(name, obj))

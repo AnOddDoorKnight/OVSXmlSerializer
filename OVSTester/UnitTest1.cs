@@ -8,6 +8,8 @@ using System.IO;
 using OVSXmlSerializer;
 using XmlSerializer = OVSXmlSerializer.XmlSerializer;
 using System.Xml.Serialization;
+using IXmlSerializable = OVSXmlSerializer.IXmlSerializable;
+using System.Xml;
 
 [TestClass]
 public class ObjectSerialization
@@ -108,8 +110,56 @@ public class ObjectSerialization
 		}
 		Assert.Fail();
 	}
+	[TestMethod("Xml Serializer Interface")]
+	public void XmlSerializerInterface()
+	{
+		ByteArraySim simulator = ByteArraySim.WithRandomValues();
+		XmlSerializer<ByteArraySim> serializer = new();
+		var stream = serializer.Serialize(simulator);
+		ByteArraySim result = serializer.Deserialize(stream);
+		Assert.IsTrue(simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
+	}
+	[TestMethod("False Xml Serializer Interface")]
+	public void FalseXmlSerializerInterface()
+	{
+		ByteArraySim simulator = new();
+		simulator.ShouldWrite = false;
+		XmlSerializer<ByteArraySim> serializer = new();
+		var stream = serializer.Serialize(simulator);
+		ByteArraySim result = serializer.Deserialize(stream);
+		Assert.IsTrue(result is null || simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
+	}
 }
 
+internal class ByteArraySim : IXmlSerializable
+{
+	public static ByteArraySim WithRandomValues()
+	{
+		ByteArraySim output = new();
+		for (byte i = 0; i < output.values.Length; i++)
+			output.values[i] = (byte)Random.Shared.Next(byte.MaxValue);
+		return output;
+	}
+	public byte[] values;
+	public ByteArraySim()
+	{
+		values = new byte[byte.MaxValue];
+	}
+
+	public bool ShouldWrite { get; set; } = true;
+
+	void IXmlSerializable.Read(XmlNode obj)
+	{
+		if (obj is null)
+			return;
+		values = Array.ConvertAll(obj.InnerText.Split('.'), @string => byte.Parse(@string));
+	}
+
+	void IXmlSerializable.Write(XmlWriter writer)
+	{
+		writer.WriteString(string.Join(".", values));
+	}
+}
 internal class XmlParameteredClassTest
 {
 	public string bruh;

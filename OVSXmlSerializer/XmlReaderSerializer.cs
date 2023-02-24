@@ -44,6 +44,13 @@
 				?? node.Attributes.GetNamedItem(ATTRIBUTE_ARRAY);
 			string typeValue = attributeNode is null ? "" : attributeNode.Value;
 			Type type = ByName(typeValue);
+			if (typeof(IXmlSerializable).IsAssignableFrom(type))
+			{
+				object serializableOutput = Activator.CreateInstance(type, true);
+				IXmlSerializable xmlSerializable = (IXmlSerializable)serializableOutput;
+				xmlSerializable.Read(node);
+				return serializableOutput;
+			}
 			if (TryReadPrimitive(type, node, out object output))
 				return output;
 			if (TryReadEnumerable(type, node, out object objectEnumerable))
