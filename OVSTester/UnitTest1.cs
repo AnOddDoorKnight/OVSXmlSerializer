@@ -14,6 +14,13 @@ using System.Xml;
 [TestClass]
 public class ObjectSerialization
 {
+	[TestMethod("Main")]
+	public void Main()
+	{
+		object obj = 4;
+		Type type = obj.GetType();
+	}
+
 	[TestMethod("String Serialization")]
 	public void SimpleSerialize()
 	{
@@ -221,12 +228,13 @@ public class B1NARYSerialization
 	[TestMethod("Player Config")]
 	public void DictionarySerialization()
 	{
-		Dictionary<string, object> value = new Dictionary<string, object>();
+		Dictionary<string, object> value = new();
 		for (int i = 0; i < 10; i++)
-			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), new object());
-		XmlSerializer<Dictionary<string, object>> serializer = new(new XmlSerializerConfig() { includeTypes = true });
+			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
+		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { includeTypes = true });
 		var stream = serializer.Serialize(value, "PlayerConfig");
-		Dictionary<string, object> output = serializer.Deserialize(stream);
-		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key.Equals(pair.Second.Key) && pair.First.Value.Equals(pair.Second.Value)) == value.Count);
+		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
+		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value.Equals(pair.Second.Value)) == value.Count);
 	}
 }

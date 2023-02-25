@@ -27,8 +27,11 @@
 			value = field.GetValue(parentObject.value);
 			fieldName = field.Name;
 			parent = parentObject.value;
-			isNull = value is null;
-			valueType = field.FieldType;
+			if (isNull = value is null)
+				valueType = field.FieldType;
+			else
+				// Gets a more defined type than what FieldType can offer
+				valueType = field.GetValue(parent).GetType(); 
 		}
 		public StructuredObject(object value, FieldInfo valueReference, object parentObject) : this(value)
 		{

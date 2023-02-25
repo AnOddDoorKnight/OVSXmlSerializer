@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes> - Added a custom, but unfortunately not the same IXmlSerializer.\n - Added a bit more XML documentation</PackageReleaseNotes>
+    <PackageReleaseNotes> - Added a custom, but unfortunately not the same IXmlSerializer;; and Added a bit more XML documentation</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>
