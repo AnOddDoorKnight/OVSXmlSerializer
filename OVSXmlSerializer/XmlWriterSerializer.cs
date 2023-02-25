@@ -87,6 +87,8 @@
 				return;
 			if (obj.value is IXmlSerializable serializable)
 			{
+				// Not sure how the actual scheme works at all since I never used
+				// - one. I don't this applies here at all anyways.
 				if (serializable.ShouldWrite == false)
 					return;
 				EnsureParameterlessConstructor(obj.valueType);
