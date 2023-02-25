@@ -39,9 +39,7 @@
 		{
 			if (node == null)
 				return null;
-			XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE)
-				?? node.Attributes.GetNamedItem(ATTRIBUTE_ENUMERABLE)
-				?? node.Attributes.GetNamedItem(ATTRIBUTE_ARRAY);
+			XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
 			string typeValue = attributeNode is null ? "" : attributeNode.Value;
 			Type type = ByName(typeValue);
 			if (typeof(IXmlSerializable).IsAssignableFrom(type))

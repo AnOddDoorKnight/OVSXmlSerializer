@@ -44,7 +44,7 @@
 			{
 				writer.WriteStartElement(name.TrimEnd('[', ']'));
 				if (config.includeTypes)
-					writer.WriteAttributeString(ATTRIBUTE_ARRAY, values.valueType.FullName);
+					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
 				Array arrValue = (Array)values.value;
 				for (int i = 0; i < arrValue.Length; i++)
 					WriteObject("Item", new StructuredObject(arrValue.GetValue(i)));
@@ -57,7 +57,7 @@
 				EnsureParameterlessConstructor(values.valueType);
 				writer.WriteStartElement(name.Replace('`', '_'));
 				if (config.includeTypes)
-					writer.WriteAttributeString(ATTRIBUTE_ENUMERABLE, values.valueType.FullName);
+					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
 					WriteObject("Item", new StructuredObject(enumerator.Current));

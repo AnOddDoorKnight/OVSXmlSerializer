@@ -3,11 +3,13 @@
 	using System;
 	using System.Reflection;
 
+	/// <summary>
+	/// Xml Serializer that converts values into XML files and such. Effectively
+	/// <see cref="XmlSerializer{T}"/> which has a generic of <see cref="object"/>
+	/// </summary>
 	public class XmlSerializer : XmlSerializer<object>
 	{
-		internal const string ATTRIBUTE = "type",
-			ATTRIBUTE_ARRAY = "typeArray",
-			ATTRIBUTE_ENUMERABLE = "typeEnumerable";
+		internal const string ATTRIBUTE = "type";
 
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 

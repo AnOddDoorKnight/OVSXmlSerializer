@@ -6,7 +6,7 @@
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
     <VersionPrefix>1.0.1</VersionPrefix>
-    <VersionSuffix>beta-3</VersionSuffix>
+    <VersionSuffix>beta-4</VersionSuffix>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>Added XmlIgnore attribute affecting the parser.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added a custom, but unfortunately not the same IXmlSerializer.</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

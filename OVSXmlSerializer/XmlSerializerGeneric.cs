@@ -6,7 +6,6 @@
 	/// <summary>
 	/// Serializer that converts classes into XML Files and such.
 	/// </summary>
-	/// <typeparam name="T"> A Non-nullable value. </typeparam>
 	public class XmlSerializer<T>
 	{
 		protected XmlSerializerConfig config;
@@ -20,6 +19,13 @@
 		}
 
 		#region Deserialization
+		/// <summary>
+		/// Converts a xml file into an object. 
+		/// </summary>
+		/// <param name="input"> The stream that contains the XML file. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public virtual T Deserialize(Stream input)
 		{
 
@@ -35,17 +41,38 @@
 			object output = new XmlReaderSerializer(config).ReadDocument(document);
 			return (T)output;
 		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public T Deserialize(FileInfo fileLocation)
 		{
 			using (var stream = fileLocation.OpenRead())
-				return Deserialize(fileLocation);
+				return Deserialize(stream);
 		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public T Deserialize(string fileLocation)
 		{
 			using (var stream = File.OpenRead(fileLocation))
-				return Deserialize(fileLocation);
+				return Deserialize(stream);
 		}
-
+		/// <summary>
+		/// Converts a xml file into an object. 
+		/// </summary>
+		/// <param name="input"> The stream that contains the XML file. </param>
+		/// <param name="rootElementName"> The name of the root element. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public virtual T Deserialize(Stream input, out string rootElementName)
 		{
 			XmlDocument document = new XmlDocument();
@@ -54,11 +81,27 @@
 			object output = new XmlReaderSerializer(config).ReadDocument(document);
 			return (T)output;
 		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <param name="rootElementName"> The name of the root element. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public virtual T Deserialize(string fileLocation, out string rootElementName)
 		{
 			using (var stream = File.OpenRead(fileLocation))
 				return Deserialize(stream, out rootElementName);
 		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <param name="rootElementName"> The name of the root element. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public virtual T Deserialize(FileInfo fileLocation, out string rootElementName)
 		{
 			using (var stream = fileLocation.OpenRead())
@@ -67,19 +110,47 @@
 		#endregion
 
 		#region Serialization
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public virtual MemoryStream Serialize(T item)
 		{
 			return Serialize(item, item.GetType().Name);
 		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream by copying it into the stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="stream"> The stream to serialize to. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public virtual void Serialize(Stream stream, T item)
 		{
 			Serialize(stream, item, item.GetType().Name);
 		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream by copying it into the stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="rootElementName">The root element within the xml file. </param>
+		/// <param name="stream"> The stream to serialize to. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public virtual void Serialize(Stream stream, T item, string rootElementName)
 		{
 			using (var memoryStream = Serialize(item, rootElementName))
 				memoryStream.CopyTo(stream);
 		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="rootElementName">The root element within the xml file. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public virtual MemoryStream Serialize(T item, string rootElementName)
 		{
 			var stream = new MemoryStream();

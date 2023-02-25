@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using System.Text;
 	using System.Xml;
 
 	/// <summary>
@@ -18,6 +19,7 @@
 			{
 				indent = config.Indent,
 				indentChars = config.IndentChars,
+				
 			};
 		}
 
@@ -37,17 +39,19 @@
 		/// If the XML file should include types. 
 		/// </summary>
 		/// <remarks>
-		/// Note that this will cause issues when deriving off of classes in 
-		/// base classes!
+		/// Currently, setting this to <see langword="false"/> will guarantee 
+		/// issues, as it is not properly implemented!
 		/// </remarks>
 		public bool includeTypes = true;
+		public Encoding encoding = Encoding.UTF8;
 
 		public XmlWriterSettings AsWriterSettings()
 		{
 			return new XmlWriterSettings()
 			{
 				Indent = indent,
-				IndentChars = indentChars
+				IndentChars = indentChars,
+				Encoding = encoding,
 			};
 		}
 	}
