@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using System;
 	using System.Text;
 	using System.Xml;
 
@@ -7,6 +8,7 @@
 	/// A single class that stores all the configuration settings. Things like
 	/// <see cref="XmlWriterSettings"/> is included.
 	/// </summary>
+	[Serializable]
 	public class XmlSerializerConfig
 	{
 		public static implicit operator XmlWriterSettings(XmlSerializerConfig config)
@@ -36,13 +38,14 @@
 		/// </summary>
 		public bool indent = true;
 		/// <summary>
-		/// If the XML file should include types. 
+		/// If the XML file should always include types.
 		/// </summary>
-		/// <remarks>
-		/// Currently, setting this to <see langword="false"/> will guarantee 
-		/// issues, as it is not properly implemented!
-		/// </remarks>
-		public bool includeTypes = true;
+		public bool alwaysIncludeTypes = true;
+		/// <summary>
+		/// If the XML file should include a type if it is derived from type,
+		/// such as an int from an object type.
+		/// </summary>
+		public bool smartTypes = true;
 		public Encoding encoding = Encoding.UTF8;
 
 		public XmlWriterSettings AsWriterSettings()

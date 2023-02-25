@@ -10,6 +10,8 @@
 	public class XmlSerializer : XmlSerializer<object>
 	{
 		internal const string ATTRIBUTE = "type";
+		internal const string AUTO_IMPLEMENTED_PROPERTY = "autoImp";
+		internal const string CONDITION = "con";
 
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 

@@ -21,6 +21,7 @@
 			if (type.GetConstructor(defaultFlags, null, Array.Empty<Type>(), null) == null && type.IsClass)
 				throw new NullReferenceException($"{type.Name} does not have an empty constructor!");
 		}
+		
 
 		internal protected XmlWriter writer;
 		protected XmlSerializerConfig config;
@@ -42,8 +43,8 @@
 		{
 			if (values.valueType.IsArray)
 			{
-				writer.WriteStartElement(name.TrimEnd('[', ']'));
-				if (config.includeTypes)
+				WriteStartElement(name.TrimEnd('[', ']'), values);
+				if (config.alwaysIncludeTypes)
 					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
 				Array arrValue = (Array)values.value;
 				for (int i = 0; i < arrValue.Length; i++)
@@ -55,8 +56,8 @@
 			if (value is IEnumerable enumerable)
 			{
 				EnsureParameterlessConstructor(values.valueType);
-				writer.WriteStartElement(name.Replace('`', '_'));
-				if (config.includeTypes)
+				WriteStartElement(name.Replace('`', '_'), values);
+				if (config.alwaysIncludeTypes)
 					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
@@ -72,8 +73,8 @@
 		{
 			if (!primitive.valueType.IsPrimitive && primitive.valueType != typeof(string))
 				return false;
-			writer.WriteStartElement(name);
-			if (config.includeTypes)
+			WriteStartElement(name, primitive);
+			if (config.alwaysIncludeTypes)
 				writer.WriteAttributeString(ATTRIBUTE, primitive.valueType.FullName);
 			writer.WriteString(primitive.value.ToString());
 			writer.WriteEndElement();
@@ -92,8 +93,8 @@
 				if (serializable.ShouldWrite == false)
 					return;
 				EnsureParameterlessConstructor(obj.valueType);
-				writer.WriteStartElement(name);
-				if (config.includeTypes)
+				WriteStartElement(name, obj);
+				if (config.alwaysIncludeTypes)
 					writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 				serializable.Write(writer);
 				writer.WriteEndElement();
@@ -104,8 +105,8 @@
 			if (TryWriteEnumerable(name, obj))
 				return;
 			EnsureParameterlessConstructor(obj.valueType);
-			writer.WriteStartElement(name);
-			if (config.includeTypes)
+			WriteStartElement(name, obj);
+			if (config.alwaysIncludeTypes)
 				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 
 			FieldInfo[] infos = obj.valueType.GetFields(defaultFlags);
@@ -116,6 +117,25 @@
 				WriteObject(field.Name, @struct);
 			}
 			writer.WriteEndElement();
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <remarks>
+		/// This fixes issues when considering auto-implemented properties.
+		/// </remarks>
+		/// <param name="name"></param>
+		/// <param name="obj"></param>
+		internal void WriteStartElement(string name, StructuredObject obj)
+		{
+			// <'name'>k_BackingField
+			if (obj.IsAutoImplementedProperty)
+			{
+				writer.WriteStartElement(name.Substring(1, name.IndexOf('>') - 1));
+				writer.WriteAttributeString(CONDITION, AUTO_IMPLEMENTED_PROPERTY);
+				return;
+			}
+			writer.WriteStartElement(name);
 		}
 	}
 }

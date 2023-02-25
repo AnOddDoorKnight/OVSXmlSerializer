@@ -23,6 +23,10 @@
 			}
 			return typeof(object);
 		}
+		internal static string AddAutoImplementedTag(string input)
+		{
+			return $"<{input}>k__BackingField";
+		}
 
 
 		protected XmlSerializerConfig config;
@@ -61,8 +65,12 @@
 			for (int i = 0; i < childNodes.Count; i++)
 			{
 				XmlNode childNode = childNodes.Item(i);
-				if (fieldDictionary.ContainsKey(childNode.Name))
-					fieldDictionary[childNode.Name].SetValue(obj, ReadObject(childNode));
+				string fieldName = childNode.Name;
+				XmlNode attributeCon = childNode.Attributes.GetNamedItem(CONDITION);
+				if (childNode.Attributes.GetNamedItem(CONDITION)?.Value == AUTO_IMPLEMENTED_PROPERTY)
+					fieldName = AddAutoImplementedTag(fieldName);
+				if (fieldDictionary.ContainsKey(fieldName))
+					fieldDictionary[fieldName].SetValue(obj, ReadObject(childNode));
 			}
 			return obj;
 		}
@@ -76,12 +84,12 @@
 			string unparsed = node.InnerText;
 			if (type == typeof(string))
 				output = unparsed;
-			else if (int.TryParse(unparsed, out int result))
-				output = result;
-			else if (float.TryParse(unparsed, out float result1))
-				output = result1;
-			else if (bool.TryParse(unparsed, out bool result2))
-				output = result2;
+			else if (type == typeof(double))
+				output = double.Parse(unparsed);
+			else if (type == typeof(int))
+				output = int.Parse(unparsed);
+			else if (type == typeof(bool))
+				output = bool.Parse(unparsed);
 			else
 				throw new NotImplementedException(type.ToString());
 			return true;

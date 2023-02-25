@@ -9,12 +9,16 @@
 
 	internal readonly struct StructuredObject : IEquatable<StructuredObject>
 	{
+		public static bool IsProbablyAutoImplementedProperty(Type type) =>
+			type.Name.Contains("<") && type.Name.Contains(">");
+
 		public readonly object value;
 		public readonly string fieldName;
 		public readonly Type valueType;
 		public readonly bool isNull;
 		public readonly object parent;
 		public Type ParentType => parent.GetType();
+		public bool IsAutoImplementedProperty => fieldName.Contains("<") && fieldName.Contains(">");
 		public bool HasAttribute<T>() where T : Attribute
 		{
 			FieldInfo field = ParentType.GetField(fieldName, defaultFlags);

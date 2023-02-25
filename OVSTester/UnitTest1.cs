@@ -57,7 +57,7 @@ public class ObjectSerialization
 		Dictionary<int, string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
-		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { includeTypes = true });
+		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { alwaysIncludeTypes = true });
 		var stream = serializer.Serialize(value, "Dictionary");
 		string report = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -136,6 +136,15 @@ public class ObjectSerialization
 		ByteArraySim result = serializer.Deserialize(stream);
 		Assert.IsTrue(result is null || simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
 	}
+	[TestMethod("Property Serialization")]
+	public void PropertySerialization()
+	{
+		AutoProp autoProp = new() { bruh = "bruh" };
+		XmlSerializer<AutoProp> serializer = new();
+		var stream = serializer.Serialize(autoProp);
+		AutoProp result = serializer.Deserialize(stream);
+		Assert.IsTrue(result.bruh == autoProp.bruh);
+	}
 }
 
 internal class ByteArraySim : IXmlSerializable
@@ -188,7 +197,10 @@ internal class StandardClass
 	public int values = 2;
 	public int genders = 1032;
 }
-
+internal class AutoProp
+{
+	public string bruh { get; set; } = "h";
+}
 internal class Program : IEquatable<Program>
 {
 	public bool Equals(Program? other) => true;
@@ -206,7 +218,7 @@ public class ImplicitObjectSerialization
 	public void SimpleImplicitSerialize()
 	{
 		const string value = "bruh";
-		XmlSerializer serializer = new(typeof(string), new XmlSerializerConfig() { includeTypes = false });
+		XmlSerializer serializer = new(typeof(string), new XmlSerializerConfig() { alwaysIncludeTypes = false });
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
 	}
@@ -216,7 +228,7 @@ public class ImplicitObjectSerialization
 		List<string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add("bruh");
-		XmlSerializer<List<string>> serializer = new(new XmlSerializerConfig() { includeTypes = false });
+		XmlSerializer<List<string>> serializer = new(new XmlSerializerConfig() { alwaysIncludeTypes = false });
 		var stream = serializer.Serialize(value);
 		List<string> result = serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
@@ -231,7 +243,7 @@ public class B1NARYSerialization
 		Dictionary<string, object> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
-		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { includeTypes = true });
+		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { alwaysIncludeTypes = true });
 		var stream = serializer.Serialize(value, "PlayerConfig");
 		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
 		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);
