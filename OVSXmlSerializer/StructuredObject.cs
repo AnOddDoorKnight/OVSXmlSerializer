@@ -14,6 +14,11 @@
 	/// </summary>
 	internal readonly struct StructuredObject : IEquatable<StructuredObject>
 	{
+		public static bool IsProbablyAutoImplementedProperty(string name) 
+			=> name.Contains("<") && name.Contains(">");
+		public static string RemoveAutoPropertyTags(string name) =>
+			name.Substring(1, name.IndexOf('>') - 1);
+
 		/// <summary>
 		/// The value of the <see cref="StructuredObject"/>.
 		/// </summary>
@@ -39,12 +44,13 @@
 		/// The <see cref="parent"/>'s type.
 		/// </summary>
 		/// <exception cref="NullReferenceException"/>
-		public Type ParentType => parent.GetType();
+		public Type ParentType => parent?.GetType();
 		/// <summary>
 		/// If the object is an auto-implemented property. Determined by if the
 		/// field name contains the requirements.
 		/// </summary>
-		public bool IsAutoImplementedProperty => fieldName.Contains("<") && fieldName.Contains(">");
+		public bool IsAutoImplementedProperty => 
+			IsProbablyAutoImplementedProperty(fieldName);
 		/// <summary>
 		/// If the object from a field, then it will determine if it has a derived
 		/// class from the field. If it does, then <see langword="true"/>. Otherwise,
@@ -64,9 +70,17 @@
 		/// <typeparam name="T"> The attribute. </typeparam>
 		public bool HasAttribute<T>() where T : Attribute
 		{
-			FieldInfo field = ParentType.GetField(fieldName, defaultFlags);
-			IEnumerable<T> attributes = field.GetCustomAttributes<T>(); // For Debug Purposes
-			return !(attributes.FirstOrDefault() is null);
+			bool output = false;
+			if (!(valueType is null))
+			{
+				output = !(valueType.GetCustomAttribute<T>() is null);
+			}
+			if (output == false && parent != null)
+			{
+				FieldInfo field = ParentType.GetField(fieldName, defaultFlags);
+				output |= !(field.GetCustomAttribute<T>() is null);
+			}
+			return output;
 		}
 
 		public StructuredObject(FieldInfo field, StructuredObject parentObject)

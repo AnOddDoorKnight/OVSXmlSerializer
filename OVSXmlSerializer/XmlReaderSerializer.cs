@@ -4,8 +4,12 @@
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Linq;
+	using System.Net.Http.Headers;
 	using System.Reflection;
+	using System.Runtime.InteropServices;
 	using System.Xml;
+	using System.Xml.Linq;
+	using System.Xml.Serialization;
 	using static XmlSerializer;
 
 	internal class XmlReaderSerializer
@@ -90,24 +94,52 @@
 				return objectEnumerable;
 			// Standard class with regular serialization.
 			object obj = Activator.CreateInstance(currentType, true);
+			
 			// Serializes fields by getting fields by name, and matching it from
 			// - the node list.
-			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>();
-			FieldInfo[] fieldInfos = currentType.GetFields(defaultFlags);
-			Array.ForEach(fieldInfos, field => fieldDictionary.Add(field.Name, field));
-			XmlNodeList childNodes = node.ChildNodes;
-			for (int i = 0; i < childNodes.Count; i++)
+			FieldInfo[] allFields = currentType.GetFields(defaultFlags);
+			string[] keys = new string[allFields.Length];
+			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>(allFields.Length);
+			// Modify for auto-implemented properties
+			for (int i = 0; i < allFields.Length; i++)
 			{
-				XmlNode childNode = childNodes.Item(i);
-				string fieldName = childNode.Name;
-				if (childNode.Attributes != null)
-				{
-					XmlNode attributeCon = childNode.Attributes.GetNamedItem(CONDITION);
-					if (childNode.Attributes.GetNamedItem(CONDITION)?.Value == AUTO_IMPLEMENTED_PROPERTY)
-						fieldName = AddAutoImplementedTag(fieldName);
-				}
-				if (fieldDictionary.TryGetValue(fieldName, out FieldInfo info))
-					fieldDictionary[fieldName].SetValue(obj, ReadObject(childNode, info.FieldType));
+				FieldInfo currentField = allFields[i];
+				string key = keys[i] =
+					StructuredObject.IsProbablyAutoImplementedProperty(currentField.Name)
+					? StructuredObject.RemoveAutoPropertyTags(currentField.Name)
+					: currentField.Name;
+				fieldDictionary.Add(key, currentField);
+			}
+			// Getting Attributes
+			List<(string Key, FieldInfo Value)> 
+				attributes = new List<(string Key, FieldInfo Value)>(), 
+				elements = new List<(string Key, FieldInfo Value)>(); 
+			for (int i = 0; i < allFields.Length; i++)
+			{
+				FieldInfo field = allFields[i];
+				string fieldName = StructuredObject.IsProbablyAutoImplementedProperty(field.Name)
+					? StructuredObject.RemoveAutoPropertyTags(field.Name)
+					: field.Name;
+				if (field.GetCustomAttribute<XmlAttributeAttribute>() != null)
+					attributes.Add((fieldName, field));
+				else
+					elements.Add((fieldName, field));
+			}
+			// Reading attributes first
+			for (int i = 0; i < attributes.Count; i++)
+			{
+				string key = attributes[i].Key;
+				XmlNode attribute = node.Attributes.GetNamedItem(key);
+				FieldInfo field = attributes[i].Value;
+				field.SetValue(obj, ReadObject(attribute, field.FieldType));
+			}
+			// Reading elements
+			for (int i = 0; i < elements.Count; i++)
+			{
+				string key = elements[i].Key;
+				XmlNode element = node.SelectSingleNode(key);
+				FieldInfo field = elements[i].Value;
+				field.SetValue(obj, ReadObject(element, field.FieldType));
 			}
 			return obj;
 		}
@@ -119,7 +151,7 @@
 				output = null;
 				return false;
 			}
-			string unparsed = node.InnerText;
+			string unparsed = node is XmlAttribute ? node.Value : node.InnerText;
 			// I wonder if there is a method or library that does this for me..
 			if (type == typeof(string))
 				output = unparsed;

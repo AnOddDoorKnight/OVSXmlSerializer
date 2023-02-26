@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Collections;
+	using System.Collections.Generic;
 	using System.Data;
 	using System.Linq;
 	using System.Reflection;
@@ -31,6 +32,14 @@
 			this.writer = writer;
 		}
 
+		internal bool ApplySmartType(StructuredObject obj)
+		{
+			if (!config.smartTypes)
+				return false;
+			if (obj.parent is null || !obj.IsDerivedFromBase)
+				return false;
+			return true;
+		}
 		internal void WriteAttributeType(StructuredObject obj)
 		{
 			if (config.alwaysIncludeTypes)
@@ -38,12 +47,8 @@
 				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 				return;
 			}
-			if (!config.smartTypes)
-				return;
-			// Smart types here
-			if (obj.parent is null || !obj.IsDerivedFromBase)
-				return;
-			writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+			if (ApplySmartType(obj))
+				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 		}
 		/// <summary>
 		/// If it should ignore the obejct if the field or object has the
@@ -89,6 +94,13 @@
 		{
 			if (!primitive.valueType.IsPrimitive && primitive.valueType != typeof(string))
 				return false;
+			if (primitive.HasAttribute<XmlAttributeAttribute>())
+			{
+				if (primitive.IsDerivedFromBase)
+					throw new Exception("Cannot serialize as the field type doesn't match the object type.");
+				writer.WriteAttributeString(name, primitive.value.ToString());
+				return true;
+			}
 			WriteStartElement(name, primitive);
 			WriteAttributeType(primitive);
 			writer.WriteString(primitive.value.ToString());
@@ -116,6 +128,8 @@
 			}
 			if (TryWritePrimitive(name, obj))
 				return;
+			if (obj.HasAttribute<XmlAttributeAttribute>()) // Not primitive, but struct or class
+				throw new Exception();
 			if (TryWriteEnumerable(name, obj))
 				return;
 			EnsureParameterlessConstructor(obj.valueType);
@@ -123,13 +137,29 @@
 			WriteAttributeType(obj);
 
 			FieldInfo[] infos = obj.valueType.GetFields(defaultFlags);
+			List<FieldInfo> left = new List<FieldInfo>(), right = new List<FieldInfo>();
+			// order by values that has the attribute attributes
 			for (int i = 0; i < infos.Length; i++)
 			{
 				FieldInfo field = infos[i];
-				StructuredObject @struct = new StructuredObject(field, obj);
-				WriteObject(field.Name, @struct);
+				if (field.GetCustomAttribute<XmlAttributeAttribute>() != null)
+					left.Add(field);
+				else
+					right.Add(field);
 			}
+			WriteValues(left);
+			WriteValues(right);
 			writer.WriteEndElement();
+
+			void WriteValues(List<FieldInfo> fieldInfos)
+			{
+				for (int i = 0; i < fieldInfos.Count; i++)
+				{
+					FieldInfo field = fieldInfos[i];
+					StructuredObject @struct = new StructuredObject(field, obj);
+					WriteObject(field.Name, @struct);
+				}
+			}
 		}
 		/// <summary>
 		/// Writes the starting element.
@@ -143,8 +173,7 @@
 		{
 			if (obj.IsAutoImplementedProperty)
 			{
-				writer.WriteStartElement(name.Substring(1, name.IndexOf('>') - 1));
-				writer.WriteAttributeString(CONDITION, AUTO_IMPLEMENTED_PROPERTY);
+				writer.WriteStartElement(StructuredObject.RemoveAutoPropertyTags(name));
 				return;
 			}
 			writer.WriteStartElement(name);

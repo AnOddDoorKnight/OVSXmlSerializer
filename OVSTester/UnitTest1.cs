@@ -6,21 +6,16 @@ using System.Linq;
 using System.Collections.Generic;
 using System.IO;
 using OVSXmlSerializer;
+using OVSXmlSerializer.Extras;
 using XmlSerializer = OVSXmlSerializer.XmlSerializer;
 using System.Xml.Serialization;
 using IXmlSerializable = OVSXmlSerializer.IXmlSerializable;
 using System.Xml;
+using System.Numerics;
 
 [TestClass]
 public class ObjectSerialization
 {
-	[TestMethod("Main")]
-	public void Main()
-	{
-		object obj = 4;
-		Type type = obj.GetType();
-	}
-
 	[TestMethod("String Serialization")]
 	public void SimpleSerialize()
 	{
@@ -93,16 +88,7 @@ public class ObjectSerialization
 		StandardClass result = xmlSerializer.Deserialize(stream);
 		//Assert.AreEqual(value, result);
 	}
-	[TestMethod("XmlIgnore")]
-	public void XmlIgnore()
-	{
-		const int IGNORED_VALUE = 5;
-		var test = new XmlIgnoreStructTest() { bruh = true, bruhhy = IGNORED_VALUE };
-		XmlSerializer<XmlIgnoreStructTest> serializer = new();
-		MemoryStream stream = serializer.Serialize(test);
-		var result = serializer.Deserialize(stream);
-		Assert.IsFalse(result.bruhhy == IGNORED_VALUE);
-	}
+	
 	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]
 	public void DisallowParameterConstructor()
 	{
@@ -184,12 +170,6 @@ internal class XmlParameteredClassTest
 		this.bruh = bruh;
 	}
 }
-internal class XmlIgnoreStructTest
-{
-	public bool bruh;
-	[XmlIgnore]
-	public int bruhhy;
-}
 internal class StandardClass
 {
 	public string value = "no";
@@ -211,6 +191,59 @@ internal class Program : IEquatable<Program>
 		return false;
 	}
 }
+
+[TestClass]
+public class AttributeTests
+{
+	[TestMethod("XmlIgnore Attribute")]
+	public void XmlIgnore()
+	{
+		const int IGNORED_VALUE = 5;
+		var test = new XmlIgnoreStructTest() { bruh = true, bruhhy = IGNORED_VALUE };
+		XmlSerializer<XmlIgnoreStructTest> serializer = new();
+		MemoryStream stream = serializer.Serialize(test);
+		var result = serializer.Deserialize(stream);
+		Assert.IsFalse(result.bruhhy == IGNORED_VALUE);
+	}
+	internal class XmlIgnoreStructTest
+	{
+		public bool bruh;
+		[XmlIgnore]
+		public int bruhhy;
+	}
+
+	[TestMethod("XmlAttribute Attribute")]
+	public void XmlAttribute()
+	{
+		XmlSerializer<XmlAttributeTest> test = new();
+		Stream stream = test.Serialize(new XmlAttributeTest() { bruhhy = 5 }, "Sex");
+		XmlDocument document = XmlDocumentExtras.LoadNew(stream);
+		bool isAttribute = document.LastChild!.Attributes!.GetNamedItem("bruhhy") != null;
+		stream.Position = 0;
+		var result = test.Deserialize(stream);
+		Assert.IsTrue(isAttribute && result.bruhhy == 5);
+	}
+	internal class XmlAttributeTest
+	{
+		public bool bruh = true;
+		[XmlAttribute]
+		public int bruhhy = 0;
+	}
+
+	[TestMethod("XmlAttribute Attribute Error")]
+	public void XmlAttributeError()
+	{
+		var serializer = new XmlSerializer<XmlAttributeTestError>();
+		Assert.ThrowsException<Exception>(() => serializer.Serialize(new XmlAttributeTestError()));
+	}
+	internal class XmlAttributeTestError
+	{
+		public bool bruh = true;
+		[XmlAttribute]
+		public Vector2 bruhhy = Vector2.One;
+	}
+}
+
 [TestClass]
 public class ImplicitObjectSerialization
 {
