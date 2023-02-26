@@ -34,43 +34,68 @@
 		{
 			this.config = config;
 		}
-		public virtual object ReadDocument(XmlDocument document)
+		public virtual object ReadDocument(XmlDocument document, Type rootType)
 		{
 			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
-			return ReadObject(rootNode);
+			return ReadObject(rootNode, rootType);
 		}
-		public virtual object ReadObject(XmlNode node)
+		public virtual object ReadObject(XmlNode node, Type currentType)
 		{
 			if (node == null)
 				return null;
-			XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
-			string typeValue = attributeNode is null ? "" : attributeNode.Value;
-			Type type = ByName(typeValue);
-			if (typeof(IXmlSerializable).IsAssignableFrom(type))
+			if (!currentType.IsValueType) // Class Type probably is defined, but not derived. 
 			{
-				object serializableOutput = Activator.CreateInstance(type, true);
+				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
+				string possibleDerivedTypeName = null;
+				if (attributeNode != null)
+					possibleDerivedTypeName = attributeNode.Value;
+				if (!string.IsNullOrEmpty(possibleDerivedTypeName))
+				{
+					Type possibleDerivedType = ByName(possibleDerivedTypeName);
+					bool isDerived = currentType.IsAssignableFrom(possibleDerivedType);
+					if (isDerived)
+						currentType = possibleDerivedType;
+				}
+			}
+			else if (currentType == null)
+			{
+				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
+				string typeValue = null;
+				if (attributeNode != null) 
+					typeValue = attributeNode.Value;
+				if (string.IsNullOrEmpty(typeValue))
+					throw new Exception();
+				currentType = ByName(typeValue);
+			}
+			
+			if (typeof(IXmlSerializable).IsAssignableFrom(currentType))
+			{
+				object serializableOutput = Activator.CreateInstance(currentType, true);
 				IXmlSerializable xmlSerializable = (IXmlSerializable)serializableOutput;
 				xmlSerializable.Read(node);
 				return serializableOutput;
 			}
-			if (TryReadPrimitive(type, node, out object output))
+			if (TryReadPrimitive(currentType, node, out object output))
 				return output;
-			if (TryReadEnumerable(type, node, out object objectEnumerable))
+			if (TryReadEnumerable(currentType, node, out object objectEnumerable))
 				return objectEnumerable;
-			object obj = Activator.CreateInstance(type, true);
+			object obj = Activator.CreateInstance(currentType, true);
 			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>();
-			FieldInfo[] fieldInfos = type.GetFields(defaultFlags);
+			FieldInfo[] fieldInfos = currentType.GetFields(defaultFlags);
 			Array.ForEach(fieldInfos, field => fieldDictionary.Add(field.Name, field));
 			XmlNodeList childNodes = node.ChildNodes;
 			for (int i = 0; i < childNodes.Count; i++)
 			{
 				XmlNode childNode = childNodes.Item(i);
 				string fieldName = childNode.Name;
-				XmlNode attributeCon = childNode.Attributes.GetNamedItem(CONDITION);
-				if (childNode.Attributes.GetNamedItem(CONDITION)?.Value == AUTO_IMPLEMENTED_PROPERTY)
-					fieldName = AddAutoImplementedTag(fieldName);
-				if (fieldDictionary.ContainsKey(fieldName))
-					fieldDictionary[fieldName].SetValue(obj, ReadObject(childNode));
+				if (childNode.Attributes != null)
+				{
+					XmlNode attributeCon = childNode.Attributes.GetNamedItem(CONDITION);
+					if (childNode.Attributes.GetNamedItem(CONDITION)?.Value == AUTO_IMPLEMENTED_PROPERTY)
+						fieldName = AddAutoImplementedTag(fieldName);
+				}
+				if (fieldDictionary.TryGetValue(fieldName, out FieldInfo info))
+					fieldDictionary[fieldName].SetValue(obj, ReadObject(childNode, info.FieldType));
 			}
 			return obj;
 		}
@@ -99,9 +124,10 @@
 			XmlNodeList nodeList = node.ChildNodes;
 			if (type.IsArray)
 			{
-				Array array = Array.CreateInstance(type.GetElementType(), nodeList.Count);
+				Type elementType = type.GetElementType();
+				Array array = Array.CreateInstance(elementType, nodeList.Count);
 				for (int i = 0; i < nodeList.Count; i++)
-					array.SetValue(ReadObject(nodeList.Item(i)), i);
+					array.SetValue(ReadObject(nodeList.Item(i), elementType), i);
 				output = array;
 				return true;
 			}
@@ -113,25 +139,23 @@
 			output = Activator.CreateInstance(type, true);
 			if (output is IList list)
 			{
+				Type elementType = type.GenericTypeArguments[0];
 				for (int i = 0; i < nodeList.Count; i++)
-					list.Add(ReadObject(nodeList.Item(i)));
+					list.Add(ReadObject(nodeList.Item(i), elementType));
 				return true;
 			}
 			if (output is IDictionary dictionary)
 			{
+				Type keyType = type.GenericTypeArguments[0];
+				Type valueType = type.GenericTypeArguments[1];
 				for (int i = 0; i < nodeList.Count; i++)
 				{
 					XmlNode key = nodeList.Item(i).SelectSingleNode("key");
 					XmlNode value = nodeList.Item(i).SelectSingleNode("value");
-					dictionary.Add(ReadObject(key), ReadObject(value));
+					dictionary.Add(ReadObject(key, keyType), ReadObject(value, valueType));
 				}
 				return true;
 			}
-			//MethodInfo? method = type.GetMethod("Add");
-			//if (method is not null)
-			//{
-			//	method.CreateDelegate(type, output).DynamicInvoke()
-			//}
 			throw new NotImplementedException();
 		}
 	}

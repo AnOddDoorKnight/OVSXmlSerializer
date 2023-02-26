@@ -28,7 +28,6 @@
 		/// </returns>
 		public virtual T Deserialize(Stream input)
 		{
-
 			XmlDocument document = new XmlDocument();
 			try
 			{
@@ -38,7 +37,7 @@
 			{
 				return default;
 			}
-			object output = new XmlReaderSerializer(config).ReadDocument(document);
+			object output = new XmlReaderSerializer(config).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -78,7 +77,7 @@
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
 			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
-			object output = new XmlReaderSerializer(config).ReadDocument(document);
+			object output = new XmlReaderSerializer(config).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -89,7 +88,7 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public virtual T Deserialize(string fileLocation, out string rootElementName)
+		public T Deserialize(string fileLocation, out string rootElementName)
 		{
 			using (var stream = File.OpenRead(fileLocation))
 				return Deserialize(stream, out rootElementName);
@@ -102,7 +101,7 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public virtual T Deserialize(FileInfo fileLocation, out string rootElementName)
+		public T Deserialize(FileInfo fileLocation, out string rootElementName)
 		{
 			using (var stream = fileLocation.OpenRead())
 				return Deserialize(stream, out rootElementName);
@@ -116,7 +115,7 @@
 		/// </summary>
 		/// <param name="item"> The item to serialize. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public virtual MemoryStream Serialize(T item)
+		public MemoryStream Serialize(T item)
 		{
 			return Serialize(item, item.GetType().Name);
 		}
@@ -127,7 +126,7 @@
 		/// <param name="item"> The item to serialize. </param>
 		/// <param name="stream"> The stream to serialize to. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public virtual void Serialize(Stream stream, T item)
+		public void Serialize(Stream stream, T item)
 		{
 			Serialize(stream, item, item.GetType().Name);
 		}
@@ -139,7 +138,7 @@
 		/// <param name="rootElementName">The root element within the xml file. </param>
 		/// <param name="stream"> The stream to serialize to. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public virtual void Serialize(Stream stream, T item, string rootElementName)
+		public void Serialize(Stream stream, T item, string rootElementName)
 		{
 			using (var memoryStream = Serialize(item, rootElementName))
 				memoryStream.CopyTo(stream);
@@ -160,7 +159,7 @@
 			stream.Position = 0;
 			return stream;
 		}
-		public virtual void Serialize(XmlWriter writer, T item)
+		public void Serialize(XmlWriter writer, T item)
 		{
 			Serialize(writer, item, item.GetType().Name);
 		}

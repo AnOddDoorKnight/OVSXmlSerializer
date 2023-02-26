@@ -1,7 +1,9 @@
 ﻿namespace OVSXmlSerializer
 {
 	using System;
+	using System.IO;
 	using System.Reflection;
+	using System.Xml;
 
 	/// <summary>
 	/// Xml Serializer that converts values into XML files and such. Effectively
@@ -26,6 +28,29 @@
 		public XmlSerializer(Type type, XmlSerializerConfig config) : base(config)
 		{
 			activeType = type;
+		}
+
+		public override object Deserialize(Stream input)
+		{
+			XmlDocument document = new XmlDocument();
+			try
+			{
+				document.Load(input);
+			}
+			catch (XmlException exception) when (exception.Message == "Root element is missing.")
+			{
+				return default;
+			}
+			object output = new XmlReaderSerializer(config).ReadDocument(document, activeType);
+			return output;
+		}
+		public override object Deserialize(Stream input, out string rootElementName)
+		{
+			XmlDocument document = new XmlDocument();
+			document.Load(input);
+			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
+			object output = new XmlReaderSerializer(config).ReadDocument(document, activeType);
+			return output;
 		}
 	}
 }

@@ -31,6 +31,20 @@
 			this.writer = writer;
 		}
 
+		internal void WriteAttributeType(StructuredObject obj)
+		{
+			if (config.alwaysIncludeTypes)
+			{
+				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+				return;
+			}
+			if (!config.smartTypes)
+				return;
+			// Smart types here
+			if (obj.parent is null || !obj.IsDerivedFromBase)
+				return;
+			writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+		}
 		internal bool IgnoreObject(StructuredObject obj)
 		{
 			if (Attribute.GetCustomAttributes(obj.valueType, typeof(XmlIgnoreAttribute)).Length > 0)
@@ -44,8 +58,7 @@
 			if (values.valueType.IsArray)
 			{
 				WriteStartElement(name.TrimEnd('[', ']'), values);
-				if (config.alwaysIncludeTypes)
-					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
+				WriteAttributeType(values);
 				Array arrValue = (Array)values.value;
 				for (int i = 0; i < arrValue.Length; i++)
 					WriteObject("Item", new StructuredObject(arrValue.GetValue(i)));
@@ -57,8 +70,7 @@
 			{
 				EnsureParameterlessConstructor(values.valueType);
 				WriteStartElement(name.Replace('`', '_'), values);
-				if (config.alwaysIncludeTypes)
-					writer.WriteAttributeString(ATTRIBUTE, values.valueType.FullName);
+				WriteAttributeType(values);
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
 					WriteObject("Item", new StructuredObject(enumerator.Current));
@@ -74,8 +86,7 @@
 			if (!primitive.valueType.IsPrimitive && primitive.valueType != typeof(string))
 				return false;
 			WriteStartElement(name, primitive);
-			if (config.alwaysIncludeTypes)
-				writer.WriteAttributeString(ATTRIBUTE, primitive.valueType.FullName);
+			WriteAttributeType(primitive);
 			writer.WriteString(primitive.value.ToString());
 			writer.WriteEndElement();
 			return true;
@@ -94,8 +105,7 @@
 					return;
 				EnsureParameterlessConstructor(obj.valueType);
 				WriteStartElement(name, obj);
-				if (config.alwaysIncludeTypes)
-					writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+				WriteAttributeType(obj);
 				serializable.Write(writer);
 				writer.WriteEndElement();
 				return;
@@ -106,8 +116,7 @@
 				return;
 			EnsureParameterlessConstructor(obj.valueType);
 			WriteStartElement(name, obj);
-			if (config.alwaysIncludeTypes)
-				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+			WriteAttributeType(obj);
 
 			FieldInfo[] infos = obj.valueType.GetFields(defaultFlags);
 			for (int i = 0; i < infos.Length; i++)
@@ -128,7 +137,6 @@
 		/// <param name="obj"></param>
 		internal void WriteStartElement(string name, StructuredObject obj)
 		{
-			// <'name'>k_BackingField
 			if (obj.IsAutoImplementedProperty)
 			{
 				writer.WriteStartElement(name.Substring(1, name.IndexOf('>') - 1));
