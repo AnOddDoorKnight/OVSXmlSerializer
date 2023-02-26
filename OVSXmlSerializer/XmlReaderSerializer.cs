@@ -11,6 +11,10 @@
 	internal class XmlReaderSerializer
 	{
 		// https://stackoverflow.com/questions/20008503/get-type-by-name
+		/// <summary>
+		/// Gets the type by the full name in every existing assembly.
+		/// </summary>
+		/// <param name="name"> The full type name. </param>
 		internal static Type ByName(string name)
 		{
 			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
@@ -23,6 +27,9 @@
 			}
 			return typeof(object);
 		}
+		/// <summary>
+		/// Adds the auto-implementation tag to an existing name.
+		/// </summary>
 		internal static string AddAutoImplementedTag(string input)
 		{
 			return $"<{input}>k__BackingField";
@@ -43,8 +50,19 @@
 		{
 			if (node == null)
 				return null;
-			if (!currentType.IsValueType) // Class Type probably is defined, but not derived. 
+			if (currentType == null)
 			{
+				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
+				string typeValue = null;
+				if (attributeNode != null)
+					typeValue = attributeNode.Value;
+				if (string.IsNullOrEmpty(typeValue))
+					throw new Exception();
+				currentType = ByName(typeValue);
+			}
+			else if (!currentType.IsValueType)
+			{
+				// Class Type probably is defined, but not derived. 
 				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
 				string possibleDerivedTypeName = null;
 				if (attributeNode != null)
@@ -57,17 +75,8 @@
 						currentType = possibleDerivedType;
 				}
 			}
-			else if (currentType == null)
-			{
-				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
-				string typeValue = null;
-				if (attributeNode != null) 
-					typeValue = attributeNode.Value;
-				if (string.IsNullOrEmpty(typeValue))
-					throw new Exception();
-				currentType = ByName(typeValue);
-			}
 			
+			// Letting the jesus take the wheel
 			if (typeof(IXmlSerializable).IsAssignableFrom(currentType))
 			{
 				object serializableOutput = Activator.CreateInstance(currentType, true);
@@ -79,7 +88,10 @@
 				return output;
 			if (TryReadEnumerable(currentType, node, out object objectEnumerable))
 				return objectEnumerable;
+			// Standard class with regular serialization.
 			object obj = Activator.CreateInstance(currentType, true);
+			// Serializes fields by getting fields by name, and matching it from
+			// - the node list.
 			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>();
 			FieldInfo[] fieldInfos = currentType.GetFields(defaultFlags);
 			Array.ForEach(fieldInfos, field => fieldDictionary.Add(field.Name, field));
@@ -101,12 +113,14 @@
 		}
 		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
 		{
+			// Since string is arguably a class or char array, its it own check.
 			if (!type.IsPrimitive && type != typeof(string))
 			{
 				output = null;
 				return false;
 			}
 			string unparsed = node.InnerText;
+			// I wonder if there is a method or library that does this for me..
 			if (type == typeof(string))
 				output = unparsed;
 			else if (type == typeof(double))
@@ -119,6 +133,16 @@
 				throw new NotImplementedException(type.ToString());
 			return true;
 		}
+		/// <summary>
+		/// Parses the enumerable if it implements <see cref="ICollection"/>.
+		/// </summary>
+		/// <param name="type"> The type. </param>
+		/// <param name="node"> The data. </param>
+		/// <param name="output"> The resulting item. </param>
+		/// <returns>If it has successfully parsed. </returns>
+		/// <exception cref="NotImplementedException"> 
+		/// If there is no implementation for the collection. 
+		/// </exception>
 		internal protected virtual bool TryReadEnumerable(Type type, XmlNode node, out object output)
 		{
 			XmlNodeList nodeList = node.ChildNodes;
@@ -131,6 +155,7 @@
 				output = array;
 				return true;
 			}
+			// All lists or dictionaries derive from collections.
 			if (!typeof(ICollection).IsAssignableFrom(type))
 			{
 				output = null;

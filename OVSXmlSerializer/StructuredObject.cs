@@ -7,15 +7,49 @@
 	using System.Xml.Serialization;
 	using static XmlSerializer;
 
+	/// <summary>
+	/// A singular struct that stores information about the object, the type,
+	/// and the parent with its own type. There is additional values to consider
+	/// as well.
+	/// </summary>
 	internal readonly struct StructuredObject : IEquatable<StructuredObject>
 	{
+		/// <summary>
+		/// The value of the <see cref="StructuredObject"/>.
+		/// </summary>
 		public readonly object value;
+		/// <summary>
+		/// The field name of the value. <see langword="null"/> if it is standalone,
+		/// or the initial input parameters.
+		/// </summary>
 		public readonly string fieldName;
+		/// <summary>
+		/// The type of <see cref="value"/>.
+		/// </summary>
 		public readonly Type valueType;
+		/// <summary>
+		/// If the value is null.
+		/// </summary>
 		public readonly bool isNull;
+		/// <summary>
+		/// The parent of the <see cref="value"/>. <see langword="null"/> if 
+		/// </summary>
 		public readonly object parent;
+		/// <summary>
+		/// The <see cref="parent"/>'s type.
+		/// </summary>
+		/// <exception cref="NullReferenceException"/>
 		public Type ParentType => parent.GetType();
+		/// <summary>
+		/// If the object is an auto-implemented property. Determined by if the
+		/// field name contains the requirements.
+		/// </summary>
 		public bool IsAutoImplementedProperty => fieldName.Contains("<") && fieldName.Contains(">");
+		/// <summary>
+		/// If the object from a field, then it will determine if it has a derived
+		/// class from the field. If it does, then <see langword="true"/>. Otherwise,
+		/// <see langword="false"/>.
+		/// </summary>
 		public bool IsDerivedFromBase
 		{
 			get
@@ -24,6 +58,10 @@
 				return !fieldType.IsAssignableFrom(valueType);
 			}
 		}
+		/// <summary>
+		/// If the field or object contains the attribute.
+		/// </summary>
+		/// <typeparam name="T"> The attribute. </typeparam>
 		public bool HasAttribute<T>() where T : Attribute
 		{
 			FieldInfo field = ParentType.GetField(fieldName, defaultFlags);

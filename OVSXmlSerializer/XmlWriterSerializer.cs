@@ -45,6 +45,10 @@
 				return;
 			writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 		}
+		/// <summary>
+		/// If it should ignore the obejct if the field or object has the
+		/// <see cref="XmlIgnoreAttribute"/>
+		/// </summary>
 		internal bool IgnoreObject(StructuredObject obj)
 		{
 			if (Attribute.GetCustomAttributes(obj.valueType, typeof(XmlIgnoreAttribute)).Length > 0)
@@ -128,13 +132,13 @@
 			writer.WriteEndElement();
 		}
 		/// <summary>
-		/// 
+		/// Writes the starting element.
 		/// </summary>
 		/// <remarks>
 		/// This fixes issues when considering auto-implemented properties.
 		/// </remarks>
-		/// <param name="name"></param>
-		/// <param name="obj"></param>
+		/// <param name="name"> The name of the element. </param>
+		/// <param name="obj"> The object to write about. </param>
 		internal void WriteStartElement(string name, StructuredObject obj)
 		{
 			if (obj.IsAutoImplementedProperty)
