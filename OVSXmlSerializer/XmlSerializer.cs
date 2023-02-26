@@ -16,10 +16,6 @@
 		internal const string CONDITION = "con";
 
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
-
-
-
-
 		protected Type activeType;
 		public XmlSerializer(Type type) : base()
 		{

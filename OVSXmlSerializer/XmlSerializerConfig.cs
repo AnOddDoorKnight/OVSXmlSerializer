@@ -58,25 +58,9 @@
 		/// </summary>
 		public bool indent = true;
 		/// <summary>
-		/// If the XML file should always include types. With this enabled,
-		/// it will always write a type even when it doesn't need to. 
+		/// how the XML file from <see cref="XmlSerializer"/> should handle types. 
 		/// </summary>
-		public bool alwaysIncludeTypes = true;
-		/// <summary>
-		/// If the XML file should include a type if it is derived from type,
-		/// such as an int from an object type.
-		/// </summary>
-		public bool smartTypes = true;
-		/// <summary>
-		/// Setting that changes <see cref="alwaysIncludeTypes"/> and <see cref="smartTypes"/>
-		/// based on the input value. Since both fields are set as <see langword="true"/> 
-		/// by default, you can set them both to <see langword="false"/> here.
-		/// </summary>
-		public bool IncludeTypes { set
-			{
-				alwaysIncludeTypes = value;
-				smartTypes = value;
-			} }
+		public IncludeTypes TypeHandling = IncludeTypes.SmartTypes;
 		
 		public Encoding encoding = Encoding.UTF8;
 
@@ -91,5 +75,26 @@
 				NewLineOnAttributes = newLineOnAttributes,
 			};
 		}
+	}
+
+	/// <summary>
+	/// The condition of how the <see cref="XmlSerializer"/> should handle types
+	/// of objects.
+	/// </summary>
+	public enum IncludeTypes : byte
+	{
+		/// <summary>
+		/// It will ignore the derived type entirely.
+		/// </summary>
+		IgnoreTypes,
+		/// <summary>
+		/// When the object is derived off the field, then it will write the
+		/// object type.
+		/// </summary>
+		SmartTypes,
+		/// <summary>
+		/// The XML file will always write the type of the object. 
+		/// </summary>
+		AlwaysIncludeTypes,
 	}
 }

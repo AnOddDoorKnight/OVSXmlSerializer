@@ -34,7 +34,7 @@
 
 		internal bool ApplySmartType(StructuredObject obj)
 		{
-			if (!config.smartTypes)
+			if (config.TypeHandling != IncludeTypes.SmartTypes)
 				return false;
 			if (obj.parent is null || !obj.IsDerivedFromBase)
 				return false;
@@ -42,7 +42,7 @@
 		}
 		internal void WriteAttributeType(StructuredObject obj)
 		{
-			if (config.alwaysIncludeTypes)
+			if (config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
 			{
 				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
 				return;

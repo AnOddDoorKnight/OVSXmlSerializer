@@ -6,7 +6,7 @@
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
     <VersionPrefix>1.0.1</VersionPrefix>
-    <VersionSuffix>beta-5</VersionSuffix>
+    <VersionSuffix>beta-6</VersionSuffix>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>Fixed a bug where it gets only the field instead of the actual derived type</PackageReleaseNotes>
+    <PackageReleaseNotes>Added Xml Attribute Attribute Support, </PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

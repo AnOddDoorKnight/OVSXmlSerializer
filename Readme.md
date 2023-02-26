@@ -29,6 +29,8 @@ This feature is enabled by default, but creating `XmlSerializerConfig`, this can
 be turned off. It will also implicitly convert `System.Xml.XmlWriterSettings` to
 the config to ensure smooth transtion between systems.
 
+There are 3 options you can enable:
+
 ## Serializing
 
 Like the default system XML serializer, they pose the same requirements such as:
@@ -55,3 +57,7 @@ Requires the stream or XML file to retrieve the object mentioned by the XML.
 Here are a few attributes that this supports from `System.Xml.Serialization`
 
 1. `[XmlIgnore]` Ignores the field completely
+2. `[XmlAttribute]` Adds *primitive value* as a single attribute to the class
+    being serialized
+
+Arrays are automatically serialized as if it is an ordinary list or dictionary.
