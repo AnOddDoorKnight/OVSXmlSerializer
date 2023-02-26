@@ -88,6 +88,8 @@
 				xmlSerializable.Read(node);
 				return serializableOutput;
 			}
+			if (TryReadEnum(currentType, node, out object objectEnum))
+				return objectEnum;
 			if (TryReadPrimitive(currentType, node, out object output))
 				return output;
 			if (TryReadEnumerable(currentType, node, out object objectEnumerable))
@@ -143,6 +145,16 @@
 			}
 			return obj;
 		}
+		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
+		{
+			if (!type.IsEnum)
+			{
+				output = null;
+				return false;
+			}
+			output = Convert.ChangeType(node.InnerText, type);
+			return true;
+		}
 		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
 		{
 			// Since string is arguably a class or char array, its it own check.
@@ -153,16 +165,7 @@
 			}
 			string unparsed = node is XmlAttribute ? node.Value : node.InnerText;
 			// I wonder if there is a method or library that does this for me..
-			if (type == typeof(string))
-				output = unparsed;
-			else if (type == typeof(double))
-				output = double.Parse(unparsed);
-			else if (type == typeof(int))
-				output = int.Parse(unparsed);
-			else if (type == typeof(bool))
-				output = bool.Parse(unparsed);
-			else
-				throw new NotImplementedException(type.ToString());
+			output = Convert.ChangeType(unparsed, type);
 			return true;
 		}
 		/// <summary>

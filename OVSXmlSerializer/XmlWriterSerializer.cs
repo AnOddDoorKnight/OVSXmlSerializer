@@ -107,6 +107,16 @@
 			writer.WriteEndElement();
 			return true;
 		}
+		internal bool TryWriteEnum(in string name, StructuredObject @enum)
+		{
+			if (!@enum.valueType.IsEnum)
+				return false;
+			WriteStartElement(name, @enum);
+			WriteAttributeType(@enum);
+			writer.WriteString(@enum.value.ToString());
+			writer.WriteEndElement();
+			return true;
+		}
 		internal void WriteObject(in string name, StructuredObject obj)
 		{
 			if (obj.isNull)
@@ -126,6 +136,8 @@
 				writer.WriteEndElement();
 				return;
 			}
+			if (TryWriteEnum(name, obj))
+				return;
 			if (TryWritePrimitive(name, obj))
 				return;
 			if (obj.HasAttribute<XmlAttributeAttribute>()) // Not primitive, but struct or class
