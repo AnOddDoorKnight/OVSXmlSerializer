@@ -12,6 +12,7 @@ using System.Xml.Serialization;
 using IXmlSerializable = OVSXmlSerializer.IXmlSerializable;
 using System.Xml;
 using System.Numerics;
+using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
 
 [TestClass]
 public class ObjectSerialization
@@ -265,6 +266,19 @@ public class ImplicitObjectSerialization
 		var stream = serializer.Serialize(value);
 		List<string> result = serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
+	}
+	[TestMethod("Implicit Dictionary Int Serialization")]
+	public void DictionaryImplicitSerialize()
+	{
+		Dictionary<string, int> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Add($"bruh{i}", i);
+		XmlSerializer<Dictionary<string, int>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		var stream = serializer.Serialize(value);
+		string XML = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		Dictionary<string, int> result = serializer.Deserialize(stream);
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value == pair.Second.Value) == value.Count);
 	}
 }
 [TestClass]

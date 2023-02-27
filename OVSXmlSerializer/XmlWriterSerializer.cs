@@ -36,9 +36,9 @@
 		{
 			if (config.TypeHandling != IncludeTypes.SmartTypes)
 				return false;
-			if (obj is FieldObject fieldObj && !fieldObj.IsDerivedFromBase)
-				return false;
-			return true;
+			if (obj is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				return true;
+			return false;
 		}
 		internal void WriteAttributeType(StructuredObject obj)
 		{
@@ -87,7 +87,6 @@
 				writer.WriteEndElement();
 				return true;
 			}
-
 			return false;
 		}
 		internal bool TryWritePrimitive(string name, StructuredObject primitive)
