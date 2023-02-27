@@ -251,7 +251,7 @@ public class ImplicitObjectSerialization
 	public void SimpleImplicitSerialize()
 	{
 		const string value = "bruh";
-		XmlSerializer serializer = new(typeof(string), new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		XmlSerializer serializer = new(typeof(string), new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
 	}
@@ -261,7 +261,7 @@ public class ImplicitObjectSerialization
 		List<string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add("bruh");
-		XmlSerializer<List<string>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		XmlSerializer<List<string>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
 		var stream = serializer.Serialize(value);
 		List<string> result = serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
@@ -276,7 +276,7 @@ public class B1NARYSerialization
 		Dictionary<string, object> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
-		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
 		var stream = serializer.Serialize(value, "PlayerConfig");
 		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
 		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);

@@ -36,7 +36,7 @@
 		{
 			if (config.TypeHandling != IncludeTypes.SmartTypes)
 				return false;
-			if (obj.parent is null || !obj.IsDerivedFromBase)
+			if (obj is FieldObject fieldObj && !fieldObj.IsDerivedFromBase)
 				return false;
 			return true;
 		}
@@ -44,11 +44,11 @@
 		{
 			if (config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
 			{
-				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
 				return;
 			}
 			if (ApplySmartType(obj))
-				writer.WriteAttributeString(ATTRIBUTE, obj.valueType.FullName);
+				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
 		}
 		/// <summary>
 		/// If it should ignore the obejct if the field or object has the
@@ -56,28 +56,28 @@
 		/// </summary>
 		internal bool IgnoreObject(StructuredObject obj)
 		{
-			if (Attribute.GetCustomAttributes(obj.valueType, typeof(XmlIgnoreAttribute)).Length > 0)
+			if (Attribute.GetCustomAttributes(obj.ValueType, typeof(XmlIgnoreAttribute)).Length > 0)
 				return true;
-			if (obj.parent is null)
+			if (obj is FieldObject fieldObj && fieldObj.Parent is null)
 				return false;
 			return obj.HasAttribute<XmlIgnoreAttribute>();
 		}
 		internal bool TryWriteEnumerable(string name, StructuredObject values)
 		{
-			if (values.valueType.IsArray)
+			if (values.ValueType.IsArray)
 			{
 				WriteStartElement(name.TrimEnd('[', ']'), values);
 				WriteAttributeType(values);
-				Array arrValue = (Array)values.value;
+				Array arrValue = (Array)values.Value;
 				for (int i = 0; i < arrValue.Length; i++)
 					WriteObject("Item", new StructuredObject(arrValue.GetValue(i)));
 				writer.WriteEndElement();
 				return true;
 			}
-			object value = values.value;
+			object value = values.Value;
 			if (value is IEnumerable enumerable)
 			{
-				EnsureParameterlessConstructor(values.valueType);
+				EnsureParameterlessConstructor(values.ValueType);
 				WriteStartElement(name.Replace('`', '_'), values);
 				WriteAttributeType(values);
 				IEnumerator enumerator = enumerable.GetEnumerator();
@@ -92,44 +92,44 @@
 		}
 		internal bool TryWritePrimitive(string name, StructuredObject primitive)
 		{
-			if (!primitive.valueType.IsPrimitive && primitive.valueType != typeof(string))
+			if (!primitive.ValueType.IsPrimitive && primitive.ValueType != typeof(string))
 				return false;
 			if (primitive.HasAttribute<XmlAttributeAttribute>())
 			{
-				if (primitive.IsDerivedFromBase)
+				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
 					throw new Exception("Cannot serialize as the field type doesn't match the object type.");
-				writer.WriteAttributeString(name, primitive.value.ToString());
+				writer.WriteAttributeString(name, primitive.Value.ToString());
 				return true;
 			}
 			WriteStartElement(name, primitive);
 			WriteAttributeType(primitive);
-			writer.WriteString(primitive.value.ToString());
+			writer.WriteString(primitive.Value.ToString());
 			writer.WriteEndElement();
 			return true;
 		}
 		internal bool TryWriteEnum(in string name, StructuredObject @enum)
 		{
-			if (!@enum.valueType.IsEnum)
+			if (!@enum.ValueType.IsEnum)
 				return false;
 			WriteStartElement(name, @enum);
 			WriteAttributeType(@enum);
-			writer.WriteString(@enum.value.ToString());
+			writer.WriteString(@enum.Value.ToString());
 			writer.WriteEndElement();
 			return true;
 		}
 		internal void WriteObject(in string name, StructuredObject obj)
 		{
-			if (obj.isNull)
+			if (obj.IsNull)
 				return;
 			if (IgnoreObject(obj))
 				return;
-			if (obj.value is IXmlSerializable serializable)
+			if (obj.Value is IXmlSerializable serializable)
 			{
 				// Not sure how the actual scheme works at all since I never used
 				// - one. I don't this applies here at all anyways.
 				if (serializable.ShouldWrite == false)
 					return;
-				EnsureParameterlessConstructor(obj.valueType);
+				EnsureParameterlessConstructor(obj.ValueType);
 				WriteStartElement(name, obj);
 				WriteAttributeType(obj);
 				serializable.Write(writer);
@@ -144,11 +144,11 @@
 				throw new Exception();
 			if (TryWriteEnumerable(name, obj))
 				return;
-			EnsureParameterlessConstructor(obj.valueType);
+			EnsureParameterlessConstructor(obj.ValueType);
 			WriteStartElement(name, obj);
 			WriteAttributeType(obj);
 
-			FieldInfo[] infos = obj.valueType.GetFields(defaultFlags);
+			FieldInfo[] infos = obj.ValueType.GetFields(defaultFlags);
 			List<FieldInfo> left = new List<FieldInfo>(), right = new List<FieldInfo>();
 			// order by values that has the attribute attributes
 			for (int i = 0; i < infos.Length; i++)
@@ -168,7 +168,7 @@
 				for (int i = 0; i < fieldInfos.Count; i++)
 				{
 					FieldInfo field = fieldInfos[i];
-					StructuredObject @struct = new StructuredObject(field, obj);
+					FieldObject @struct = new FieldObject(field, obj.Value);
 					WriteObject(field.Name, @struct);
 				}
 			}
@@ -183,9 +183,9 @@
 		/// <param name="obj"> The object to write about. </param>
 		internal void WriteStartElement(string name, StructuredObject obj)
 		{
-			if (obj.IsAutoImplementedProperty)
+			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
 			{
-				writer.WriteStartElement(StructuredObject.RemoveAutoPropertyTags(name));
+				writer.WriteStartElement(FieldObject.RemoveAutoPropertyTags(name));
 				return;
 			}
 			writer.WriteStartElement(name);

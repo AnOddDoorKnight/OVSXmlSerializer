@@ -5,7 +5,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
-    <VersionPrefix>1.0.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <!--<VersionSuffix>beta-6</VersionSuffix>-->
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>Added Xml Attribute Attribute Support, Added Enum support, and a bit more documentation or Readme editing</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix a unit test oversight where it didn't show Smart Types working</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

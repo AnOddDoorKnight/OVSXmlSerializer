@@ -107,8 +107,8 @@
 			{
 				FieldInfo currentField = allFields[i];
 				string key = keys[i] =
-					StructuredObject.IsProbablyAutoImplementedProperty(currentField.Name)
-					? StructuredObject.RemoveAutoPropertyTags(currentField.Name)
+					FieldObject.IsProbablyAutoImplementedProperty(currentField.Name)
+					? FieldObject.RemoveAutoPropertyTags(currentField.Name)
 					: currentField.Name;
 				fieldDictionary.Add(key, currentField);
 			}
@@ -119,8 +119,8 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo field = allFields[i];
-				string fieldName = StructuredObject.IsProbablyAutoImplementedProperty(field.Name)
-					? StructuredObject.RemoveAutoPropertyTags(field.Name)
+				string fieldName = FieldObject.IsProbablyAutoImplementedProperty(field.Name)
+					? FieldObject.RemoveAutoPropertyTags(field.Name)
 					: field.Name;
 				if (field.GetCustomAttribute<XmlAttributeAttribute>() != null)
 					attributes.Add((fieldName, field));
