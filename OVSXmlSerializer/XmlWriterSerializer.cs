@@ -3,11 +3,10 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
-	using System.Data;
+	using System.Globalization;
 	using System.Linq;
 	using System.Reflection;
 	using System.Xml;
-	using System.Xml.Serialization;
 	using static XmlSerializer;
 
 	internal class XmlWriterSerializer
@@ -50,18 +49,6 @@
 			if (ApplySmartType(obj))
 				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
 		}
-		/// <summary>
-		/// If it should ignore the obejct if the field or object has the
-		/// <see cref="XmlIgnoreAttribute"/>
-		/// </summary>
-		internal bool IgnoreObject(StructuredObject obj)
-		{
-			if (Attribute.GetCustomAttributes(obj.ValueType, typeof(XmlIgnoreAttribute)).Length > 0)
-				return true;
-			if (obj is FieldObject fieldObj && fieldObj.Parent is null)
-				return false;
-			return obj.HasAttribute<XmlIgnoreAttribute>();
-		}
 		internal bool TryWriteEnumerable(string name, StructuredObject values)
 		{
 			if (values.ValueType.IsArray)
@@ -89,18 +76,19 @@
 			}
 			return false;
 		}
-		internal bool TryWritePrimitive(string name, StructuredObject primitive)
+		internal bool TryWritePrimitive(string name, StructuredObject primitive, bool startElement = true)
 		{
 			if (!primitive.ValueType.IsPrimitive && primitive.ValueType != typeof(string))
 				return false;
-			if (primitive.HasAttribute<XmlAttributeAttribute>())
+			if (XmlAttributeAttribute.IsAttribute(primitive))
 			{
 				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
 					throw new Exception("Cannot serialize as the field type doesn't match the object type.");
 				writer.WriteAttributeString(name, primitive.Value.ToString());
 				return true;
 			}
-			WriteStartElement(name, primitive);
+			if (startElement)
+				WriteStartElement(name, primitive);
 			WriteAttributeType(primitive);
 			writer.WriteString(primitive.Value.ToString());
 			writer.WriteEndElement();
@@ -116,11 +104,12 @@
 			writer.WriteEndElement();
 			return true;
 		}
+		// Start here for editing
 		internal void WriteObject(in string name, StructuredObject obj)
 		{
 			if (obj.IsNull)
 				return;
-			if (IgnoreObject(obj))
+			if (XmlIgnoreAttribute.Ignore(obj))
 				return;
 			if (obj.Value is IXmlSerializable serializable)
 			{
@@ -139,27 +128,48 @@
 				return;
 			if (TryWritePrimitive(name, obj))
 				return;
-			if (obj.HasAttribute<XmlAttributeAttribute>()) // Not primitive, but struct or class
-				throw new Exception();
+			if (XmlAttributeAttribute.IsAttribute(obj)) // Not primitive, but struct or class
+				throw new Exception($"{obj.Value} is not a primitive type!");
 			if (TryWriteEnumerable(name, obj))
 				return;
 			EnsureParameterlessConstructor(obj.ValueType);
 			WriteStartElement(name, obj);
 			WriteAttributeType(obj);
 
+
 			FieldInfo[] infos = obj.ValueType.GetFields(defaultFlags);
-			List<FieldInfo> left = new List<FieldInfo>(), right = new List<FieldInfo>();
+
+
+
+
+			List<FieldInfo> attributes = new List<FieldInfo>(),
+				elements = new List<FieldInfo>(),
+				text = new List<FieldInfo>();
 			// order by values that has the attribute attributes
 			for (int i = 0; i < infos.Length; i++)
 			{
 				FieldInfo field = infos[i];
-				if (field.GetCustomAttribute<XmlAttributeAttribute>() != null)
-					left.Add(field);
+				// Doing ignore again for compatibility with text attribute
+				if (XmlIgnoreAttribute.Ignore(field))
+					continue;
+				else if (XmlTextAttribute.IsText(field))
+					text.Add(field);
+				else if (XmlAttributeAttribute.IsAttribute(field))
+					attributes.Add(field);
 				else
-					right.Add(field);
+					elements.Add(field);
 			}
-			WriteValues(left);
-			WriteValues(right);
+			WriteValues(attributes);
+			if (text.Count > 0)
+			{
+				if (text.Count > 1)
+					throw new InvalidOperationException($"There can only be one [{nameof(XmlText)}]!");
+				FieldObject textField = new FieldObject(text.Single(), obj.Value);
+				if (!TryWritePrimitive(null, textField, false))
+					throw new InvalidCastException();
+				return;
+			}
+			WriteValues(elements);
 			writer.WriteEndElement();
 
 			void WriteValues(List<FieldInfo> fieldInfos)
@@ -182,11 +192,10 @@
 		/// <param name="obj"> The object to write about. </param>
 		internal void WriteStartElement(string name, StructuredObject obj)
 		{
+			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
+				name = namedAtt;
 			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
-			{
-				writer.WriteStartElement(FieldObject.RemoveAutoPropertyTags(name));
-				return;
-			}
+				name = FieldObject.RemoveAutoPropertyTags(name);
 			writer.WriteStartElement(name);
 		}
 	}

@@ -55,10 +55,13 @@ and it will de-parse it easily.
 
 ## Attributes
 
-Here are a few attributes that this supports from `System.Xml.Serialization`
+Here are a few attributes that uses in its own `OVSXmlSerializer` namespace.
+Note that `System.Xml.Serialization` will be converted automatically if needed.
 
 1. `[XmlIgnore]` Ignores the field completely
 2. `[XmlAttribute]` Adds *primitive value* as a single attribute to the class
     being serialized
+3. `[XmlNamedAs(string name)]` Changes the field name or object name to something 
+   else on XML serialization.
 
 Arrays are automatically serialized as if it is an ordinary list or dictionary.

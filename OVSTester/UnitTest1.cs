@@ -7,12 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using OVSXmlSerializer;
 using OVSXmlSerializer.Extras;
-using XmlSerializer = OVSXmlSerializer.XmlSerializer;
-using System.Xml.Serialization;
-using IXmlSerializable = OVSXmlSerializer.IXmlSerializable;
 using System.Xml;
 using System.Numerics;
-using Microsoft.VisualStudio.TestPlatform.PlatformAbstractions.Interfaces;
 
 [TestClass]
 public class ObjectSerialization
@@ -196,6 +192,24 @@ internal class Program : IEquatable<Program>
 [TestClass]
 public class AttributeTests
 {
+	[TestMethod("XmlNamed Attribute")]
+	public void XmlNamed()
+	{
+		const int IGNORED_VALUE = 5;
+		var test = new XmlNamedStructTest() { bruh = true, bruhhy = IGNORED_VALUE };
+		XmlSerializer<XmlNamedStructTest> serializer = new();
+		MemoryStream stream = serializer.Serialize(test);
+		Assert.IsTrue(XmlDocumentExtras.LoadNew(stream).SelectSingleNode($"{nameof(XmlNamedStructTest)}//Sex") != null);
+		stream.Position = 0;
+		var result = serializer.Deserialize(stream);
+		Assert.IsTrue(result.bruhhy == IGNORED_VALUE);
+	}
+	internal class XmlNamedStructTest
+	{
+		public bool bruh;
+		[XmlNamedAs("Sex")]
+		public int bruhhy;
+	}
 	[TestMethod("XmlIgnore Attribute")]
 	public void XmlIgnore()
 	{
@@ -242,6 +256,26 @@ public class AttributeTests
 		public bool bruh = true;
 		[XmlAttribute]
 		public Vector2 bruhhy = Vector2.One;
+	}
+	[TestMethod("XmlText Attribute")]
+	public void XmlText()
+	{
+		var test = new XmlTextTest() { ohpdifbr = "tpewo" };
+		XmlSerializer<XmlTextTest> serializer = new();
+		MemoryStream stream = serializer.Serialize(test);
+		string xml = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		var result = serializer.Deserialize(stream);
+		Assert.IsTrue(result.ohpdifbr == test.ohpdifbr);
+	}
+	internal class XmlTextTest
+	{
+		[XmlIgnore]
+		public string brih = "pro";
+		[XmlAttribute]
+		public int groekg = 5;
+		[XmlText]
+		public string ohpdifbr = "hoahaha";
 	}
 }
 

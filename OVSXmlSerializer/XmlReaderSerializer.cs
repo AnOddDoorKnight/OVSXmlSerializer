@@ -115,15 +115,21 @@
 			// Getting Attributes
 			List<(string Key, FieldInfo Value)> 
 				attributes = new List<(string Key, FieldInfo Value)>(), 
-				elements = new List<(string Key, FieldInfo Value)>(); 
+				elements = new List<(string Key, FieldInfo Value)>();
+			(string Key, FieldInfo Value)? text = null;
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo field = allFields[i];
 				string fieldName = FieldObject.IsProbablyAutoImplementedProperty(field.Name)
 					? FieldObject.RemoveAutoPropertyTags(field.Name)
 					: field.Name;
-				if (field.GetCustomAttribute<XmlAttributeAttribute>() != null)
+				// Getting Named Arguments
+				if (XmlNamedAsAttribute.HasName(field, out string name))
+					fieldName = name;
+				if (XmlAttributeAttribute.IsAttribute(field))
 					attributes.Add((fieldName, field));
+				else if (XmlTextAttribute.IsText(field))
+					text = (fieldName, field);
 				else
 					elements.Add((fieldName, field));
 			}
@@ -136,13 +142,19 @@
 				field.SetValue(obj, ReadObject(attribute, field.FieldType));
 			}
 			// Reading elements
-			for (int i = 0; i < elements.Count; i++)
+			if (text.HasValue)
 			{
-				string key = elements[i].Key;
-				XmlNode element = node.SelectSingleNode(key);
-				FieldInfo field = elements[i].Value;
-				field.SetValue(obj, ReadObject(element, field.FieldType));
+				TryReadPrimitive(text.Value.Value.FieldType, node, out object textOutput);
+				text.Value.Value.SetValue(obj, textOutput);
 			}
+			else
+				for (int i = 0; i < elements.Count; i++)
+				{
+					string key = elements[i].Key;
+					XmlNode element = node.SelectSingleNode(key);
+					FieldInfo field = elements[i].Value;
+					field.SetValue(obj, ReadObject(element, field.FieldType));
+				}
 			return obj;
 		}
 		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
