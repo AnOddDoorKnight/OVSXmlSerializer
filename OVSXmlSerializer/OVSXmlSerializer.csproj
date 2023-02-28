@@ -5,7 +5,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
-    <VersionPrefix>1.1.0</VersionPrefix>
+    <VersionPrefix>1.1.1</VersionPrefix>
     <!--<VersionSuffix>beta-6</VersionSuffix>-->
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -20,6 +20,7 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
