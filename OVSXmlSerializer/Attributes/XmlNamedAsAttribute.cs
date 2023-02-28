@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Configuration;
 	using System;
 	using System.Reflection;
 
@@ -8,7 +9,7 @@
 	/// name listed here instead of the field name.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
-	public class XmlNamedAsAttribute : Attribute
+	public class XmlNamedAsAttribute : OVSAttribute
 	{
 		internal static bool HasName(StructuredObject @object, out string name)
 		{

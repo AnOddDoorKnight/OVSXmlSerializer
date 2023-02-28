@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Configuration;
 	using System;
 	using System.Reflection;
 
@@ -7,7 +8,7 @@
 	/// Writes the value as a primitive type, with some additional elements left over.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
-	public class XmlTextAttribute : Attribute
+	public class XmlTextAttribute : OVSAttribute
 	{
 		internal static bool IsText(StructuredObject @object)
 		{

@@ -14,23 +14,6 @@
 
 	internal class XmlReaderSerializer
 	{
-		// https://stackoverflow.com/questions/20008503/get-type-by-name
-		/// <summary>
-		/// Gets the type by the full name in every existing assembly.
-		/// </summary>
-		/// <param name="name"> The full type name. </param>
-		internal static Type ByName(string name)
-		{
-			foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Reverse())
-			{
-				var tt = assembly.GetType(name);
-				if (tt != null)
-				{
-					return tt;
-				}
-			}
-			return typeof(object);
-		}
 		/// <summary>
 		/// Adds the auto-implementation tag to an existing name.
 		/// </summary>
@@ -41,9 +24,11 @@
 
 
 		protected XmlSerializerConfig config;
+		protected TypeCacher typeCacher;
 		public XmlReaderSerializer(XmlSerializerConfig config)
 		{
 			this.config = config;
+			typeCacher = new TypeCacher();
 		}
 		public virtual object ReadDocument(XmlDocument document, Type rootType)
 		{
@@ -62,7 +47,7 @@
 					typeValue = attributeNode.Value;
 				if (string.IsNullOrEmpty(typeValue))
 					throw new Exception();
-				currentType = ByName(typeValue);
+				currentType = typeCacher.ByName(typeValue);
 			}
 			else if (!currentType.IsValueType)
 			{
@@ -73,7 +58,7 @@
 					possibleDerivedTypeName = attributeNode.Value;
 				if (!string.IsNullOrEmpty(possibleDerivedTypeName))
 				{
-					Type possibleDerivedType = ByName(possibleDerivedTypeName);
+					Type possibleDerivedType = typeCacher.ByName(possibleDerivedTypeName);
 					bool isDerived = currentType.IsAssignableFrom(possibleDerivedType);
 					if (isDerived)
 						currentType = possibleDerivedType;
