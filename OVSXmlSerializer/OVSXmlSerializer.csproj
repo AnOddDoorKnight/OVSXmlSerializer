@@ -16,7 +16,7 @@
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>Smart types targeting is now fixed..?, hopefully it works this time. Not confident about this one. Also moved all the attributes that it uses as its own namespace instead.</PackageReleaseNotes>
+    <PackageReleaseNotes>Smart types targeting is now fixed..?, hopefully it works this time. Not confident about this one. Also moved all the attributes that it uses as its own namespace instead. This should be the final bugfix update and future versions are .NET upgrades and extra features, thinking about allowing the user to add custom actions or names like overrides, perhaps even namespaces, into the systems.</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

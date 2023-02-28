@@ -86,15 +86,20 @@
 		/// <summary>
 		/// It will ignore the derived type entirely.
 		/// </summary>
-		IgnoreTypes,
+		IgnoreTypes = 0,
 		/// <summary>
 		/// When the object is derived off the field, then it will write the
 		/// object type.
 		/// </summary>
-		SmartTypes,
+		SmartTypes = 8,
+		///// <summary>
+		///// Has the properties of <see cref="SmartTypes"/> and always has the 
+		///// top-level value shown as its type.
+		///// </summary>
+		//SmartButTopAlways = 12,
 		/// <summary>
 		/// The XML file will always write the type of the object. 
 		/// </summary>
-		AlwaysIncludeTypes,
+		AlwaysIncludeTypes = 16,
 	}
 }
