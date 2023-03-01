@@ -5,7 +5,8 @@
 
 	/// <summary>
 	/// When being serialized by <see cref="XmlSerializer"/>, it will write the
-	/// name listed here instead of the field name.
+	/// name listed here instead of the field name. 
+	/// 
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class XmlNamedAsAttribute : Attribute
@@ -41,7 +42,16 @@
 			name = null;
 			return false;
 		}
+		/// <summary>
+		/// Renames the specified element with this name. Make sure to not have
+		/// any spaces in the name.
+		/// </summary>
 		public string Name { get; set; }
+		/// <summary>
+		/// Creates a new <see cref="XmlNamedAsAttribute"/> for naming elements
+		/// and attributes.
+		/// </summary>
+		/// <param name="name"> The name to rename the object in the XML file. </param>
 		public XmlNamedAsAttribute(string name)
 		{
 			Name = name;

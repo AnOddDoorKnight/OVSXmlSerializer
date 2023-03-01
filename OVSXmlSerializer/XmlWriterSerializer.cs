@@ -80,10 +80,14 @@
 		{
 			if (!primitive.ValueType.IsPrimitive && primitive.ValueType != typeof(string))
 				return false;
-			if (XmlAttributeAttribute.IsAttribute(primitive))
+			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
 			{
 				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
 					throw new Exception("Cannot serialize as the field type doesn't match the object type.");
+				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
+					name = namedAs;
+				if (!string.IsNullOrEmpty(attribute.CustomName))
+					name = attribute.CustomName;
 				writer.WriteAttributeString(name, primitive.Value.ToString());
 				return true;
 			}
@@ -128,7 +132,7 @@
 				return;
 			if (TryWritePrimitive(name, obj))
 				return;
-			if (XmlAttributeAttribute.IsAttribute(obj)) // Not primitive, but struct or class
+			if (XmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 				throw new Exception($"{obj.Value} is not a primitive type!");
 			if (TryWriteEnumerable(name, obj))
 				return;
@@ -154,7 +158,7 @@
 					continue;
 				else if (XmlTextAttribute.IsText(field))
 					text.Add(field);
-				else if (XmlAttributeAttribute.IsAttribute(field))
+				else if (XmlAttributeAttribute.IsAttribute(field, out var attributeContents))
 					attributes.Add(field);
 				else
 					elements.Add(field);
@@ -164,6 +168,8 @@
 			{
 				if (text.Count > 1)
 					throw new InvalidOperationException($"There can only be one [{nameof(XmlText)}]!");
+				if (elements.Count > 0)
+					throw new InvalidOperationException($"There are elements in the field in {obj.Value}, be sure to ignore or put them as attributes!");
 				FieldObject textField = new FieldObject(text.Single(), obj.Value);
 				if (!TryWritePrimitive(null, textField, false))
 					throw new InvalidCastException();

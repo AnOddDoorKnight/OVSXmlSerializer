@@ -28,6 +28,10 @@
 				return true;
 			return false;
 		}
+		/// <summary>
+		/// Constructs a new ignore attribute used to completely not assign the
+		/// values in the XML file.
+		/// </summary>
 		public XmlIgnoreAttribute()
 		{
 			

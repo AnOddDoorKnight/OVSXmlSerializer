@@ -126,8 +126,11 @@
 				// Getting Named Arguments
 				if (XmlNamedAsAttribute.HasName(field, out string name))
 					fieldName = name;
-				if (XmlAttributeAttribute.IsAttribute(field))
-					attributes.Add((fieldName, field));
+				if (XmlAttributeAttribute.IsAttribute(field, out var attributeContents))
+					attributes.Add(
+						(string.IsNullOrEmpty(attributeContents.CustomName) 
+						? fieldName 
+						: attributeContents.CustomName, field));
 				else if (XmlTextAttribute.IsText(field))
 					text = (fieldName, field);
 				else

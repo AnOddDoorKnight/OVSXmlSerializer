@@ -7,6 +7,9 @@
 	using System.Xml;
 	using System.Xml.Linq;
 
+	/// <summary>
+	/// Extra helper methods to make making XML Documents easier.
+	/// </summary>
 	public static class XmlDocumentExtras
 	{
 		#region Load a new file
@@ -58,6 +61,7 @@
 		/// chainable.
 		/// </summary>
 		/// <param name="document"> The document to write to. </param>
+		/// <param name="stream"> The stream to load from. Set position to 0 if having issues. </param>
 		public static XmlDocument Load(this XmlDocument document, Stream stream)
 		{
 			document.Load(stream);
@@ -68,12 +72,14 @@
 		/// chainable.
 		/// </summary>
 		/// <param name="document"> The document to write to. </param>
+		/// <param name="file"> The file to load from. </param>
 		public static XmlDocument Load(this XmlDocument document, FileInfo file) => Load(document, file.FullName);
 		/// <summary>
 		/// Loads an existing <see cref="XmlDocument"/> and allows it to be
 		/// chainable.
 		/// </summary>
 		/// <param name="document"> The document to write to. </param>
+		/// <param name="fileName"> The full fileName to copy the file from. </param>
 		public static XmlDocument Load(this XmlDocument document, string fileName)
 		{
 			document.Load(fileName);
@@ -84,6 +90,7 @@
 		/// chainable.
 		/// </summary>
 		/// <param name="document"> The document to write to. </param>
+		/// <param name="reader"> The reader to load from. </param>
 		public static XmlDocument Load(XmlDocument document, XmlReader reader)
 		{
 			document.Load(reader);
@@ -94,6 +101,7 @@
 		/// chainable.
 		/// </summary>
 		/// <param name="document"> The document to write to. </param>
+		/// <param name="reader"> The Xml Reader to copy from. </param>
 		public static XmlDocument Load(XmlDocument document, TextReader reader)
 		{
 			document.Load(reader);

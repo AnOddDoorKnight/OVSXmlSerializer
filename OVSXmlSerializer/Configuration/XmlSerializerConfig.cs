@@ -11,10 +11,20 @@
 	[Serializable]
 	public class XmlSerializerConfig
 	{
+		/// <summary>
+		/// Using the <see cref="XmlSerializerConfig.AsWriterSettings"/>, converts
+		/// the data stored inside as writer settings.
+		/// </summary>
+		/// <param name="config"></param>
 		public static implicit operator XmlWriterSettings(XmlSerializerConfig config)
 		{
 			return config.AsWriterSettings();
 		}
+		/// <summary>
+		/// Converts the parameters within the settings as a config. implicitly
+		/// due to seamless compatibility to the original XML serializer.
+		/// </summary>
+		/// <param name="config"></param>
 		public static implicit operator XmlSerializerConfig(XmlWriterSettings config)
 		{
 			// Im sure there is more settings i can port from the writer settings.
@@ -31,7 +41,9 @@
 		}
 
 
-
+		/// <summary>
+		/// Default variation of the config.
+		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
 
 		/// <summary>
@@ -61,9 +73,13 @@
 		/// how the XML file from <see cref="XmlSerializer"/> should handle types. 
 		/// </summary>
 		public IncludeTypes TypeHandling = IncludeTypes.SmartTypes;
-		
+		/// <summary>
+		/// The encoding of the result of the file.
+		/// </summary>
 		public Encoding encoding = Encoding.UTF8;
-
+		/// <summary>
+		/// Converts all data from the config to the relevant writer settings.
+		/// </summary>
 		public XmlWriterSettings AsWriterSettings()
 		{
 			return new XmlWriterSettings()
