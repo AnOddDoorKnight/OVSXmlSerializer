@@ -3,13 +3,7 @@
 	using System;
 	using static XmlSerializer;
 
-	public abstract class OverrideObject
-	{
-
-	}
-
-	
-	public abstract class OverrideTarget : OverrideObject
+	public abstract class OverrideTarget
 	{
 		public Type TargetType { get; set; }
 	}

@@ -6,25 +6,25 @@
 	using System.Text;
 	using static XmlSerializer;
 
-	public abstract class EnumerableModify : OverrideObject
+	public class EnumerableTarget : OverrideTarget
 	{
 		public string entryName = "Item";
 	}
-	public class OverrideArray : EnumerableModify
+	public class OverrideArray : EnumerableTarget
 	{
 		public OverrideArray()
 		{
 
 		}
 	}
-	public class OverrideList : EnumerableModify
+	public class OverrideList : EnumerableTarget
 	{
 		public OverrideList()
 		{
 
 		}
 	}
-	public class OverrideDictionary : EnumerableModify
+	public class OverrideDictionary : EnumerableTarget
 	{
 		//public List<OVSAttribute> KeyAttributes;
 		//public List<OVSAttribute> ValueAttributes;

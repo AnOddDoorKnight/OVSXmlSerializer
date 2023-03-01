@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Configuration;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -51,13 +52,19 @@
 		}
 		internal bool TryWriteEnumerable(string name, StructuredObject values)
 		{
+			// Default overrides
+			if (!config.overrideConfig.HasEnumerableTarget(values.Value, out var @override))
+				@override = config.overrideConfig.DefaultEnumerableTarget;
+			string entryName = @override.entryName;
+
+			// Actual enumerable stuff here
 			if (values.ValueType.IsArray)
 			{
 				WriteStartElement(name.TrimEnd('[', ']'), values);
 				WriteAttributeType(values);
 				Array arrValue = (Array)values.Value;
 				for (int i = 0; i < arrValue.Length; i++)
-					WriteObject("Item", new StructuredObject(arrValue.GetValue(i)));
+					WriteObject(entryName, new StructuredObject(arrValue.GetValue(i)));
 				writer.WriteEndElement();
 				return true;
 			}
@@ -69,7 +76,7 @@
 				WriteAttributeType(values);
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
-					WriteObject("Item", new StructuredObject(enumerator.Current));
+					WriteObject(entryName, new StructuredObject(enumerator.Current));
 				enumerator.Reset();
 				writer.WriteEndElement();
 				return true;

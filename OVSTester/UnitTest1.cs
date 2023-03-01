@@ -32,31 +32,7 @@ public class ObjectSerialization
 		var output = (KeyValuePair<string, int>)serializer.Deserialize(stream);
 		Assert.IsTrue(value.Key == output.Key && value.Value == output.Value);//(value, (KeyValuePair<string, int>)serializer.Deserialize(stream));
 	}
-	[TestMethod("List Serialization")]
-	public void ListSerialization()
-	{
-		List<string> value = new();
-		for (int i = 0; i < 10; i++)
-			value.Add("bruh");
-		XmlSerializer<List<string>> serializer = new();
-		var stream = serializer.Serialize(value);
-		List<string> result = serializer.Deserialize(stream);
-		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
-	}
-	[TestMethod("Dictionary Serialization")]
-	public void DictionarySerialization()
-	{
-		Dictionary<int, string> value = new();
-		for (int i = 0; i < 10; i++)
-			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
-		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
-		var stream = serializer.Serialize(value, "Dictionary");
-		string report = new StreamReader(stream).ReadToEnd();
-		stream.Position = 0;
-		Dictionary<int, string> output = serializer.Deserialize(stream);
-		Assert.IsTrue(output.Count > 0, "output dictionary contains nothing!");
-		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key) == value.Count, "output doesn't match the contents of the original!");
-	}
+	
 	[TestMethod("Empty Class Serialization")]
 	public void ClassSerialization()
 	{
@@ -329,5 +305,39 @@ public class B1NARYSerialization
 		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
 		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value.Equals(pair.Second.Value)) == value.Count);
+	}
+}
+[TestClass]
+public class EnumerableSerialization
+{
+	[TestMethod("List Serialization")]
+	public void ListSerialization()
+	{
+		List<string> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Add("bruh");
+		XmlSerializer<List<string>> serializer = new();
+		var stream = serializer.Serialize(value);
+		List<string> result = serializer.Deserialize(stream);
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
+	}
+	[TestMethod("Dictionary Serialization")]
+	public void DictionarySerialization()
+	{
+		Dictionary<int, string> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
+		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		var stream = serializer.Serialize(value, "Dictionary");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		Dictionary<int, string> output = serializer.Deserialize(stream);
+		Assert.IsTrue(output.Count > 0, "output dictionary contains nothing!");
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key) == value.Count, "output doesn't match the contents of the original!");
+	}
+	[TestMethod("Custom Array Entry")]
+	public void ArrayEntry()
+	{
+		
 	}
 }

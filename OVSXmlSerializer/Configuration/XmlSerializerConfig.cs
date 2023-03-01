@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Configuration;
 	using System;
 	using System.Text;
 	using System.Xml;
@@ -63,6 +64,8 @@
 		public IncludeTypes TypeHandling = IncludeTypes.SmartTypes;
 		
 		public Encoding encoding = Encoding.UTF8;
+
+		public XmlSerializerOverrideConfig overrideConfig = new XmlSerializerOverrideConfig();
 
 		public XmlWriterSettings AsWriterSettings()
 		{
