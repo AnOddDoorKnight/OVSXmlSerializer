@@ -8,11 +8,20 @@
 	/// </summary>
 	public class XmlSerializer<T>
 	{
+		/// <summary>
+		/// The configuration that changes the behaviour of the serializer.
+		/// </summary>
 		protected XmlSerializerConfig config;
+		/// <summary>
+		/// Constructs a generic of XmlSerializer. Uses default config.
+		/// </summary>
 		public XmlSerializer()
 		{
 			config = XmlSerializerConfig.Default;
 		}
+		/// <summary>
+		/// Constructs a generic of XmlSerializer. Uses the specified config.
+		/// </summary>
 		public XmlSerializer(XmlSerializerConfig config)
 		{
 			this.config = config;
@@ -159,10 +168,25 @@
 			stream.Position = 0;
 			return stream;
 		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="writer"> The writer to write to. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public void Serialize(XmlWriter writer, T item)
 		{
 			Serialize(writer, item, item.GetType().Name);
 		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// stream.
+		/// </summary>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="writer"> The writer to write to. </param>
+		/// <param name="rootElementName"> The custom name to store the root value to. </param>
+		/// <returns> A serialized object with the XML format. </returns>
 		public virtual void Serialize(XmlWriter writer, T item, string rootElementName)
 		{
 			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, new StructuredObject(item));

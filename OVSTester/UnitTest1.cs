@@ -220,6 +220,40 @@ public class AttributeTests
 		[XmlAttribute]
 		public int bruhhy = 0;
 	}
+	[TestMethod("XmlAttribute Attribute Named")]
+	public void XmlAttributeNamed()
+	{
+		XmlSerializer<XmlAttributeTestNamed> test = new();
+		Stream stream = test.Serialize(new XmlAttributeTestNamed() { bruhhy = 5 }, "Sex");
+		XmlDocument document = XmlDocumentExtras.LoadNew(stream);
+		Assert.IsFalse(document.LastChild!.Attributes!.GetNamedItem("poopy") == null);
+		stream.Position = 0;
+		var result = test.Deserialize(stream);
+		Assert.IsTrue(result.bruhhy == 5);
+	}
+	internal class XmlAttributeTestNamed
+	{
+		public bool bruh = true;
+		[XmlAttribute, XmlNamedAs("poopy")]
+		public int bruhhy = 0;
+	}
+	[TestMethod("XmlAttribute Attribute Named Alt")]
+	public void XmlAttributeNamedAlt()
+	{
+		XmlSerializer<XmlAttributeTestNamedAlt> test = new();
+		Stream stream = test.Serialize(new XmlAttributeTestNamedAlt() { bruhhy = 5 }, "Sex");
+		XmlDocument document = XmlDocumentExtras.LoadNew(stream);
+		Assert.IsFalse(document.LastChild!.Attributes!.GetNamedItem("poopy") == null);
+		stream.Position = 0;
+		var result = test.Deserialize(stream);
+		Assert.IsTrue(result.bruhhy == 5);
+	}
+	internal class XmlAttributeTestNamedAlt
+	{
+		public bool bruh = true;
+		[XmlAttribute("poopy")]
+		public int bruhhy = 0;
+	}
 
 	[TestMethod("XmlAttribute Attribute Error")]
 	public void XmlAttributeError()

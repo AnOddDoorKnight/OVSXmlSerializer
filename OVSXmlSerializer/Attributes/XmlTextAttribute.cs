@@ -28,6 +28,9 @@
 				return true;
 			return false;
 		}
+		/// <summary>
+		/// Creates a new instance of <see cref="XmlTextAttribute"/>
+		/// </summary>
 		public XmlTextAttribute()
 		{
 

@@ -6,7 +6,7 @@
 	internal class FieldObject : StructuredObject
 	{
 		/// <summary>
-		/// The parent of the <see cref="Value"/>. <see langword="null"/> if 
+		/// The parent of the <see cref="StructuredObject.Value"/>. <see langword="null"/> if 
 		/// </summary>
 		public object Parent { get; }
 		/// <summary>
@@ -14,7 +14,7 @@
 		/// </summary>
 		public FieldInfo Field { get; }
 		/// <summary>
-		/// The <see cref="parent"/>'s type.
+		/// The <see cref="Parent"/>'s type.
 		/// </summary>
 		/// <exception cref="NullReferenceException"/>
 		public Type ParentType { get; }
@@ -60,6 +60,12 @@
 			if (!output)
 				output |= !(Field.GetCustomAttribute<T>() is null);
 			return output;
+		}
+		public override bool HasAttribute<T>(out T attribute)
+		{
+			if (!base.HasAttribute(out attribute))
+				attribute = Field.GetCustomAttribute<T>();
+			return attribute != null;
 		}
 	}
 }
