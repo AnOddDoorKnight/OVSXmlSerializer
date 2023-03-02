@@ -108,7 +108,11 @@
 			writer.WriteEndElement();
 			return true;
 		}
-		// Start here for editing
+
+		internal void StartWriteObject(in string name, StructuredObject obj)
+		{
+
+		}
 		internal void WriteObject(in string name, StructuredObject obj)
 		{
 			if (obj.IsNull)

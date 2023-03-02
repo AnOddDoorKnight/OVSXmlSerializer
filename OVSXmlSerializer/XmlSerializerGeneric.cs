@@ -126,6 +126,9 @@
 		/// <returns> A serialized object with the XML format. </returns>
 		public MemoryStream Serialize(T item)
 		{
+			object testOutput = (object)item;
+			if (testOutput is null)
+				return new MemoryStream();
 			return Serialize(item, item.GetType().Name);
 		}
 		/// <summary>
@@ -137,6 +140,12 @@
 		/// <returns> A serialized object with the XML format. </returns>
 		public void Serialize(Stream stream, T item)
 		{
+			object testOutput = (object)item;
+			if (testOutput is null)
+			{
+				new MemoryStream().CopyTo(stream);
+				return;
+			}
 			Serialize(stream, item, item.GetType().Name);
 		}
 		/// <summary>
@@ -161,6 +170,9 @@
 		/// <returns> A serialized object with the XML format. </returns>
 		public virtual MemoryStream Serialize(T item, string rootElementName)
 		{
+			object testOutput = (object)item;
+			if (testOutput is null)
+				return new MemoryStream();
 			var stream = new MemoryStream();
 			XmlWriter writer = XmlWriter.Create(stream, config.AsWriterSettings());
 			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, new StructuredObject(item));
@@ -177,6 +189,9 @@
 		/// <returns> A serialized object with the XML format. </returns>
 		public void Serialize(XmlWriter writer, T item)
 		{
+			object testOutput = (object)item;
+			if (testOutput is null)
+				return;
 			Serialize(writer, item, item.GetType().Name);
 		}
 		/// <summary>
@@ -189,6 +204,9 @@
 		/// <returns> A serialized object with the XML format. </returns>
 		public virtual void Serialize(XmlWriter writer, T item, string rootElementName)
 		{
+			object testOutput = (object)item;
+			if (testOutput is null)
+				return;
 			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 		}

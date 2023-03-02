@@ -46,6 +46,12 @@
 		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
 
+
+		/// <summary>
+		/// The current version of the XML file. Null if you don't want any
+		/// attributes assigned to the root element
+		/// </summary>
+		public Version Version = null;
 		/// <summary>
 		/// Whenever it should add a new line when declaring attributes.
 		/// </summary>

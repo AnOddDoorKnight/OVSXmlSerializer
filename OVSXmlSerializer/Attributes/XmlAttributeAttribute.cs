@@ -74,6 +74,25 @@
 			contents = null;
 			return false;
 		}
+
+		internal static bool IsAttribute(Type currentType, out XmlAttributeAttribute output)
+		{
+			var attributeType = currentType.GetCustomAttribute<XmlAttributeAttribute>();
+			if (attributeType != null)
+			{
+				output = attributeType;
+				return true;
+			}
+			var AltAttributeType = currentType.GetCustomAttribute<System.Xml.Serialization.XmlAttributeAttribute>();
+			if (AltAttributeType != null)
+			{
+				output = (XmlAttributeAttribute)AltAttributeType;
+				return true;
+			}
+			output = null;
+			return false;
+		}
+
 		/// <summary>
 		/// The name to override the attribute name with. Note that it will override
 		/// the value from <see cref="XmlNamedAsAttribute.Name"/>.

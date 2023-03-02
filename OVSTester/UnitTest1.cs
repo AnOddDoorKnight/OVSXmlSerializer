@@ -9,10 +9,32 @@ using OVSXmlSerializer;
 using OVSXmlSerializer.Extras;
 using System.Xml;
 using System.Numerics;
+using System.Drawing;
+using ColorTuple = System.ValueTuple<float, float, float>;
 
 [TestClass]
 public class ObjectSerialization
 {
+	[TestMethod("Null Class")]
+	public void NullSerialize()
+	{
+
+		StandardClass value = null;
+		XmlSerializer<StandardClass> xmlSerializer = new();
+		using var stream = xmlSerializer.Serialize(value);
+		StandardClass result = xmlSerializer.Deserialize(stream);
+		Assert.IsTrue(result is null);
+	}
+	[TestMethod("Null Item in Class")]
+	public void NullItemSerialize()
+	{
+
+		StandardClass value = new StandardClass() { sex = null };
+		XmlSerializer<StandardClass> xmlSerializer = new();
+		using var stream = xmlSerializer.Serialize(value);
+		StandardClass result = xmlSerializer.Deserialize(stream);
+		Assert.IsTrue(result.sex is null);
+	}
 	[TestMethod("String Serialization")]
 	public void SimpleSerialize()
 	{
@@ -363,5 +385,69 @@ public class B1NARYSerialization
 		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
 		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value.Equals(pair.Second.Value)) == value.Count);
+	}
+	[TestMethod("Color Format Test")]
+	public void ColorFormatSerialization()
+	{
+		ColorFormat colorFormat = new()
+		{
+			FormatName = "Default",
+		};
+		XmlSerializer<ColorFormat> formatter = new();
+		var stream = formatter.Serialize(colorFormat);
+		ColorFormat output = formatter.Deserialize(stream);
+	}
+	internal class ColorFormat
+	{
+		/// <summary>
+		/// Converts a byte to a float ranging from 0 to 1 into 0 to 255.
+		/// </summary>
+		public static float ToPercent(byte value)
+		{
+			return (float)value / byte.MaxValue;
+		}
+		/// <summary>
+		/// Converts a float ranging from 0 to 1 into 0 to 255.
+		/// </summary>
+		public static byte ToByte(float percent)
+		{
+			return Convert.ToByte(percent * byte.MaxValue);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		[XmlAttribute("name")]
+		public string FormatName;
+		/// <summary>
+		/// The color format version of the color format.
+		/// </summary>
+		[XmlAttribute("ver")]
+		public int Version = 1;
+		/// <summary>
+		/// The primary color to be used by all UI. Defaulted to this color by
+		/// default if something happens.
+		/// </summary>
+		[XmlNamedAs("Primary")]
+		public ColorTuple primaryUI = new ColorTuple(ToPercent(47), ToPercent(161), ToPercent(206));
+		/// <summary>
+		/// The secondary color to be used by all UI. The yang to the 
+		/// <see cref="primaryUI"/> ying.
+		/// </summary>
+		[XmlNamedAs("Secondary")]
+		public ColorTuple SecondaryUI = new ColorTuple(ToPercent(47), ToPercent(206), ToPercent(172));
+		/// <summary>
+		/// 
+		/// </summary>
+		[XmlNamedAs("Extras")]
+		public Dictionary<string, Color> ExtraUIColors = new Dictionary<string, Color>();
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public ColorFormat()
+		{
+
+		}
 	}
 }
