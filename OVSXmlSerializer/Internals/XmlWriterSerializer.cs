@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSXmlSerializer.Internals
 {
 	using OVSXmlSerializer.Configuration;
 	using System;
@@ -10,29 +10,29 @@
 	using System.Xml;
 	using static XmlSerializer;
 
-	internal class XmlWriterSerializer
+	internal sealed class XmlWriterSerializer
 	{
 		/// <summary>
 		/// Throws an exception if the specified type does not have a parameterless
 		/// constructor. Otherwise does nothing.
 		/// </summary>
 		/// <param name="type"> The type to check if it has one. </param>
-		internal static void EnsureParameterlessConstructor(Type type)
+		public static void EnsureParameterlessConstructor(Type type)
 		{
 			if (type.GetConstructor(defaultFlags, null, Array.Empty<Type>(), null) == null && type.IsClass)
 				throw new NullReferenceException($"{type.Name} does not have an empty constructor!");
 		}
 		
 
-		internal protected XmlWriter writer;
-		protected XmlSerializerConfig config;
-		public XmlWriterSerializer(XmlSerializerConfig config, XmlWriter writer)
+		public XmlWriter writer;
+		private XmlSerializerConfig config;
+		internal XmlWriterSerializer(XmlSerializerConfig config, XmlWriter writer)
 		{
 			this.config = config;
 			this.writer = writer;
 		}
 
-		internal bool ApplySmartType(StructuredObject obj)
+		public bool ApplySmartType(StructuredObject obj)
 		{
 			if (config.TypeHandling != IncludeTypes.SmartTypes)
 				return false;
@@ -40,7 +40,7 @@
 				return true;
 			return false;
 		}
-		internal void WriteAttributeType(StructuredObject obj)
+		public void WriteAttributeType(StructuredObject obj)
 		{
 			if (config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
 			{
@@ -50,13 +50,12 @@
 			if (ApplySmartType(obj))
 				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
 		}
-		internal bool TryWriteEnumerable(string name, StructuredObject values)
+		public bool TryWriteEnumerable(string name, StructuredObject values)
 		{
 			// Default overrides
 			if (!config.overrideConfig.HasEnumerableTarget(values.Value, out var @override))
 				@override = config.overrideConfig.DefaultEnumerableTarget;
-			string entryName = @override.entryName;
-
+			string entryName = @override.EntryName;
 			// Actual enumerable stuff here
 			if (values.ValueType.IsArray)
 			{
@@ -83,7 +82,7 @@
 			}
 			return false;
 		}
-		internal bool TryWritePrimitive(string name, StructuredObject primitive, bool startElement = true)
+		public bool TryWritePrimitive(string name, StructuredObject primitive, bool startElement = true)
 		{
 			if (!primitive.ValueType.IsPrimitive && primitive.ValueType != typeof(string))
 				return false;
@@ -105,7 +104,7 @@
 			writer.WriteEndElement();
 			return true;
 		}
-		internal bool TryWriteEnum(in string name, StructuredObject @enum)
+		public bool TryWriteEnum(in string name, StructuredObject @enum)
 		{
 			if (!@enum.ValueType.IsEnum)
 				return false;
@@ -116,7 +115,7 @@
 			return true;
 		}
 		// Start here for editing
-		internal void WriteObject(in string name, StructuredObject obj)
+		public void WriteObject(in string name, StructuredObject obj)
 		{
 			if (obj.IsNull)
 				return;
@@ -203,7 +202,7 @@
 		/// </remarks>
 		/// <param name="name"> The name of the element. </param>
 		/// <param name="obj"> The object to write about. </param>
-		internal void WriteStartElement(string name, StructuredObject obj)
+		public void WriteStartElement(string name, StructuredObject obj)
 		{
 			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
 				name = namedAtt;

@@ -41,7 +41,6 @@
 			};
 		}
 
-
 		/// <summary>
 		/// Default variation of the config.
 		/// </summary>

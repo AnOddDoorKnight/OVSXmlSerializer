@@ -1,10 +1,13 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSXmlSerializer.Internals
 {
 	using System;
 	using System.Collections.Generic;
 	using System.Reflection;
 
-	internal class TypeCacher
+	/// <summary>
+	/// Caches all types when first recieved to reduce time.
+	/// </summary>
+	public class TypeCacher
 	{
 		private Dictionary<string, Type> FullNameTypes { get; } = new Dictionary<string, Type>();
 		private Assembly[] AllAssemblies { get; } = AppDomain.CurrentDomain.GetAssemblies();

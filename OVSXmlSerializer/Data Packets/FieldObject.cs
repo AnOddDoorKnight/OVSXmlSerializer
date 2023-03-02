@@ -6,7 +6,8 @@
 	internal class FieldObject : StructuredObject
 	{
 		/// <summary>
-		/// The parent of the <see cref="StructuredObject.Value"/>. <see langword="null"/> if 
+		/// The parent of the <see cref="StructuredObject.Value"/>. 
+		/// <see langword="null"/> if it has no field or parent.
 		/// </summary>
 		public object Parent { get; }
 		/// <summary>

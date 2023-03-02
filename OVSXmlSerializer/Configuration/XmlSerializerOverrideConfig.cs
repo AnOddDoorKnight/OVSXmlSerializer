@@ -1,6 +1,7 @@
 ﻿namespace OVSXmlSerializer.Configuration
 {
 	using System;
+	using System.Collections;
 	using System.Collections.Generic;
 	using System.Reflection;
 	using static XmlSerializer;
@@ -14,13 +15,12 @@
 		public XmlSerializerOverrideConfig()
 		{
 			normalTargets = new List<OverrideTarget>();
-			fieldTargets = new List<OverrideFieldTarget>();
 			enumerableTargets = new List<EnumerableTarget>();
 		}
 
 		public IReadOnlyList<OverrideTarget> NormalTargets => normalTargets;
 		private List<OverrideTarget> normalTargets;
-		public bool HasTarget(object obj, out OverrideTarget overrideTarget)
+		public bool HasTarget(object obj, out OverrideTarget overrideTarget, object parent = null)
 		{
 			Type type = obj.GetType();
 			for (int i = 0; i < normalTargets.Count; i++)
@@ -28,6 +28,15 @@
 				OverrideTarget currentTarget = normalTargets[i];
 				if (type != currentTarget.TargetType) 
 					continue;
+				if (currentTarget.Parent.HasValue)
+				{
+					Type parentType = parent.GetType();
+					if (parentType != currentTarget.Parent.Value.ParentType)
+						continue;
+					FieldInfo fieldInfo = parentType.GetField(currentTarget.Parent.Value.FieldName, defaultFlags);
+					if (fieldInfo == null)
+						continue;
+				}
 				overrideTarget = currentTarget;
 				return true;
 			}
@@ -35,63 +44,24 @@
 			return false;
 		}
 
-		public IReadOnlyList<OverrideTarget> FieldTargets => fieldTargets;
-		private List<OverrideFieldTarget> fieldTargets;
-		public bool HasFieldTarget(object obj, object parent, out OverrideFieldTarget overrideTarget)
-		{
-			Type type = obj.GetType(),
-				parentType = parent.GetType();
-			for (int i = 0; i < fieldTargets.Count; i++)
-			{
-				OverrideFieldTarget currentTarget = fieldTargets[i];
-				if (type != currentTarget.TargetType)
-					continue;
-				if (parentType != currentTarget.ParentType)
-					continue;
-				FieldInfo fieldInfo = parentType.GetField(currentTarget.FieldName, defaultFlags);
-				if (fieldInfo == null)
-					continue;
-				overrideTarget = currentTarget;
-				return true;
-			}
-			overrideTarget = null;
-			return false;
-		}
-		public bool HasFieldTarget(object parent, out OverrideFieldTarget overrideTarget)
-		{
-			Type parentType = parent.GetType();
-			for (int i = 0; i < fieldTargets.Count; i++)
-			{
-				OverrideFieldTarget currentTarget = fieldTargets[i];
-				if (parentType != currentTarget.ParentType)
-					continue;
-				FieldInfo fieldInfo = parentType.GetField(currentTarget.FieldName, defaultFlags);
-				if (fieldInfo == null)
-					continue;
-				if (fieldInfo.GetValue(parent).GetType() != currentTarget.TargetType)
-					continue;
-				overrideTarget = currentTarget;
-				return true;
-			}
-			overrideTarget = null;
-			return false;
-		}
-
+		
 		public IReadOnlyList<EnumerableTarget> EnumerableTargets => enumerableTargets;
 		private List<EnumerableTarget> enumerableTargets;
-		public EnumerableTarget DefaultEnumerableTarget { get; private set; } =
-			new EnumerableTarget();
-		public bool HasEnumerableTarget(object enumerable, out EnumerableTarget enumerableTarget)
+		public EnumerableTarget DefaultEnumerableTarget => EnumerableTarget.Default;
+		public bool HasEnumerableTarget(object parent, out EnumerableTarget enumerableTarget)
 		{
-			Type type = enumerable.GetType();
+			Type type = parent.GetType();
+			if (!type.IsArray && !typeof(IEnumerable).IsAssignableFrom(type))
+				goto end;
 			for (int i = 0; i < enumerableTargets.Count; i++)
 			{
-				EnumerableTarget currentTarget = enumerableTargets[i];
-				if (type != currentTarget.TargetType)
-					continue;
-				enumerableTarget = currentTarget;
-				return true;
-			}
+				var target = enumerableTargets[i];
+				if (target.Predicate(parent))
+				{
+					enumerableTarget = target;
+					return true;
+				}
+			} end:
 			enumerableTarget = null;
 			return false;
 		}

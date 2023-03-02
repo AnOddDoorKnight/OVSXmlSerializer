@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSXmlSerializer.Internals
 {
 	using System;
 	using System.Collections;
@@ -9,10 +9,10 @@
 	using System.Runtime.InteropServices;
 	using System.Xml;
 	using System.Xml.Linq;
-	using System.Xml.Serialization;
+	using OVSXmlSerializer;
 	using static XmlSerializer;
 
-	internal class XmlReaderSerializer
+	internal sealed class XmlReaderSerializer
 	{
 		/// <summary>
 		/// Adds the auto-implementation tag to an existing name.
@@ -23,19 +23,19 @@
 		}
 
 
-		protected XmlSerializerConfig config;
-		protected TypeCacher typeCacher;
-		public XmlReaderSerializer(XmlSerializerConfig config)
+		private XmlSerializerConfig config;
+		internal TypeCacher typeCacher;
+		internal XmlReaderSerializer(XmlSerializerConfig config)
 		{
 			this.config = config;
 			typeCacher = new TypeCacher();
 		}
-		public virtual object ReadDocument(XmlDocument document, Type rootType)
+		public object ReadDocument(XmlDocument document, Type rootType)
 		{
 			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
 			return ReadObject(rootNode, rootType);
 		}
-		public virtual object ReadObject(XmlNode node, Type currentType)
+		public object ReadObject(XmlNode node, Type currentType)
 		{
 			if (node == null)
 				return null;
@@ -145,7 +145,7 @@
 				}
 			return obj;
 		}
-		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
+		internal bool TryReadEnum(Type type, XmlNode node, out object output)
 		{
 			if (!type.IsEnum)
 			{
@@ -155,7 +155,7 @@
 			output = Convert.ChangeType(node.InnerText, type);
 			return true;
 		}
-		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
+		internal bool TryReadPrimitive(Type type, XmlNode node, out object output)
 		{
 			// Since string is arguably a class or char array, its it own check.
 			if (!type.IsPrimitive && type != typeof(string))
@@ -178,7 +178,7 @@
 		/// <exception cref="NotImplementedException"> 
 		/// If there is no implementation for the collection. 
 		/// </exception>
-		internal protected virtual bool TryReadEnumerable(Type type, XmlNode node, out object output)
+		internal bool TryReadEnumerable(Type type, XmlNode node, out object output)
 		{
 			XmlNodeList nodeList = node.ChildNodes;
 			if (type.IsArray)

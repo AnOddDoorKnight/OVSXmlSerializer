@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Internals;
 	using System.IO;
 	using System.Xml;
 
