@@ -167,7 +167,7 @@
 				output = null;
 				return false;
 			}
-			output = Convert.ChangeType(node.InnerText, type);
+			output = Enum.Parse(type, node.InnerText);
 			return true;
 		}
 		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)

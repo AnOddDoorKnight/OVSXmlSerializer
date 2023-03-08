@@ -15,6 +15,14 @@ using ColorTuple = System.ValueTuple<float, float, float>;
 [TestClass]
 public class ObjectSerialization
 {
+	[TestMethod("Enum Serialization")]
+	public void EnumSerialize()
+	{
+		const Environment.SpecialFolder specialFolder = Environment.SpecialFolder.MyDocuments;
+		XmlSerializer serializer = new(typeof(Environment.SpecialFolder));
+		var stream = serializer.Serialize(specialFolder);
+		Assert.AreEqual(specialFolder, (Environment.SpecialFolder)serializer.Deserialize(stream));
+	}
 	[TestMethod("Null Class")]
 	public void NullSerialize()
 	{

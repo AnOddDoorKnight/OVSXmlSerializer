@@ -5,18 +5,22 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
-    <VersionPrefix>1.1.2</VersionPrefix>
+    <VersionPrefix>1.1.3</VersionPrefix>
     <!--<VersionSuffix>beta-6</VersionSuffix>-->
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>AnOddDoorKnight</Authors>
-    <Description>Odd's Very Special Xml Serializer is a Xml Serializer that is revolved around smart types; Explicit-type naming if needed.</Description>
+    <Description>Odd's Very Special Xml Serializer is a Xml Serializer that is revolved around smart types; Explicit-type naming if needed.
+
+The system itself works very similar to how the XML serializer works normally, but is meant to be worked with the `object` or more 'undefined' data that the ordinary XML serializer have difficulty handling. You can turn this off for more traditional formatting with the config class, but it does reveal the issue once again.
+
+Unlike the traditional XML Serializer, this will use the type parameters in the class to automatically differentiate enums and arrays, which will remove the need to mark fields as `[XmlArray]` or `[XmlEnum]`.</Description>
     <Copyright>MIT license</Copyright>
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>- Fixed an oversight where because strings are not value types and assigned as attributes, it causes an error.</PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixed an issue where Enums wouldn't de-parse correctly.</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>
