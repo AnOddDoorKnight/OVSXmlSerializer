@@ -409,6 +409,26 @@ public class B1NARYSerialization
 		stream.Position = 0;
 		ColorFormat output = formatter.Deserialize(stream);
 	}
+	[TestMethod("Changeable Value Test")]
+	public void ChangableValueSerialization()
+	{
+		Storer storer = new();
+		XmlSerializer<Storer> formatter = new();
+		var stream = formatter.Serialize(storer);
+		string str = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		Storer output = formatter.Deserialize(stream);
+	}
+	[TestMethod("Player Config Test")]
+	public void PlayerConfigSerialization()
+	{
+		PlayerConfig storer = new();
+		XmlSerializer<PlayerConfig> formatter = new();
+		var stream = formatter.Serialize(storer);
+		string str = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		PlayerConfig output = formatter.Deserialize(stream);
+	}
 	internal class ColorFormat
 	{
 		/// <summary>
@@ -460,6 +480,108 @@ public class B1NARYSerialization
 		public ColorFormat()
 		{
 
+		}
+	}
+	public sealed class ChangableValue<T>
+	{
+		public static implicit operator T(ChangableValue<T> input)
+		{
+			return input.Value;
+		}
+		[XmlText]
+		private T value;
+		[field: XmlIgnore]
+		public event Action<T> ValueChanged;
+		public T Value
+		{
+			get => value;
+			set
+			{
+				this.value = value;
+				ValueChanged?.Invoke(value);
+			}
+		}
+		private ChangableValue()
+		{
+
+		}
+		public ChangableValue(T @default)
+		{
+			value = @default;
+		}
+		public void AttachValue(Action<T> input)
+		{
+			input.Invoke(Value);
+			ValueChanged += input;
+		}
+	}
+	public class Storer
+	{
+		public ChangableValue<float> bruh = new(4f);
+		public ChangableValue<float> sex = new(12f);
+		public string no = "brih";
+	}
+	public class PlayerConfig
+	{
+		public Gameplay gameplay = new();
+		public Video video = new();
+		public Input input = new();
+		public Audio audio = new();
+
+
+
+
+		[Serializable]
+		public sealed class Audio
+		{
+			public float master = 1f;
+			public float SFX = 1f;
+			public float musicMain = 1f;
+			public float passiveMusic = 1f;
+			public float activeMusic = 1f;
+			public float theVoices = 1f;
+		}
+		[Serializable]
+		public sealed class Gameplay
+		{
+
+		}
+
+		[Serializable]
+		public sealed class Video
+		{
+
+			public float cameraBobLookMultiplier = 1f;
+			[XmlNamedAs("enabled")]
+			public bool cameraBobLookEnabled = true;
+			public float movementBobMultiplier = 1f;
+			[XmlNamedAs("bobEnabled")]
+			public bool movementBobEnabled = true;
+			[XmlNamedAs("maxMultiplier")]
+			public float cameraBobLookMaxMultiplier = 5f;
+			[XmlNamedAs("bobCap")]
+			public float movementBobCap = 3f;
+			public ChangableValue<float> fieldOfView = new(78f);
+		}
+		[Serializable]
+		public sealed class Input
+		{
+			public KeyboardMouse keyboardMouse = new();
+			public Controller controller = new();
+
+
+
+
+			[Serializable]
+			public sealed class KeyboardMouse
+			{
+				public ChangableValue<float> mouseSensitivity = new(25f);
+			}
+			[Serializable]
+			public sealed class Controller
+			{
+
+			}
 		}
 	}
 }
