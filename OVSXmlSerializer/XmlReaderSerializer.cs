@@ -64,7 +64,7 @@
 					throw new Exception();
 				currentType = ByName(typeValue);
 			}
-			else if (!currentType.IsValueType && XmlAttributeAttribute.IsAttribute(currentType, out _))
+			else if (!currentType.IsValueType && !XmlAttributeAttribute.IsAttribute(currentType, out _) && node.Attributes != null)
 			{
 				// Class Type probably is defined, but not derived. 
 				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);

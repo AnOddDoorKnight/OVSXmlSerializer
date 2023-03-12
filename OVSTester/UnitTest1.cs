@@ -390,6 +390,8 @@ public class B1NARYSerialization
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
 		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
 		var stream = serializer.Serialize(value, "PlayerConfig");
+		string str = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
 		Dictionary<string, object> output = (Dictionary<string, object>)serializer.Deserialize(stream);
 		Dictionary<string, int> outputSequel = output.ToDictionary(key => key.Key, value => (int)value.Value);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value.Equals(pair.Second.Value)) == value.Count);
@@ -403,6 +405,8 @@ public class B1NARYSerialization
 		};
 		XmlSerializer<ColorFormat> formatter = new();
 		var stream = formatter.Serialize(colorFormat);
+		string str = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
 		ColorFormat output = formatter.Deserialize(stream);
 	}
 	internal class ColorFormat
