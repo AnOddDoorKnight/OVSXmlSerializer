@@ -20,6 +20,10 @@
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class XmlAttributeAttribute : Attribute
 	{
+		/// <summary>
+		/// Converts The normal xml attribute into the OVSXml Attribute;
+		/// </summary>
+		/// <param name="castie"> The victim to cast into with extreme amounts of bytes. </param>
 		public static explicit operator XmlAttributeAttribute(System.Xml.Serialization.XmlAttributeAttribute castie)
 		{
 			return castie == null ? null : new XmlAttributeAttribute(castie.AttributeName);

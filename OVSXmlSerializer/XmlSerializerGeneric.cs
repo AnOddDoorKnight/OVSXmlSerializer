@@ -175,7 +175,7 @@
 				return new MemoryStream();
 			var stream = new MemoryStream();
 			XmlWriter writer = XmlWriter.Create(stream, config.AsWriterSettings());
-			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, new StructuredObject(item));
+			new XmlWriterSerializer(config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 			stream.Position = 0;
 			return stream;
@@ -207,7 +207,7 @@
 			object testOutput = (object)item;
 			if (testOutput is null)
 				return;
-			new XmlWriterSerializer(config, writer).WriteObject(rootElementName, new StructuredObject(item));
+			new XmlWriterSerializer(config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 		}
 		#endregion

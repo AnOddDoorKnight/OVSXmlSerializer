@@ -196,6 +196,11 @@
 		internal protected virtual bool TryReadEnumerable(Type type, XmlNode node, out object output)
 		{
 			XmlNodeList nodeList = node.ChildNodes;
+			if (type.GetCustomAttribute<XMLIgnoreEnumerableAttribute>() != null)
+			{
+				output = null;
+				return false;
+			}
 			if (type.IsArray)
 			{
 				Type elementType = type.GetElementType();

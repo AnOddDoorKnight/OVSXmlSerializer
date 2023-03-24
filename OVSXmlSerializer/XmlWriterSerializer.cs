@@ -51,6 +51,8 @@
 		}
 		internal bool TryWriteEnumerable(string name, StructuredObject values)
 		{
+			if (XMLIgnoreEnumerableAttribute.Ignore(values))
+				return false;
 			if (values.ValueType.IsArray)
 			{
 				WriteStartElement(name.TrimEnd('[', ']'), values);
@@ -70,7 +72,14 @@
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
 					WriteObject("Item", new StructuredObject(enumerator.Current));
-				enumerator.Reset();
+				try
+				{
+					enumerator.Reset();
+				}
+				catch 
+				{
+				
+				}
 				writer.WriteEndElement();
 				return true;
 			}
@@ -111,7 +120,7 @@
 
 		internal void StartWriteObject(in string name, StructuredObject obj)
 		{
-
+			WriteObject(name, obj);
 		}
 		internal void WriteObject(in string name, StructuredObject obj)
 		{
@@ -132,6 +141,8 @@
 				writer.WriteEndElement();
 				return;
 			}
+			if (obj.Value is Delegate)
+				return;
 			if (TryWriteEnum(name, obj))
 				return;
 			if (TryWritePrimitive(name, obj))
@@ -206,6 +217,7 @@
 				name = namedAtt;
 			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
 				name = FieldObject.RemoveAutoPropertyTags(name);
+			name = name.Replace('`', '_');
 			writer.WriteStartElement(name);
 		}
 	}
