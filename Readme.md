@@ -64,6 +64,8 @@ Note that `System.Xml.Serialization` will be converted automatically if needed.
 3. `[XmlNamedAs(string name)]` Changes the field name or object name to something 
    else on XML serialization.
 4. `[XmlText]` Assuming that all other fields are attributes or ignored, this
-   will write the primitive value 
+   will write the primitive value  
+5. `[XmlIgnoreEnumerable]` If the object implements enumerable, this ignores the
+   serialization that comes with it.
 
 Arrays are automatically serialized as if it is an ordinary list or dictionary.
