@@ -100,11 +100,6 @@ public class B1NARYSerialization
 		[XmlAttribute("name")]
 		public string FormatName;
 		/// <summary>
-		/// The color format version of the color format.
-		/// </summary>
-		[XmlAttribute("ver")]
-		public int Version = 1;
-		/// <summary>
 		/// The primary color to be used by all UI. Defaulted to this color by
 		/// default if something happens.
 		/// </summary>

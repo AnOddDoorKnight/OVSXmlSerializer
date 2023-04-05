@@ -32,11 +32,11 @@
 			// - and I don't understand it exactly.
 			return new XmlSerializerConfig()
 			{
-				indent = config.Indent,
-				indentChars = config.IndentChars,
-				encoding = config.Encoding,
-				newLineOnAttributes = config.NewLineOnAttributes,
-				omitXmlDelcaration = config.OmitXmlDeclaration,
+				Indent = config.Indent,
+				IndentChars = config.IndentChars,
+				Encoding = config.Encoding,
+				NewLineOnAttributes = config.NewLineOnAttributes,
+				OmitXmlDelcaration = config.OmitXmlDeclaration,
 			};
 		}
 
@@ -46,16 +46,18 @@
 		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
 
-		public OVSXmlLogger logger = null;
+		public bool OmitAutoGenerationComment { get; set; } = false;
+		public OVSXmlLogger Logger { get; set; } = null;
 		/// <summary>
 		/// The current version of the XML file. Null if you don't want any
 		/// attributes assigned to the root element
 		/// </summary>
 		public Version Version { get; set; } = null;
+		public Versioning.Leniency VersionLeniency { get; set; } = Versioning.Leniency.Strict;
 		/// <summary>
 		/// Whenever it should add a new line when declaring attributes.
 		/// </summary>
-		public bool newLineOnAttributes = false;
+		public bool NewLineOnAttributes { get; set; } = false;
 		/// <summary>
 		/// Gets or sets a value indicating whether to omit an XML declaration.
 		/// The declaration mentions the beginning element, that typically mentions
@@ -65,24 +67,24 @@
 		/// <see langword="true"/> to omit the XML declaration; otherwise, <see langword="false"/>. 
 		/// Default is <see langword="false"/>.
 		/// </returns>
-		public bool omitXmlDelcaration = false;
+		public bool OmitXmlDelcaration { get; set; } = false;
 		/// <summary>
 		/// The single indentation that should occur. This will be repeated as 
 		/// layers are added further.
 		/// </summary>
-		public string indentChars = "\t";
+		public string IndentChars { get; set; } = "\t";
 		/// <summary>
 		/// When writing onto a file, if it should have indentation such as '\n'.
 		/// </summary>
-		public bool indent = true;
+		public bool Indent { get; set; } = true;
 		/// <summary>
 		/// how the XML file from <see cref="XmlSerializer"/> should handle types. 
 		/// </summary>
-		public IncludeTypes TypeHandling = IncludeTypes.SmartTypes;
+		public IncludeTypes TypeHandling { get; set; } = IncludeTypes.SmartTypes;
 		/// <summary>
 		/// The encoding of the result of the file.
 		/// </summary>
-		public Encoding encoding = Encoding.UTF8;
+		public Encoding Encoding { get; set; } = Encoding.UTF8;
 		/// <summary>
 		/// Converts all data from the config to the relevant writer settings.
 		/// </summary>
@@ -90,11 +92,11 @@
 		{
 			return new XmlWriterSettings()
 			{
-				Indent = indent,
-				IndentChars = indentChars,
-				Encoding = encoding,
-				OmitXmlDeclaration = omitXmlDelcaration,
-				NewLineOnAttributes = newLineOnAttributes,
+				Indent = Indent,
+				IndentChars = IndentChars,
+				Encoding = Encoding,
+				OmitXmlDeclaration = OmitXmlDelcaration,
+				NewLineOnAttributes = NewLineOnAttributes,
 			};
 		}
 	}

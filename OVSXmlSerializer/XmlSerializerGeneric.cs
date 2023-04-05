@@ -48,7 +48,7 @@
 			{
 				return default;
 			}
-			object output = new XmlReaderSerializer(Config).ReadDocument(document, typeof(T));
+			object output = new XmlReaderSerializer<T>(this).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -88,7 +88,7 @@
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
 			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
-			object output = new XmlReaderSerializer(Config).ReadDocument(document, typeof(T));
+			object output = new XmlReaderSerializer<T>(this).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -177,7 +177,7 @@
 				return new MemoryStream();
 			var stream = new MemoryStream();
 			XmlWriter writer = XmlWriter.Create(stream, Config.AsWriterSettings());
-			new XmlWriterSerializer(Config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
+			new XmlWriterSerializer<T>(writer, this).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 			stream.Position = 0;
 			return stream;
@@ -209,42 +209,12 @@
 			object testOutput = (object)item;
 			if (testOutput is null)
 				return;
-			new XmlWriterSerializer(Config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
+			new XmlWriterSerializer<T>(writer, this).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 		}
 		#endregion
 
 		#region Version Checking
-		public bool IsVersion(string fileLocation, Version version)
-		{
-			using (Stream stream = File.OpenRead(fileLocation))
-				return IsVersion(stream, version);
-		}
-		public bool IsVersion(FileInfo fileLocation, Version version)
-		{
-			using (Stream stream = fileLocation.OpenRead())
-				return IsVersion(stream, version);
-		}
-		public bool IsVersion(Stream input, Version version)
-		{
-			XmlDocument document = new XmlDocument();
-			try
-			{
-				document.Load(input);
-			}
-			catch (XmlException exception) when (exception.Message == "Root element is missing.")
-			{
-				return default;
-			}
-			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
-			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_ATTRIBUTE);
-			if (versionNode != null)
-			{
-				Version inputVersion = Version.Parse(versionNode.Value);
-				return inputVersion == version;
-			}
-			return Config.Version == null;
-		}
 		#endregion
 
 		#region Other

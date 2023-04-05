@@ -13,7 +13,6 @@
 	{
 		internal const string ATTRIBUTE = "type";
 		internal const string CONDITION = "con";
-		internal const string VERSION_ATTRIBUTE = "ver";
 
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 		/// <summary>
@@ -67,7 +66,7 @@
 			{
 				return default;
 			}
-			object output = new XmlReaderSerializer(Config).ReadDocument(document, ActiveType);
+			object output = new XmlReaderSerializer<object>(this).ReadDocument(document, ActiveType);
 			return output;
 		}
 
@@ -77,7 +76,7 @@
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
 			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
-			object output = new XmlReaderSerializer(Config).ReadDocument(document, ActiveType);
+			object output = new XmlReaderSerializer<object>(this).ReadDocument(document, ActiveType);
 			return output;
 		}
 	}

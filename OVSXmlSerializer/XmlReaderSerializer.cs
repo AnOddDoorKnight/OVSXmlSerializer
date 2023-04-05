@@ -12,7 +12,7 @@
 	using System.Xml.Serialization;
 	using static XmlSerializer;
 
-	internal class XmlReaderSerializer
+	internal class XmlReaderSerializer<T>
 	{
 		// https://stackoverflow.com/questions/20008503/get-type-by-name
 		/// <summary>
@@ -41,13 +41,17 @@
 
 
 		protected XmlSerializerConfig config;
-		public XmlReaderSerializer(XmlSerializerConfig config)
+		protected XmlSerializer<T> source;
+		public XmlReaderSerializer(XmlSerializer<T> source)
 		{
-			this.config = config;
+			this.config = source.Config;
+			this.source = source;
 		}
 		public virtual object ReadDocument(XmlDocument document, Type rootType)
 		{
 			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
+			if (!Versioning.IsVersion(document, config.Version, config.VersionLeniency))
+				throw new InvalidCastException($"object '{rootNode.Name}' of version '{rootNode.Attributes.GetNamedItem(Versioning.VERSION_ATTRIBUTE).Value}' is not version '{config.Version}'!");
 			return ReadObject(rootNode, rootType);
 		}
 		public virtual object ReadObject(XmlNode node, Type currentType)

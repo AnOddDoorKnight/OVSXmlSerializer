@@ -11,7 +11,9 @@ using System.Xml;
 using System.Numerics;
 using System.Drawing;
 using ColorTuple = System.ValueTuple<float, float, float>;
-
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Threading;
 
 [TestClass]
 public class ObjectSerialization
@@ -159,6 +161,18 @@ public class ObjectSerialization
 		AutoProp result = serializer.Deserialize(stream);
 		Assert.IsTrue(result.bruh == autoProp.bruh);
 	}
+	[TestMethod("Circular Serialization")]
+	public void CircularSerialization()
+	{
+		CircularSerialization serialization = new();
+		serialization.circularSerialization = serialization;
+		XmlSerializer<CircularSerialization> serializer = new();
+		serializer.Serialize(serialization).Dispose();
+	}
+}
+internal class CircularSerialization
+{
+	public CircularSerialization circularSerialization;
 }
 internal class ByteArraySim : IXmlSerializable
 {
