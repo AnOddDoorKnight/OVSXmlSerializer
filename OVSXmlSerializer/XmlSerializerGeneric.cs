@@ -1,7 +1,9 @@
 ﻿namespace OVSXmlSerializer
 {
+	using System;
 	using System.IO;
 	using System.Xml;
+	using static XmlSerializer;
 
 	/// <summary>
 	/// Serializer that converts classes into XML Files and such.
@@ -11,20 +13,20 @@
 		/// <summary>
 		/// The configuration that changes the behaviour of the serializer.
 		/// </summary>
-		protected XmlSerializerConfig config;
+		public XmlSerializerConfig Config { get; protected set; }
 		/// <summary>
 		/// Constructs a generic of XmlSerializer. Uses default config.
 		/// </summary>
 		public XmlSerializer()
 		{
-			config = XmlSerializerConfig.Default;
+			Config = XmlSerializerConfig.Default;
 		}
 		/// <summary>
 		/// Constructs a generic of XmlSerializer. Uses the specified config.
 		/// </summary>
 		public XmlSerializer(XmlSerializerConfig config)
 		{
-			this.config = config;
+			this.Config = config;
 		}
 
 		#region Deserialization
@@ -46,7 +48,7 @@
 			{
 				return default;
 			}
-			object output = new XmlReaderSerializer(config).ReadDocument(document, typeof(T));
+			object output = new XmlReaderSerializer(Config).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -86,7 +88,7 @@
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
 			rootElementName = document.ChildNodes.Item(document.ChildNodes.Count - 1).Name;
-			object output = new XmlReaderSerializer(config).ReadDocument(document, typeof(T));
+			object output = new XmlReaderSerializer(Config).ReadDocument(document, typeof(T));
 			return (T)output;
 		}
 		/// <summary>
@@ -174,8 +176,8 @@
 			if (testOutput is null)
 				return new MemoryStream();
 			var stream = new MemoryStream();
-			XmlWriter writer = XmlWriter.Create(stream, config.AsWriterSettings());
-			new XmlWriterSerializer(config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
+			XmlWriter writer = XmlWriter.Create(stream, Config.AsWriterSettings());
+			new XmlWriterSerializer(Config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
 			stream.Position = 0;
 			return stream;
@@ -207,8 +209,67 @@
 			object testOutput = (object)item;
 			if (testOutput is null)
 				return;
-			new XmlWriterSerializer(config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
+			new XmlWriterSerializer(Config, writer).StartWriteObject(rootElementName, new StructuredObject(item));
 			writer.Flush();
+		}
+		#endregion
+
+		#region Version Checking
+		public bool IsVersion(string fileLocation, Version version)
+		{
+			using (Stream stream = File.OpenRead(fileLocation))
+				return IsVersion(stream, version);
+		}
+		public bool IsVersion(FileInfo fileLocation, Version version)
+		{
+			using (Stream stream = fileLocation.OpenRead())
+				return IsVersion(stream, version);
+		}
+		public bool IsVersion(Stream input, Version version)
+		{
+			XmlDocument document = new XmlDocument();
+			try
+			{
+				document.Load(input);
+			}
+			catch (XmlException exception) when (exception.Message == "Root element is missing.")
+			{
+				return default;
+			}
+			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
+			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_ATTRIBUTE);
+			if (versionNode != null)
+			{
+				Version inputVersion = Version.Parse(versionNode.Value);
+				return inputVersion == version;
+			}
+			return Config.Version == null;
+		}
+		#endregion
+
+		#region Other
+		/// <summary>
+		/// Deeply copies all the data down into primitives into a separate created 
+		/// object via XML serializing and deserializing the object.
+		/// </summary>
+		/// <param name="input"> The object to copy. </param>
+		public virtual T DeepCopy(T input)
+		{
+			using (MemoryStream stream = Serialize(input, "DeepCopy"))
+				return Deserialize(stream);
+		}
+		/// <summary>
+		/// Uses <see cref="object.MemberwiseClone"/> to create a new object,
+		/// ignoring accessibility methods. Uses reflection instead of using the
+		/// serializer.
+		/// </summary>
+		public T ShallowCopy(T input)
+		{
+			if ((object)input is null)
+				return input;
+			object output = input.GetType().GetMethod(nameof(MemberwiseClone))
+				.Invoke(input, Array.Empty<object>());
+			return (T)output;
 		}
 		#endregion
 	}

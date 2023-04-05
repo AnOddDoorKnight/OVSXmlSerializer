@@ -5,8 +5,8 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
-    <VersionPrefix>1.1.5</VersionPrefix>
-    <!--<VersionSuffix>beta-6</VersionSuffix>-->
+    <VersionPrefix>1.1.6</VersionPrefix>
+    <VersionSuffix>beta-1</VersionSuffix>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -20,8 +20,7 @@ Unlike the traditional XML Serializer, this will use the type parameters in the 
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>- Added the XmlIgnoreEnumerableAttribute, ignores what the engine does for enumerables and treats it as a regular object.
-- added some missing(?) Xml Comments for some objects. </PackageReleaseNotes>
+    <PackageReleaseNotes>- Verbose debug tool added to config</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>
