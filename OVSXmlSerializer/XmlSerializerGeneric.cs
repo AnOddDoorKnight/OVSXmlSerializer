@@ -173,12 +173,14 @@
 		public virtual MemoryStream Serialize(T item, string rootElementName)
 		{
 			object testOutput = (object)item;
+			MemoryStream stream = new MemoryStream();
 			if (testOutput is null)
-				return new MemoryStream();
-			var stream = new MemoryStream();
-			XmlWriter writer = XmlWriter.Create(stream, Config.AsWriterSettings());
-			new XmlWriterSerializer<T>(writer, this).StartWriteObject(rootElementName, new StructuredObject(item));
+				return stream;
+			var writer = XmlWriter.Create(stream, Config.AsWriterSettings());
+			XmlDocument document = new XmlWriterSerializer<T>(this).Serialize(item, rootElementName);
+			document.Save(writer);
 			writer.Flush();
+			writer.Close();
 			stream.Position = 0;
 			return stream;
 		}
@@ -209,8 +211,8 @@
 			object testOutput = (object)item;
 			if (testOutput is null)
 				return;
-			new XmlWriterSerializer<T>(writer, this).StartWriteObject(rootElementName, new StructuredObject(item));
-			writer.Flush();
+			XmlDocument document = new XmlWriterSerializer<T>(this).Serialize(item, rootElementName);
+			document.Save(writer);
 		}
 		#endregion
 

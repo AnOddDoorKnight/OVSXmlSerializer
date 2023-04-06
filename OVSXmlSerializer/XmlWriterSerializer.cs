@@ -1,12 +1,15 @@
 ﻿namespace OVSXmlSerializer
 {
+	using OVSXmlSerializer.Extras;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
 	using System.Globalization;
+	using System.IO;
 	using System.Linq;
 	using System.Reflection;
 	using System.Xml;
+	using System.Xml.Linq;
 	using static XmlSerializer;
 
 	internal class XmlWriterSerializer<T>
@@ -36,144 +39,39 @@
 				throw new NullReferenceException(message);
 			}
 		}
-		
 
-		internal protected XmlWriter writer;
+
+		//internal protected XmlWriter writer;
+		internal protected XmlDocument document;
 		protected XmlSerializerConfig config;
 		protected XmlSerializer<T> source;
-		public XmlWriterSerializer(XmlWriter writer, XmlSerializer<T> source)
+		public XmlWriterSerializer(XmlSerializer<T> source)
 		{
 			this.config = source.Config;
-			this.writer = writer;
+			//this.writer = writer;
 			this.source = source;
+			// Writing base..
+			document = new XmlDocument();
 		}
 
-		internal bool ApplySmartType(StructuredObject obj)
+		public XmlDocument Serialize(T obj, string name)
 		{
-			if (config.TypeHandling != IncludeTypes.SmartTypes)
-				return false;
-			if (obj is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is a derived type from field type '{fieldObj.Field.FieldType}'..");
-				return true;
-			}
-			return false;
-		}
-		internal void WriteAttributeType(StructuredObject obj)
-		{
-			if (config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is set to always include types..");
-				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
-				return;
-			}
-			if (ApplySmartType(obj))
-				writer.WriteAttributeString(ATTRIBUTE, obj.ValueType.FullName);
-		}
-		internal bool TryWriteEnumerable(string name, StructuredObject values)
-		{
-			if (XMLIgnoreEnumerableAttribute.Ignore(values))
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(values)} may be an enumerable, but not serialize as one due to {nameof(XMLIgnoreEnumerableAttribute)} being present");
-				return false;
-			}
-			if (values.ValueType.IsArray)
-			{
-				WriteStartElement(name.TrimEnd('[', ']'), values);
-				WriteAttributeType(values);
-				Array arrValue = (Array)values.Value;
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an array with {arrValue.Length} elements..");
-				for (int i = 0; i < arrValue.Length; i++)
-					WriteObject("Item", new StructuredObject(arrValue.GetValue(i)));
-				writer.WriteEndElement();
-				return true;
-			}
-			object value = values.Value;
-			if (value is IEnumerable enumerable)
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an ordinary enumerable..");
-				EnsureParameterlessConstructor(values.ValueType);
-				WriteStartElement(name.Replace('`', '_'), values);
-				WriteAttributeType(values);
-				IEnumerator enumerator = enumerable.GetEnumerator();
-				while (enumerator.MoveNext())
-					WriteObject("Item", new StructuredObject(enumerator.Current));
-				try
-				{
-					enumerator.Reset();
-				}
-				catch 
-				{
-				
-				}
-				writer.WriteEndElement();
-				return true;
-			}
-			return false;
-		}
-		internal bool TryWritePrimitive(string name, StructuredObject primitive, bool startElement = true)
-		{
-			if (!primitive.ValueType.IsPrimitive && primitive.ValueType != typeof(string))
-				return false;
-			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive as attribute..");
-				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
-				{
-					const string MESSAGE_ERROR = "Cannot serialize as the field type doesn't match the object type. " +
-						"This is typically caused as the primitive value is derived off of object in an XML Attribute, unable to write the derived attribute type.";
-					config.Logger?.InvokeMessage(SOURCE_WRITER, MESSAGE_ERROR);
-					throw new Exception(MESSAGE_ERROR);
-				}
-				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
-				{
-					config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is renamed to '{namedAs}', as having the {nameof(XmlNamedAsAttribute)} attribute");
-					name = namedAs;
-				}
-				if (!string.IsNullOrEmpty(attribute.CustomName))
-					name = attribute.CustomName;
-				writer.WriteAttributeString(name, primitive.Value.ToString());
-				return true;
-			}
-			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
-			if (startElement)
-				WriteStartElement(name, primitive);
-			WriteAttributeType(primitive);
-			writer.WriteString(primitive.Value.ToString());
-			writer.WriteEndElement();
-			return true;
-		}
-		internal bool TryWriteEnum(in string name, StructuredObject @enum)
-		{
-			if (!@enum.ValueType.IsEnum)
-				return false;
-			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(@enum)} is an enum, serializing element with .ToString().");
-			WriteStartElement(name, @enum);
-			WriteAttributeType(@enum);
-			writer.WriteString(@enum.Value.ToString());
-			writer.WriteEndElement();
-			return true;
-		}
-
-		internal void StartWriteObject(in string name, StructuredObject obj)
-		{
-			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Started XML Serialization of {(!obj.IsNull ? obj.Value.ToString() : "Null")}");
+			var structuredObject = new StructuredObject(obj);
+			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Started XML Serialization of {(!structuredObject.IsNull ? structuredObject.Value.ToString() : "Null")}");
 			startObject = true;
-			WriteObject(name, obj);
+			if (!structuredObject.IsNull)
+			{
+				if (!config.OmitAutoGenerationComment)
+					document.AppendChild(document.CreateComment("Auto-generated by OVSXmlSerializer"));
+				WriteObject(structuredObject, document, EnsureName(name, structuredObject));
+			}
 			config.Logger?.InvokeMessage(SOURCE_WRITER, "Serialization finished!");
+			return document;
 		}
+
 		private bool startObject = false;
-		private bool TryWriteVersionNumber()
-		{
-			if (!startObject)
-				return false;
-			if (config.Version is null)
-				return false;
-			startObject = false;
-			writer.WriteAttributeString(Versioning.VERSION_ATTRIBUTE, config.Version.ToString());
-			return true;
-		}
-		internal void WriteObject(in string name, StructuredObject obj)
+
+		internal void WriteObject(StructuredObject obj, XmlNode parent, string name)
 		{
 			if (obj.IsNull)
 			{
@@ -188,7 +86,6 @@
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} contains {nameof(XmlIgnoreAttribute)}, ignoring.");
 				return;
 			}
-
 			if (obj.Value is IXmlSerializable serializable)
 			{
 				// Not sure how the actual scheme works at all since I never used
@@ -197,10 +94,8 @@
 					return;
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} has {nameof(IXmlSerializable)} implemented, using.");
 				EnsureParameterlessConstructor(obj.ValueType);
-				WriteStartElement(name, obj);
-				WriteAttributeType(obj);
-				serializable.Write(writer);
-				writer.WriteEndElement();
+				XmlElement serializableElement = CreateElement(parent, name);
+				serializable.Write(serializableElement);
 				return;
 			}
 			if (obj.Value is Delegate)
@@ -208,80 +103,241 @@
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} is a delegate, skipping.");
 				return;
 			}
-			if (TryWriteEnum(name, obj))
+
+			if (TryWriteEnum(name, obj, parent))
 				return;
-			if (TryWritePrimitive(name, obj))
+			if (TryWritePrimitive(name, obj, parent))
 				return;
 			if (XmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 				throw new Exception($"{obj.Value} is not a primitive type!");
-			if (TryWriteEnumerable(name, obj))
+			if (TryWriteEnumerable(name, obj, parent))
 				return;
-			EnsureParameterlessConstructor(obj.ValueType);
-			WriteStartElement(name, obj);
-			WriteAttributeType(obj);
 
+			EnsureParameterlessConstructor(obj.ValueType);
+			XmlNode currentNode = CreateElement(parent, name, obj);
 
 			FieldInfo[] infos = obj.ValueType.GetFields(defaultFlags);
 			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(obj)} normally..");
 
-
-
-			List<FieldInfo> attributes = new List<FieldInfo>(),
-				elements = new List<FieldInfo>(),
-				text = new List<FieldInfo>();
-			// order by values that has the attribute attributes
+			bool didText = false;
+			bool hasElements = false;
 			for (int i = 0; i < infos.Length; i++)
 			{
 				FieldInfo field = infos[i];
+				FieldObject fieldObject = new FieldObject(field, obj.Value);
 				// Doing ignore again for compatibility with text attribute
 				if (XmlIgnoreAttribute.Ignore(field))
-					continue;
-				else if (XmlTextAttribute.IsText(field))
-					text.Add(field);
-				else if (XmlAttributeAttribute.IsAttribute(field, out var attributeContents))
-					attributes.Add(field);
-				else
-					elements.Add(field);
-			}
-			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Collected fields from {StartLogObject(obj)}: " +
-				$"\n{attributes.Count} attributes \n{{\n\t{string.Join("\n\t", attributes)} \n}}" +
-				$"\n{elements.Count} elements \n{{\n\t{string.Join("\n\t", elements)} \n}}" +
-				$"\n{text.Count} textFields \n{{\n\t{string.Join("\n\t", text)} \n}}");
-			WriteValues(attributes);
-			if (text.Count > 0)
-			{
-				if (text.Count > 1)
-					throw new InvalidOperationException($"There can only be one [{nameof(XmlText)}]!");
-				if (elements.Count > 0)
-					throw new InvalidOperationException($"There are elements in the field in {obj.Value}, be sure to ignore or put them as attributes!");
-				FieldObject textField = new FieldObject(text.Single(), obj.Value);
-				if (!TryWritePrimitive(null, textField, false))
-					throw new InvalidCastException();
-				return;
-			}
-			WriteValues(elements);
-			writer.WriteEndElement();
-
-			void WriteValues(List<FieldInfo> fieldInfos)
-			{
-				for (int i = 0; i < fieldInfos.Count; i++)
 				{
-					FieldInfo field = fieldInfos[i];
-					FieldObject @struct = new FieldObject(field, obj.Value);
-					WriteObject(field.Name, @struct);
+					continue;
 				}
+
+				if (XmlTextAttribute.IsText(field))
+				{
+					if (didText)
+						throw new InvalidOperationException($"There can only be one [{nameof(XmlText)}]!");
+					if (hasElements)
+						throw new InvalidOperationException($"There are elements in the field in {obj.Value}, be sure to ignore or put them as attributes!");
+					didText = true;
+					if (!TryWritePrimitive(ref currentNode, fieldObject, parent))
+						throw new InvalidCastException();
+					continue;
+				}
+				if (XmlAttributeAttribute.IsAttribute(field, out var contents))
+				{
+					WriteObject(fieldObject, currentNode, EnsureName(field.Name, fieldObject));
+					continue;
+				}
+				if (didText)
+					throw new Exception();
+				hasElements = true;
+				WriteObject(fieldObject, currentNode, EnsureName(field.Name, fieldObject));
 			}
 		}
-		/// <summary>
-		/// Writes the starting element.
-		/// </summary>
-		/// <remarks>
-		/// This fixes issues when considering auto-implemented properties.
-		/// </remarks>
-		/// <param name="name"> The name of the element. </param>
-		/// <param name="obj"> The object to write about. </param>
-		internal void WriteStartElement(string name, StructuredObject obj)
+		internal bool TryWriteEnum(in string name, StructuredObject @enum, XmlNode parent)
 		{
+			if (!@enum.ValueType.IsEnum)
+				return false;
+			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(@enum)} is an enum, serializing element with .ToString().");
+			XmlElement element = CreateElement(parent, name, @enum);
+			element.InnerText = @enum.Value.ToString();
+			return true;
+		}
+		internal bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent)
+		{
+			if (!IsPrimitive(primitive))
+				return false;
+			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
+			{
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive as attribute..");
+				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				{
+					const string MESSAGE_ERROR = "Cannot serialize as the field " +
+						"type doesn't match the object type. This is typically " +
+						"caused as the primitive value is derived off of object " +
+						"in an XML Attribute, unable to write the derived attribute " +
+						"type.";
+					config.Logger?.InvokeMessage(SOURCE_WRITER, MESSAGE_ERROR);
+					throw new Exception(MESSAGE_ERROR);
+				}
+				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
+				{
+					config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is renamed to '{namedAs}', as having the {nameof(XmlNamedAsAttribute)} attribute");
+					name = namedAs;
+				}
+				if (!string.IsNullOrEmpty(attribute.CustomName))
+					name = attribute.CustomName;
+				XmlAttribute xmlAttribute = CreateAttribute(parent, name, primitive.Value.ToString());
+				return true;
+			}
+			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
+			XmlNode currentNode = CreateElement(parent, name, primitive);
+			currentNode.InnerText = primitive.Value.ToString();
+			return true;
+		}
+		internal bool TryWritePrimitive(ref XmlNode currentNode, StructuredObject primitive, XmlNode parent)
+		{
+			if (!IsPrimitive(primitive))
+				return false;
+			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
+			{
+				if (!(currentNode is XmlAttribute))
+					throw new Exception();
+				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				{
+					const string MESSAGE_ERROR = "Cannot serialize as the field " +
+						"type doesn't match the object type. This is typically " +
+						"caused as the primitive value is derived off of object " +
+						"in an XML Attribute, unable to write the derived attribute " +
+						"type.";
+					config.Logger?.InvokeMessage(SOURCE_WRITER, MESSAGE_ERROR);
+					throw new Exception(MESSAGE_ERROR);
+				}
+				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
+				{
+					parent.RemoveChild(currentNode);
+					currentNode = CreateAttribute(parent, namedAs, "");
+					config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is renamed to '{namedAs}', as having the {nameof(XmlNamedAsAttribute)} attribute");
+				}
+				currentNode.Value = primitive.Value.ToString();
+				return true;
+			}
+			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
+			currentNode.InnerText = primitive.Value.ToString();
+			return true;
+		}
+		internal bool TryWriteEnumerable(string name, StructuredObject values, XmlNode parent)
+		{
+			if (XMLIgnoreEnumerableAttribute.Ignore(values))
+			{
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(values)} may be an enumerable, but not serialize as one due to {nameof(XMLIgnoreEnumerableAttribute)} being present");
+				return false;
+			}
+			if (values.ValueType.IsArray)
+			{
+				XmlElement arrayElement = CreateElement(parent, name, values);
+				Array arrValue = (Array)values.Value;
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an array with {arrValue.Length} elements..");
+				for (int i = 0; i < arrValue.Length; i++)
+				{
+					StructuredObject currentValue = new StructuredObject(arrValue.GetValue(i));
+					WriteObject(currentValue, arrayElement, "Item");
+				}
+				return true;
+			}
+			object value = values.Value;
+			if (value is IEnumerable enumerable)
+			{
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an ordinary enumerable..");
+				EnsureParameterlessConstructor(values.ValueType);
+				XmlElement enumerableElement = CreateElement(parent, name, values);
+				IEnumerator enumerator = enumerable.GetEnumerator();
+				while (enumerator.MoveNext())
+				{
+					StructuredObject currentValue = new StructuredObject(enumerator.Current);
+					WriteObject(currentValue, enumerableElement, "Item");
+				}
+				try { enumerator.Reset(); } catch { }
+				return true;
+			}
+			return false;
+		}
+
+
+
+		internal XmlElement CreateElement(XmlNode parent, string name, StructuredObject obj)
+		{
+			XmlElement element = CreateElement(parent, name);
+			WriteTypeAttribute(element, obj);
+			TryWriteVersionNumber(element);
+			return element;
+		}
+		internal XmlElement CreateElement(XmlNode parent, string elementName)
+		{
+			XmlElement element = document.CreateElement(elementName);
+			(parent ?? document).AppendChild(element);
+			TryWriteVersionNumber(element);
+			return element;
+		}
+		internal XmlAttribute CreateAttribute(XmlNode parent, string name, string value)
+		{
+			XmlAttribute attribute = document.CreateAttribute(name);
+			attribute.Value = value;
+			parent.Attributes.Append(attribute);
+			return attribute;
+		}
+		internal XmlAttribute WriteTypeAttribute(XmlNode parent, StructuredObject obj)
+		{
+			if (config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
+			{
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is set to always include types..");
+				return CreateAttribute(parent, ATTRIBUTE, obj.ValueType.FullName);
+			}
+			if (config.TypeHandling == IncludeTypes.SmartTypes)
+				if (obj is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				{
+					config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is a derived type from field type '{fieldObj.Field.FieldType}'..");
+					return CreateAttribute(parent, ATTRIBUTE, obj.ValueType.FullName);
+				}
+			return null;
+		}
+		private bool TryWriteVersionNumber(XmlNode parent)
+		{
+			if (!startObject)
+				return false;
+			if (config.Version is null)
+				return false;
+			startObject = false;
+			CreateAttribute(parent, Versioning.VERSION_ATTRIBUTE, config.Version.ToString());
+			return true;
+		}
+		/*
+
+		
+		internal string GetName(StructuredObject obj)
+		{
+			string name = string.Empty;
+			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
+			{
+				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} is renamed to '{namedAtt}', as having the {nameof(XmlNamedAsAttribute)} attribute");
+				name = namedAtt;
+			}
+			else if (obj is FieldObject fieldObject)
+			{
+				name = fieldObject.Field.Name; 
+				if (fieldObject.IsAutoImplementedProperty)
+				{
+					config.Logger?.InvokeMessage(SOURCE_WRITER, $"Converting '{name}' to '{StructuredObject.RemoveAutoPropertyTags(name)}'");
+					name = StructuredObject.RemoveAutoPropertyTags(name);
+				}
+			}
+			name = name.Replace('`', '_');
+			return name;
+		}
+		*/
+		internal string EnsureName(string name, StructuredObject obj)
+		{
+			if (obj.IsNull)
+				return "";
 			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
 			{
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} is renamed to '{namedAtt}', as having the {nameof(XmlNamedAsAttribute)} attribute");
@@ -293,8 +349,28 @@
 				name = FieldObject.RemoveAutoPropertyTags(name);
 			}
 			name = name.Replace('`', '_');
-			writer.WriteStartElement(name);
-			TryWriteVersionNumber();
+			name = name.TrimEnd('[', ']');
+			return name;
+		}
+		internal bool IsPrimitive(StructuredObject primitive)
+		{
+			return primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string);
 		}
 	}
 }
+		
+
+		/*
+		
+		
+		
+
+		internal void WriteObject(in string name, StructuredObject obj)
+		{
+			
+
+			
+			
+			
+		}
+		*/

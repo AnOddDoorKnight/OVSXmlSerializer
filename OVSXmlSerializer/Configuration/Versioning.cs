@@ -49,19 +49,12 @@
 		public static bool IsVersion(Stream input, Version version, Leniency leniency = Leniency.Strict)
 		{
 			XmlDocument document = new XmlDocument();
-			try
-			{
-				document.Load(input);
-			}
-			catch (XmlException exception) when (exception.Message == "Root element is missing.")
-			{
-				return default;
-			}
+			document.Load(input);
 			return IsVersion(document, version, leniency);
 		}
 		public static bool IsVersion(XmlDocument document, Version version, Leniency leniency = Leniency.Strict)
 		{
-			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
+			XmlNode rootNode = document.LastChild;
 			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_ATTRIBUTE);
 			if (versionNode != null)
 			{

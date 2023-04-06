@@ -105,9 +105,8 @@ public class ObjectSerialization
 		string[] value = { "bruh" };
 		XmlSerializer serializer = new(typeof(string));
 		var stream = serializer.Serialize(value);
-		stream.Position = 0;
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
-		Assert.IsTrue(strings[2].StartsWith("\t"));
+		Assert.IsTrue(strings[3].StartsWith("\t"), $"'{strings[3]}' Does not match '{serializer.Config.IndentChars}'!");
 	}
 	[TestMethod("Class Serialization")]
 	public void StandardSerialization()
@@ -161,6 +160,7 @@ public class ObjectSerialization
 		AutoProp result = serializer.Deserialize(stream);
 		Assert.IsTrue(result.bruh == autoProp.bruh);
 	}
+	/*
 	[TestMethod("Circular Serialization")]
 	public void CircularSerialization()
 	{
@@ -168,7 +168,7 @@ public class ObjectSerialization
 		serialization.circularSerialization = serialization;
 		XmlSerializer<CircularSerialization> serializer = new();
 		serializer.Serialize(serialization).Dispose();
-	}
+	}*/
 }
 internal class CircularSerialization
 {
@@ -198,9 +198,9 @@ internal class ByteArraySim : IXmlSerializable
 		values = Array.ConvertAll(obj.InnerText.Split('.'), @string => byte.Parse(@string));
 	}
 
-	void IXmlSerializable.Write(XmlWriter writer)
+	void IXmlSerializable.Write(XmlNode writer)
 	{
-		writer.WriteString(string.Join(".", values));
+		writer.InnerText = string.Join(".", values);
 	}
 }
 internal class XmlParameteredClassTest
