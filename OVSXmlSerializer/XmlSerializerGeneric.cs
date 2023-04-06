@@ -11,6 +11,10 @@
 	public class XmlSerializer<T>
 	{
 		/// <summary>
+		/// Default Xml Serializer. Effectively creating a new blank instance.
+		/// </summary>
+		public static XmlSerializer<T> Default { get; } = new XmlSerializer<T>();
+		/// <summary>
 		/// The configuration that changes the behaviour of the serializer.
 		/// </summary>
 		public XmlSerializerConfig Config { get; protected set; }

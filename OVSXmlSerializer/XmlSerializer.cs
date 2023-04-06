@@ -11,6 +11,11 @@
 	/// </summary>
 	public class XmlSerializer : XmlSerializer<object>
 	{
+		/// <summary>
+		/// Default Xml Serializer. Effectively creating a new blank instance.
+		/// </summary>
+		public static new XmlSerializer Default { get; } = new XmlSerializer();
+
 		internal const string ATTRIBUTE = "type";
 		internal const string CONDITION = "con";
 		internal const string REFERENCE_ATTRIBUTE = "reference_id";

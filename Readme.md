@@ -4,15 +4,20 @@
 
 
 
-The system itself works very similar to how the XML serializer works normally,
+The system itself works very similar to how the XML serializer works normally, 
 but is meant to be worked with the `object` or more 'undefined' data that the 
-ordinary XML serializer have difficulty handling. You can turn this off for more
-traditional formatting with the config class, but it does reveal the issue once 
-again.
+ordinary XML serializer have difficulty handling. You can turn this off for 
+more traditional formatting with the config class, but it does reveal the issue 
+once again. Additionally, It can handle reference types; allowing multiple 
+separate fields that contain the same instance; It also allows you to connect a 
+built-in debugger to specifically track what is wrong with the 
+serialization/deserialization if needed. 
+
 
 Unlike the traditional XML Serializer, this will use the type parameters in the
 class to automatically differentiate enums and arrays, which will remove the need
 to mark fields as `[XmlArray]` or `[XmlEnum]`.
+
 
 ## Explicit Types
 
