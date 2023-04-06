@@ -3,10 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
-    <!--<Nullable>enable</Nullable>-->
     <Title>OVSXmlSerializer</Title>
-    <VersionPrefix>1.1.6</VersionPrefix>
-    <VersionSuffix>beta-1</VersionSuffix>
+    <VersionPrefix>2.0.0</VersionPrefix>
     <RepositoryType>git</RepositoryType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -20,7 +18,10 @@ Unlike the traditional XML Serializer, this will use the type parameters in the 
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>- Verbose debug tool added to config</PackageReleaseNotes>
+    <PackageReleaseNotes>- Verbose debug tool added to config
+- Reference types can now be referenced to other fields, no duplicate fields and no risk of stack overflow. 
+- Properly added versioning
+- Changed Config to use properties instead of fields</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

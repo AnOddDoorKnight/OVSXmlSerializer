@@ -4,10 +4,16 @@
 	using System.IO;
 	using System.Xml;
 
-	
+	/// <summary>
+	/// Measures Xml files to check if they are a specific version or not.
+	/// </summary>
 	public static class Versioning
 	{
 		internal const string VERSION_ATTRIBUTE = "ver";
+		/// <summary>
+		/// Measurement on how <see cref="Versioning"/> should handle variation changes
+		/// 
+		/// </summary>
 		public enum Leniency : byte
 		{
 			/// <summary>
@@ -36,22 +42,47 @@
 			All = 4,
 		}
 
+		/// <summary>
+		/// Checks the version of the XML file.
+		/// </summary>
+		/// <param name="fileLocation"> The full file location. </param>
+		/// <param name="version"> Comparing to/expected value </param>
+		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(string fileLocation, Version version, Leniency leniency = Leniency.Strict)
 		{
 			using (Stream stream = File.OpenRead(fileLocation))
 				return IsVersion(stream, version, leniency);
 		}
+		/// <summary>
+		/// Checks the version of the XML file.
+		/// </summary>
+		/// <param name="fileLocation"> The file location. </param>
+		/// <param name="version"> Comparing to/expected value </param>
+		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(FileInfo fileLocation, Version version, Leniency leniency = Leniency.Strict)
 		{
 			using (Stream stream = fileLocation.OpenRead())
 				return IsVersion(stream, version, leniency);
 		}
+
+		/// <summary>
+		/// Checks the version of the XML file.
+		/// </summary>
+		/// <param name="input"> The document as a stream. </param>
+		/// <param name="version"> Comparing to/expected value </param>
+		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(Stream input, Version version, Leniency leniency = Leniency.Strict)
 		{
 			XmlDocument document = new XmlDocument();
 			document.Load(input);
 			return IsVersion(document, version, leniency);
 		}
+		/// <summary>
+		/// Checks the version of the XML file.
+		/// </summary>
+		/// <param name="document"> The document. </param>
+		/// <param name="version"> Comparing to/expected value </param>
+		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(XmlDocument document, Version version, Leniency leniency = Leniency.Strict)
 		{
 			XmlNode rootNode = document.LastChild;
@@ -63,6 +94,12 @@
 			}
 			return version == null;
 		}
+		/// <summary>
+		/// Checks the version of the XML file.
+		/// </summary>
+		/// <param name="altVersion"> The comparator of one version </param>
+		/// <param name="version"> Comparing to/expected value </param>
+		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(Version version, Version altVersion, Leniency leniency = Leniency.Strict)
 		{
 			switch (leniency)
