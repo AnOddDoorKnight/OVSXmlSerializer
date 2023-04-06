@@ -14,6 +14,7 @@
 
 	internal class XmlReaderSerializer<T>
 	{
+		private const string SOURCE_READER = "Reader";
 		// https://stackoverflow.com/questions/20008503/get-type-by-name
 		/// <summary>
 		/// Gets the type by the full name in every existing assembly.
@@ -59,9 +60,14 @@
 		public virtual object ReadObject(XmlNode node, Type currentType)
 		{
 			if (node == null)
+			{
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Node is null, skipping..");
 				return null;
+			}
+
 			if (currentType == null)
 			{
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Getting missing type from {node.Name}..");
 				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
 				string typeValue = null;
 				if (attributeNode != null)
@@ -69,10 +75,12 @@
 				if (string.IsNullOrEmpty(typeValue))
 					throw new Exception();
 				currentType = ByName(typeValue);
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Got type as {currentType}");
 			}
 			else if (!currentType.IsValueType && !XmlAttributeAttribute.IsAttribute(currentType, out _) && node.Attributes != null)
 			{
 				// Class Type probably is defined, but not derived. 
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Checking for derived types for {node.Name}..");
 				XmlNode attributeNode = node.Attributes.GetNamedItem(ATTRIBUTE);
 				string possibleDerivedTypeName = null;
 				if (attributeNode != null)
@@ -82,7 +90,10 @@
 					Type possibleDerivedType = ByName(possibleDerivedTypeName);
 					bool isDerived = currentType.IsAssignableFrom(possibleDerivedType);
 					if (isDerived)
+					{
 						currentType = possibleDerivedType;
+						config.Logger?.InvokeMessage(SOURCE_READER, $"Got derived type as {currentType}");
+					}
 				}
 			}
 			if (TryReadReference(currentType, node, out object @ref))
@@ -91,6 +102,7 @@
 			// Letting the jesus take the wheel
 			if (typeof(IXmlSerializable).IsAssignableFrom(currentType))
 			{
+				config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} has {nameof(IXmlSerializable)} interface, using..");
 				object serializableOutput = Activator.CreateInstance(currentType, true);
 				AddReferenceTypeToDictionary(node, serializableOutput);
 				IXmlSerializable xmlSerializable = (IXmlSerializable)serializableOutput;
@@ -106,6 +118,7 @@
 			// Standard class with regular serialization.
 			object obj = Activator.CreateInstance(currentType, true);
 			AddReferenceTypeToDictionary(node, obj);
+			config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is an ordinary object.. parsing fields..");
 
 			// Serializes fields by getting fields by name, and matching it from
 			// - the node list.
@@ -151,6 +164,7 @@
 			{
 				string key = attributes[i].Key;
 				XmlNode attribute = node.Attributes.GetNamedItem(key);
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Reading attribute {key} from {node.Name}..");
 				FieldInfo field = attributes[i].Value;
 				field.SetValue(obj, ReadObject(attribute, field.FieldType));
 			}
@@ -158,6 +172,7 @@
 			if (text.HasValue)
 			{
 				TryReadPrimitive(text.Value.Value.FieldType, node, out object textOutput);
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Reading text data from {node.Name}..");
 				text.Value.Value.SetValue(obj, textOutput);
 			}
 			else
@@ -167,6 +182,7 @@
 					XmlNode element = node.SelectSingleNode(key);
 					if (element == null)
 						element = node.SelectSingleNode($"Reference_{elements[i].Key}");
+					config.Logger?.InvokeMessage(SOURCE_READER, $"Reading element {key} from {node.Name}..");
 					FieldInfo field = elements[i].Value;
 					field.SetValue(obj, ReadObject(element, field.FieldType));
 				}
@@ -191,6 +207,7 @@
 			}
 			int ID = int.Parse(node.InnerText);
 			reference = referenceTypes[ID];
+			config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is a reference type with ID of {ID}, parsed.");
 			return true;
 		}
 		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
@@ -201,6 +218,7 @@
 				return false;
 			}
 			output = Enum.Parse(type, node.InnerText);
+			config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is an enum of {type} with value {node.InnerText}");
 			return true;
 		}
 		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
@@ -212,8 +230,8 @@
 				return false;
 			}
 			string unparsed = node is XmlAttribute ? node.Value : node.InnerText;
-			// I wonder if there is a method or library that does this for me..
 			output = Convert.ChangeType(unparsed, type);
+			config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is an primitive or string of {type} with value '{unparsed}'");
 			return true;
 		}
 		/// <summary>
@@ -242,6 +260,7 @@
 				for (int i = 0; i < nodeList.Count; i++)
 					array.SetValue(ReadObject(nodeList.Item(i), elementType), i);
 				output = array;
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Created an array of {type}, named {node.Name}. Elements: \n\t{string.Join("\n\t", array)}");
 				return true;
 			}
 			// All lists or dictionaries derive from collections.
@@ -257,6 +276,7 @@
 				Type elementType = type.GenericTypeArguments[0];
 				for (int i = 0; i < nodeList.Count; i++)
 					list.Add(ReadObject(nodeList.Item(i), elementType));
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Created a IList of {type}, named {node.Name}. Elements: \n\t{string.Join("\n\t", list)}");
 				return true;
 			}
 			if (output is IDictionary dictionary)
@@ -269,6 +289,7 @@
 					XmlNode value = nodeList.Item(i).SelectSingleNode("value");
 					dictionary.Add(ReadObject(key, keyType), ReadObject(value, valueType));
 				}
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Created a IDictionary of {type}, named {node.Name}. Elements: \n\t{string.Join("\n\t", dictionary)}");
 				return true;
 			}
 			throw new NotImplementedException();
@@ -284,6 +305,7 @@
 				{
 					int id = int.Parse(node.Attributes[i].Value);
 					referenceTypes.Add(id, value);
+					config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is a referenced parsed type. Adding ID with {id}");
 					return true;
 				}
 			return false;
