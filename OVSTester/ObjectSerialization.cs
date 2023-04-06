@@ -160,15 +160,19 @@ public class ObjectSerialization
 		AutoProp result = serializer.Deserialize(stream);
 		Assert.IsTrue(result.bruh == autoProp.bruh);
 	}
-	/*
+	
 	[TestMethod("Circular Serialization")]
 	public void CircularSerialization()
 	{
 		CircularSerialization serialization = new();
 		serialization.circularSerialization = serialization;
 		XmlSerializer<CircularSerialization> serializer = new();
-		serializer.Serialize(serialization).Dispose();
-	}*/
+		using var stream = serializer.Serialize(serialization);
+		string outputStr = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		CircularSerialization output = serializer.Deserialize(stream);
+		Assert.IsTrue(ReferenceEquals(output, output.circularSerialization));
+	}
 }
 internal class CircularSerialization
 {

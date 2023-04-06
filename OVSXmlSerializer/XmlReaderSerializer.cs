@@ -42,6 +42,7 @@
 
 		protected XmlSerializerConfig config;
 		protected XmlSerializer<T> source;
+		Dictionary<int, object> referenceTypes;
 		public XmlReaderSerializer(XmlSerializer<T> source)
 		{
 			this.config = source.Config;
@@ -49,6 +50,7 @@
 		}
 		public virtual object ReadDocument(XmlDocument document, Type rootType)
 		{
+			referenceTypes = new Dictionary<int, object>();
 			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
 			if (!Versioning.IsVersion(document, config.Version, config.VersionLeniency))
 				throw new InvalidCastException($"object '{rootNode.Name}' of version '{rootNode.Attributes.GetNamedItem(Versioning.VERSION_ATTRIBUTE).Value}' is not version '{config.Version}'!");
@@ -83,11 +85,14 @@
 						currentType = possibleDerivedType;
 				}
 			}
+			if (TryReadReference(currentType, node, out object @ref))
+				return @ref;
 			
 			// Letting the jesus take the wheel
 			if (typeof(IXmlSerializable).IsAssignableFrom(currentType))
 			{
 				object serializableOutput = Activator.CreateInstance(currentType, true);
+				AddReferenceTypeToDictionary(node, serializableOutput);
 				IXmlSerializable xmlSerializable = (IXmlSerializable)serializableOutput;
 				xmlSerializable.Read(node);
 				return serializableOutput;
@@ -100,7 +105,8 @@
 				return objectEnumerable;
 			// Standard class with regular serialization.
 			object obj = Activator.CreateInstance(currentType, true);
-			
+			AddReferenceTypeToDictionary(node, obj);
+
 			// Serializes fields by getting fields by name, and matching it from
 			// - the node list.
 			FieldInfo[] allFields = currentType.GetFields(defaultFlags);
@@ -159,10 +165,33 @@
 				{
 					string key = elements[i].Key;
 					XmlNode element = node.SelectSingleNode(key);
+					if (element == null)
+						element = node.SelectSingleNode($"Reference_{elements[i].Key}");
 					FieldInfo field = elements[i].Value;
 					field.SetValue(obj, ReadObject(element, field.FieldType));
 				}
 			return obj;
+		}
+		internal protected virtual bool TryReadReference(Type type, XmlNode node, out object reference)
+		{
+			if (type.IsValueType)
+			{
+				reference = null;
+				return false;
+			}
+			if (type == typeof(string))
+			{
+				reference = null;
+				return false;
+			}
+			if (!node.Name.StartsWith("Reference_"))
+			{
+				reference = null;
+				return false;
+			}
+			int ID = int.Parse(node.InnerText);
+			reference = referenceTypes[ID];
+			return true;
 		}
 		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
 		{
@@ -209,6 +238,7 @@
 			{
 				Type elementType = type.GetElementType();
 				Array array = Array.CreateInstance(elementType, nodeList.Count);
+				AddReferenceTypeToDictionary(node, array);
 				for (int i = 0; i < nodeList.Count; i++)
 					array.SetValue(ReadObject(nodeList.Item(i), elementType), i);
 				output = array;
@@ -221,6 +251,7 @@
 				return false;
 			}
 			output = Activator.CreateInstance(type, true);
+			AddReferenceTypeToDictionary(node, output);
 			if (output is IList list)
 			{
 				Type elementType = type.GenericTypeArguments[0];
@@ -241,6 +272,21 @@
 				return true;
 			}
 			throw new NotImplementedException();
+		}
+		internal bool IsPrimitive(StructuredObject primitive)
+		{
+			return primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string);
+		}
+		internal bool AddReferenceTypeToDictionary(XmlNode node, object value)
+		{
+			for (int i = 0; i < node.Attributes.Count; i++)
+				if (node.Attributes[i].Name == REFERENCE_ATTRIBUTE)
+				{
+					int id = int.Parse(node.Attributes[i].Value);
+					referenceTypes.Add(id, value);
+					return true;
+				}
+			return false;
 		}
 	}
 }

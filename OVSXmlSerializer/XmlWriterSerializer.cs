@@ -45,6 +45,9 @@
 		internal protected XmlDocument document;
 		protected XmlSerializerConfig config;
 		protected XmlSerializer<T> source;
+
+		protected Dictionary<object, XmlNode> referenceTypes;
+		protected int nextRefIndex = 0;
 		public XmlWriterSerializer(XmlSerializer<T> source)
 		{
 			this.config = source.Config;
@@ -56,6 +59,7 @@
 
 		public XmlDocument Serialize(T obj, string name)
 		{
+			referenceTypes = new Dictionary<object, XmlNode>();
 			var structuredObject = new StructuredObject(obj);
 			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Started XML Serialization of {(!structuredObject.IsNull ? structuredObject.Value.ToString() : "Null")}");
 			startObject = true;
@@ -104,6 +108,8 @@
 				return;
 			}
 
+			if (ReferenceType(name, obj, parent))
+				return;
 			if (TryWriteEnum(name, obj, parent))
 				return;
 			if (TryWritePrimitive(name, obj, parent))
@@ -152,6 +158,36 @@
 				hasElements = true;
 				WriteObject(fieldObject, currentNode, EnsureName(field.Name, fieldObject));
 			}
+		}
+		internal bool ReferenceType(in string name, StructuredObject obj, XmlNode parent)
+		{
+			if (obj.ValueType.IsValueType)
+				return false;
+			if (obj.ValueType == typeof(string))
+				return false;
+			if (!referenceTypes.TryGetValue(obj.Value, out XmlNode referencedNode))
+				return false;
+			const string refAttName = REFERENCE_ATTRIBUTE;
+			XmlElement referenceElement = CreateElement(parent, $"Reference_{name}");
+			int? ID = null;
+			for (int i = 0; i < referencedNode.Attributes.Count; i++)
+				if (referencedNode.Attributes[i].Name == refAttName)
+				{
+					XmlNode attribute = referencedNode.Attributes[i];
+					ID = int.Parse(attribute.Value);
+					break;
+				}
+			// New Reference type
+			if (!ID.HasValue)
+			{
+				ID = nextRefIndex;
+				nextRefIndex++;
+				XmlAttribute attribute = document.CreateAttribute(refAttName);
+				attribute.Value = ID.Value.ToString();
+				referencedNode.Attributes.Prepend(attribute);
+			}
+			referenceElement.InnerText = ID.Value.ToString();
+			return true;
 		}
 		internal bool TryWriteEnum(in string name, StructuredObject @enum, XmlNode parent)
 		{
@@ -269,6 +305,7 @@
 			XmlElement element = CreateElement(parent, name);
 			WriteTypeAttribute(element, obj);
 			TryWriteVersionNumber(element);
+			AddReferenceType(obj, element);
 			return element;
 		}
 		internal XmlElement CreateElement(XmlNode parent, string elementName)
@@ -310,30 +347,6 @@
 			CreateAttribute(parent, Versioning.VERSION_ATTRIBUTE, config.Version.ToString());
 			return true;
 		}
-		/*
-
-		
-		internal string GetName(StructuredObject obj)
-		{
-			string name = string.Empty;
-			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} is renamed to '{namedAtt}', as having the {nameof(XmlNamedAsAttribute)} attribute");
-				name = namedAtt;
-			}
-			else if (obj is FieldObject fieldObject)
-			{
-				name = fieldObject.Field.Name; 
-				if (fieldObject.IsAutoImplementedProperty)
-				{
-					config.Logger?.InvokeMessage(SOURCE_WRITER, $"Converting '{name}' to '{StructuredObject.RemoveAutoPropertyTags(name)}'");
-					name = StructuredObject.RemoveAutoPropertyTags(name);
-				}
-			}
-			name = name.Replace('`', '_');
-			return name;
-		}
-		*/
 		internal string EnsureName(string name, StructuredObject obj)
 		{
 			if (obj.IsNull)
@@ -356,21 +369,14 @@
 		{
 			return primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string);
 		}
+		internal bool AddReferenceType(StructuredObject obj, XmlNode representingNode)
+		{
+			if (obj.ValueType.IsValueType)
+				return false;
+			if (obj.ValueType == typeof(string))
+				return false;
+			referenceTypes.Add(obj.Value, representingNode);
+			return true;
+		}
 	}
 }
-		
-
-		/*
-		
-		
-		
-
-		internal void WriteObject(in string name, StructuredObject obj)
-		{
-			
-
-			
-			
-			
-		}
-		*/

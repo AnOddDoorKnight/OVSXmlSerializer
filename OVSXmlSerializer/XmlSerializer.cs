@@ -13,6 +13,7 @@
 	{
 		internal const string ATTRIBUTE = "type";
 		internal const string CONDITION = "con";
+		internal const string REFERENCE_ATTRIBUTE = "reference_id";
 
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 		/// <summary>
