@@ -61,7 +61,7 @@
 		{
 			if (node == null)
 			{
-				config.Logger?.InvokeMessage(SOURCE_READER, $"Node is null, skipping..");
+				config.Logger?.InvokeMessage(SOURCE_READER, $"Node is null, returning null..");
 				return null;
 			}
 
@@ -184,7 +184,14 @@
 						element = node.SelectSingleNode($"Reference_{elements[i].Key}");
 					config.Logger?.InvokeMessage(SOURCE_READER, $"Reading element {key} from {node.Name}..");
 					FieldInfo field = elements[i].Value;
-					field.SetValue(obj, ReadObject(element, field.FieldType));
+					object outputField = ReadObject(element, field.FieldType);
+					if (outputField is null)
+						if (config.IgnoreUndefinedValues)
+						{
+							config.Logger?.InvokeMessage(SOURCE_READER, $"Ignoring undefined values is enabled, skipping setting to null..");
+							continue;
+						}
+					field.SetValue(obj, outputField);
 				}
 			return obj;
 		}

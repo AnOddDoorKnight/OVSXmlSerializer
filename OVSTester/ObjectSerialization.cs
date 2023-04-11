@@ -112,10 +112,12 @@ public class ObjectSerialization
 	public void StandardSerialization()
 	{
 		StandardClass value = new();
+		value.value = null;
 		XmlSerializer<StandardClass> xmlSerializer = new();
+		xmlSerializer.Config.IgnoreUndefinedValues = true;
 		using var stream = xmlSerializer.Serialize(value);
 		StandardClass result = xmlSerializer.Deserialize(stream);
-		//Assert.AreEqual(value, result);
+		Assert.AreEqual(new StandardClass().value, result.value);
 	}
 
 	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]
@@ -202,7 +204,7 @@ internal class ByteArraySim : IXmlSerializable
 		values = Array.ConvertAll(obj.InnerText.Split('.'), @string => byte.Parse(@string));
 	}
 
-	void IXmlSerializable.Write(XmlNode writer)
+	void IXmlSerializable.Write(XmlDocument document, XmlNode writer)
 	{
 		writer.InnerText = string.Join(".", values);
 	}

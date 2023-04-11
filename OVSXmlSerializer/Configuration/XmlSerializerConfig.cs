@@ -45,7 +45,12 @@
 		/// Default variation of the config.
 		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
-
+		/// <summary>
+		/// If the object is set to <see langword="null"/> on the reader, or missing entirely,
+		/// it will instead allow the default to be set instead on enabled. Where
+		/// leaving it disabled to set it to <see langword="null"/> instead.
+		/// </summary>
+		public bool IgnoreUndefinedValues { get; set; } = false;
 		/// <summary>
 		/// Whenever a reference type is made, and multiple things use the same
 		/// instance of the reference type, then it will simply use an ID system

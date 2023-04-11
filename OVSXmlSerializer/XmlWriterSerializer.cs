@@ -99,7 +99,7 @@
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(obj)} has {nameof(IXmlSerializable)} implemented, using.");
 				EnsureParameterlessConstructor(obj.ValueType);
 				XmlElement serializableElement = CreateElement(parent, name);
-				serializable.Write(serializableElement);
+				serializable.Write(document, serializableElement);
 				return;
 			}
 			if (obj.Value is Delegate)
