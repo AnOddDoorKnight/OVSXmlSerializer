@@ -17,6 +17,11 @@
 		/// An event that is called every time a new message is made.
 		/// </summary>
 		public event Action<OVSXmlDebugLine> Log;
+		/// <summary>
+		/// An event that is called whenever the writer or reader has finished 
+		/// parsing.
+		/// </summary>
+		public event Action<IReadOnlyList<OVSXmlDebugLine>> FinishedLogStage;
 
 		/// <summary>
 		/// Creates a new instance to use for writers and readers.
@@ -36,6 +41,15 @@
 		internal void InvokeMessage(OVSXmlDebugLine line) => Log.Invoke(line);
 		internal void InvokeMessage(string source, string message) => InvokeMessage(new OVSXmlDebugLine(source, message));
 		internal void InvokeMessage(string message) => InvokeMessage(new OVSXmlDebugLine(message));
+
+
+		internal void FinishInvokeMessage(OVSXmlDebugLine line)
+		{
+			Log.Invoke(line);
+			FinishedLogStage?.Invoke(DebugLines);
+		}
+		internal void FinishInvokeMessage(string source, string message) => FinishInvokeMessage(new OVSXmlDebugLine(source, message));
+		internal void FinishInvokeMessage(string message) => FinishInvokeMessage(new OVSXmlDebugLine(message));
 	}
 
 	/// <summary>

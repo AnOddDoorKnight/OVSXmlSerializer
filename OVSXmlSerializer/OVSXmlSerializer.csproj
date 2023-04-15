@@ -18,7 +18,8 @@ Unlike the traditional XML Serializer, this will use the type parameters in the 
     <PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
-    <PackageReleaseNotes>- Values are now culture-independent</PackageReleaseNotes>
+    <PackageReleaseNotes>- Primitive values can now have cultures applied, independent-culture is applied by default in config
+- Added finishing events to debugger</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <OutputType>Library</OutputType>
     <RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>

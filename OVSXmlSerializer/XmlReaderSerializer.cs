@@ -54,9 +54,12 @@
 		{
 			referenceTypes = new Dictionary<int, object>();
 			XmlNode rootNode = document.ChildNodes.Item(document.ChildNodes.Count - 1);
+			config.Logger?.InvokeMessage(SOURCE_READER, $"Started XML De-Serialization of {(rootNode != null ? rootNode.Name : "Null")}");
 			if (!Versioning.IsVersion(document, config.Version, config.VersionLeniency))
 				throw new InvalidCastException($"object '{rootNode.Name}' of version '{rootNode.Attributes.GetNamedItem(Versioning.VERSION_ATTRIBUTE).Value}' is not version '{config.Version}'!");
-			return ReadObject(rootNode, rootType);
+			object returnObject = ReadObject(rootNode, rootType);
+			config.Logger?.FinishInvokeMessage(SOURCE_READER, "De-Serialization finished!");
+			return returnObject;
 		}
 		public virtual object ReadObject(XmlNode node, Type currentType)
 		{
