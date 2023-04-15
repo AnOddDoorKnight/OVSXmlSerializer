@@ -3,6 +3,7 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.Linq;
 	using System.Net.Http.Headers;
 	using System.Reflection;
@@ -237,7 +238,7 @@
 				return false;
 			}
 			string unparsed = node is XmlAttribute ? node.Value : node.InnerText;
-			output = Convert.ChangeType(unparsed, type);
+			output = Convert.ChangeType(unparsed, type, config.CurrentCulture);
 			config.Logger?.InvokeMessage(SOURCE_READER, $"{node.Name} is an primitive or string of {type} with value '{unparsed}'");
 			return true;
 		}

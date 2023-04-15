@@ -1,6 +1,7 @@
 ﻿namespace OVSXmlSerializer
 {
 	using System;
+	using System.Globalization;
 	using System.Text;
 	using System.Xml;
 
@@ -40,11 +41,16 @@
 			};
 		}
 
-
 		/// <summary>
 		/// Default variation of the config.
 		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
+		/// <summary>
+		/// Gets or sets the culture, which will handle primitive printing. Set
+		/// as <see cref="CultureInfo.InvariantCulture"/> for cross-compatibility
+		/// between computers, but can be set to other cultures if needed.
+		/// </summary>
+		public CultureInfo CurrentCulture { get; set; } = CultureInfo.InvariantCulture;
 		/// <summary>
 		/// If the object is set to <see langword="null"/> on the reader, or missing entirely,
 		/// it will instead allow the default to be set instead on enabled. Where

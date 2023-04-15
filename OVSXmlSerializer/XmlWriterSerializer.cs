@@ -222,12 +222,12 @@
 				}
 				if (!string.IsNullOrEmpty(attribute.CustomName))
 					name = attribute.CustomName;
-				XmlAttribute xmlAttribute = CreateAttribute(parent, name, primitive.Value.ToString());
+				XmlAttribute xmlAttribute = CreateAttribute(parent, name, ToStringPrimitive(primitive.Value));
 				return true;
 			}
 			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
 			XmlNode currentNode = CreateElement(parent, name, primitive);
-			currentNode.InnerText = primitive.Value.ToString();
+			currentNode.InnerText = ToStringPrimitive(primitive.Value);
 			return true;
 		}
 		internal bool TryWritePrimitive(ref XmlNode currentNode, StructuredObject primitive, XmlNode parent)
@@ -254,12 +254,18 @@
 					currentNode = CreateAttribute(parent, namedAs, "");
 					config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is renamed to '{namedAs}', as having the {nameof(XmlNamedAsAttribute)} attribute");
 				}
-				currentNode.Value = primitive.Value.ToString();
+				currentNode.Value = ToStringPrimitive(primitive.Value);
 				return true;
 			}
 			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
-			currentNode.InnerText = primitive.Value.ToString();
+			currentNode.InnerText = ToStringPrimitive(primitive.Value);
 			return true;
+		}
+		private string ToStringPrimitive(object value)
+		{
+			if (value is IFormattable formattable)
+				return formattable.ToString(null, config.CurrentCulture);
+			return value.ToString();
 		}
 		internal bool TryWriteEnumerable(string name, StructuredObject values, XmlNode parent)
 		{
