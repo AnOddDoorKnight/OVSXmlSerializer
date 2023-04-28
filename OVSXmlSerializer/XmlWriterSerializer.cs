@@ -373,7 +373,7 @@
 		}
 		internal bool IsPrimitive(StructuredObject primitive)
 		{
-			return primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string);
+			return primitive.ValueType != null && (primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string));
 		}
 		internal bool AddReferenceType(StructuredObject obj, XmlNode representingNode)
 		{

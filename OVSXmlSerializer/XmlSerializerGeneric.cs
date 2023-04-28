@@ -218,10 +218,60 @@
 			XmlDocument document = new XmlWriterSerializer<T>(this).Serialize(item, rootElementName);
 			document.Save(writer);
 		}
+
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// file.
+		/// </summary>
+		/// <param name="file"> The file to write to. </param>
+		/// <param name="item"> The item to serialize. </param>
+		/// <returns> A serialized object with the XML format. </returns>
+		public void Serialize(FileInfo file, T item)
+		{
+			Serialize(file, item, item.GetType().Name);
+		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// file.
+		/// </summary>
+		/// <param name="file"> The file to write to. </param>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="rootElementName">The root element within the xml file. </param>
+		/// <returns> A serialized object with the XML format. </returns>
+		public void Serialize(FileInfo file, T item, string rootElementName)
+		{
+			using (MemoryStream stream = Serialize(item, rootElementName))
+				using (FileStream fileStream = file.Open(FileMode.Create))
+					stream.CopyTo(fileStream);
+		}
+
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// file.
+		/// </summary>
+		/// <param name="fileLocation"> The file to write to. </param>
+		/// <param name="item"> The item to serialize. </param>
+		/// <returns> A serialized object with the XML format. </returns>
+		public void Serialize(string fileLocation, T item)
+		{
+			Serialize(fileLocation, item, item.GetType().Name);
+		}
+		/// <summary>
+		/// Serializes the specified <paramref name="item"/> as a XML file in a
+		/// file.
+		/// </summary>
+		/// <param name="fileLocation"> The file to write to. </param>
+		/// <param name="item"> The item to serialize. </param>
+		/// <param name="rootElementName">The root element within the xml file. </param>
+		/// <returns> A serialized object with the XML format. </returns>
+		public void Serialize(string fileLocation, T item, string rootElementName)
+		{
+			using (MemoryStream stream = Serialize(item, rootElementName))
+				using (FileStream fileStream = File.Open(fileLocation, FileMode.Create))
+					stream.CopyTo(fileStream);
+		}
 		#endregion
 
-		#region Version Checking
-		#endregion
 
 		#region Other
 		/// <summary>
