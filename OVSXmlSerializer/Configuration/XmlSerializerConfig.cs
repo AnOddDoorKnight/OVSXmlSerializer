@@ -42,7 +42,7 @@
 		}
 
 		/// <summary>
-		/// Default variation of the config.
+		/// Creates a new variation of the config.
 		/// </summary>
 		public static XmlSerializerConfig Default => new XmlSerializerConfig();
 		/// <summary>

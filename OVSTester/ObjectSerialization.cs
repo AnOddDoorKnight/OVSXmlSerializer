@@ -138,9 +138,8 @@ public class ObjectSerialization
 	public void XmlSerializerInterface()
 	{
 		ByteArraySim simulator = ByteArraySim.WithRandomValues();
-		XmlSerializer<ByteArraySim> serializer = new();
-		var stream = serializer.Serialize(simulator);
-		ByteArraySim result = serializer.Deserialize(stream);
+		MemoryStream stream = XmlSerializer.Default.Serialize(simulator);
+		ByteArraySim result = (ByteArraySim)XmlSerializer.Default.Deserialize(stream);
 		Assert.IsTrue(simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
 	}
 	[TestMethod("False Xml Serializer Interface")]

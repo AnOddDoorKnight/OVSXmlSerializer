@@ -11,7 +11,8 @@
 	public class XmlSerializer<T>
 	{
 		/// <summary>
-		/// Default Xml Serializer. Effectively creating a new blank instance.
+		/// Provides a shared <see cref="XmlSerializer{T}"/> instance that serializes
+		/// stuff
 		/// </summary>
 		public static XmlSerializer<T> Default { get; } = new XmlSerializer<T>();
 		/// <summary>
