@@ -170,14 +170,14 @@
 				XmlNode attribute = node.Attributes.GetNamedItem(key);
 				config.Logger?.InvokeMessage(SOURCE_READER, $"Reading attribute {key} from {node.Name}..");
 				FieldInfo field = attributes[i].Value;
-				field.SetValue(obj, ReadObject(attribute, field.FieldType));
+				SetFieldValue(field, obj, ReadObject(attribute, field.FieldType));
 			}
 			// Reading elements
 			if (text.HasValue)
 			{
 				TryReadPrimitive(text.Value.Value.FieldType, node, out object textOutput);
 				config.Logger?.InvokeMessage(SOURCE_READER, $"Reading text data from {node.Name}..");
-				text.Value.Value.SetValue(obj, textOutput);
+				SetFieldValue(text.Value.Value, obj, textOutput);
 			}
 			else
 				for (int i = 0; i < elements.Count; i++)
@@ -195,7 +195,7 @@
 							config.Logger?.InvokeMessage(SOURCE_READER, $"Ignoring undefined values is enabled, skipping setting to null..");
 							continue;
 						}
-					field.SetValue(obj, outputField);
+					SetFieldValue(field, obj, outputField);
 				}
 			return obj;
 		}
@@ -320,6 +320,20 @@
 					return true;
 				}
 			return false;
+		}
+		internal void SetFieldValue(FieldInfo info, object parent, object setting)
+		{
+			if (info.IsInitOnly)
+				switch (config.HandleReadonlyFields)
+				{
+					case ReadonlyFieldHandle.ThrowError:
+					case ReadonlyFieldHandle.Ignore:
+						return;
+					case ReadonlyFieldHandle.Continue:
+						goto normal;
+				}
+			normal:
+			info.SetValue(parent, setting);
 		}
 	}
 }

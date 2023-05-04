@@ -29,24 +29,24 @@
 		/// class from the field. If it does, then <see langword="true"/>. Otherwise,
 		/// <see langword="false"/>.
 		/// </summary>
-		public bool IsDerivedFromBase
+		public override bool IsDerivedFromBase
 		{
 			get
 			{
-				if (m_isDerivedFromBase != null)
-					return m_isDerivedFromBase.Value;
+				if (base.IsDerivedFromBase)
+					return true;
 				if (Parent == null)
 					return false;
 				Type fieldType = Field.FieldType;
-				return (bool)(m_isDerivedFromBase = fieldType.IsAssignableFrom(ValueType) && fieldType != ValueType);
+				return fieldType.IsAssignableFrom(ValueType) && fieldType != ValueType;
 			}
 		}
-		private bool? m_isDerivedFromBase = null;
 
 		public FieldObject(object value, FieldInfo field, object parent) : base(value)
 		{
 			Parent = parent;
 			Field = field;
+			OriginatedType = field.FieldType;
 			ParentType = parent?.GetType();
 		}
 		public FieldObject(FieldInfo field, object parent) : this(field.GetValue(parent), field, parent)

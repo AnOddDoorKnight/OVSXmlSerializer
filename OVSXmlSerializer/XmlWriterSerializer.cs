@@ -60,7 +60,11 @@
 		public XmlDocument Serialize(T obj, string name)
 		{
 			referenceTypes = new Dictionary<object, XmlNode>();
-			var structuredObject = new StructuredObject(obj);
+			Type startingType = typeof(object);
+			Type[] genericTypes = source.GetType().GetGenericArguments();
+			if (genericTypes.Length > 0)
+				startingType = genericTypes[0];
+			var structuredObject = new StructuredObject(obj, startingType);
 			config.Logger?.InvokeMessage(SOURCE_WRITER, $"Started XML Serialization of {(!structuredObject.IsNull ? structuredObject.Value.ToString() : "Null")}");
 			startObject = true;
 			if (!structuredObject.IsNull)
@@ -131,6 +135,16 @@
 			{
 				FieldInfo field = infos[i];
 				FieldObject fieldObject = new FieldObject(field, obj.Value);
+				if (field.IsInitOnly && !(obj is EnumeratedObject))
+					switch (config.HandleReadonlyFields)
+					{
+						case ReadonlyFieldHandle.Ignore:
+							continue;
+						case ReadonlyFieldHandle.ThrowError:
+							throw new InvalidOperationException($"{field.Name} from {obj.ValueType.Name} is readonly!");
+						case ReadonlyFieldHandle.Continue:
+							break;
+					}
 				// Doing ignore again for compatibility with text attribute
 				if (XmlIgnoreAttribute.Ignore(field))
 				{
@@ -278,10 +292,11 @@
 			{
 				XmlElement arrayElement = CreateElement(parent, name, values);
 				Array arrValue = (Array)values.Value;
+				Type elementType = values.ValueType.GetElementType();
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an array with {arrValue.Length} elements..");
 				for (int i = 0; i < arrValue.Length; i++)
 				{
-					StructuredObject currentValue = new StructuredObject(arrValue.GetValue(i));
+					StructuredObject currentValue = new EnumeratedObject(arrValue.GetValue(i), elementType);
 					WriteObject(currentValue, arrayElement, "Item");
 				}
 				return true;
@@ -292,10 +307,11 @@
 				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an ordinary enumerable..");
 				EnsureParameterlessConstructor(values.ValueType);
 				XmlElement enumerableElement = CreateElement(parent, name, values);
+				Type elementType = values.ValueType.GetGenericArguments()[0];
 				IEnumerator enumerator = enumerable.GetEnumerator();
 				while (enumerator.MoveNext())
 				{
-					StructuredObject currentValue = new StructuredObject(enumerator.Current);
+					StructuredObject currentValue = new EnumeratedObject(enumerator.Current, elementType);
 					WriteObject(currentValue, enumerableElement, "Item");
 				}
 				try { enumerator.Reset(); } catch { }
@@ -336,9 +352,9 @@
 				return CreateAttribute(parent, ATTRIBUTE, obj.ValueType.FullName);
 			}
 			if (config.TypeHandling == IncludeTypes.SmartTypes)
-				if (obj is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				if (obj.IsDerivedFromBase)
 				{
-					config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is a derived type from field type '{fieldObj.Field.FieldType}'..");
+					config.Logger?.InvokeMessage(SOURCE_WRITER, $"serializing type's {StartLogObject(obj)}, as it is a derived type from '{obj.OriginatedType}'..");
 					return CreateAttribute(parent, ATTRIBUTE, obj.ValueType.FullName);
 				}
 			return null;

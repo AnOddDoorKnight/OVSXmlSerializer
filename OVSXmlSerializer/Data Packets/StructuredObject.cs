@@ -17,6 +17,17 @@
 
 		public object Value { get; }
 		public Type ValueType { get; }
+		public Type OriginatedType { get; protected set; }
+		public virtual bool IsDerivedFromBase
+		{
+			get
+			{
+				if (OriginatedType == null)
+					return false;
+				return OriginatedType.IsAssignableFrom(ValueType) && OriginatedType != ValueType;
+			}
+		}
+
 		public bool IsNull { get; }
 
 
@@ -28,6 +39,10 @@
 				ValueType = null;
 			else
 				ValueType = value.GetType();
+		}
+		public StructuredObject(object value, Type targetType) : this(value)
+		{
+			OriginatedType = targetType;
 		}
 
 		/// <summary>
@@ -41,11 +56,6 @@
 			{
 				output = !(ValueType.GetCustomAttribute<T>() is null);
 			}
-			//if (output == false && parent != null)
-			//{
-			//	FieldInfo field = ParentType.GetField(fieldName, defaultFlags);
-			//	output |= !(field.GetCustomAttribute<T>() is null);
-			//}
 			return output;
 		}
 		/// <summary>

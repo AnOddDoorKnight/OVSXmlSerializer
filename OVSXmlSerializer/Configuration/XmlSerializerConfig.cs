@@ -110,6 +110,10 @@
 		/// </summary>
 		public IncludeTypes TypeHandling { get; set; } = IncludeTypes.SmartTypes;
 		/// <summary>
+		/// How the writer should handle readonly field.
+		/// </summary>
+		public ReadonlyFieldHandle HandleReadonlyFields { get; set; } = ReadonlyFieldHandle.ThrowError;
+		/// <summary>
 		/// The encoding of the result of the file.
 		/// </summary>
 		public Encoding Encoding { get; set; } = Encoding.UTF8;
@@ -144,14 +148,27 @@
 		/// object type.
 		/// </summary>
 		SmartTypes = 8,
-		///// <summary>
-		///// Has the properties of <see cref="SmartTypes"/> and always has the 
-		///// top-level value shown as its type.
-		///// </summary>
-		//SmartButTopAlways = 12,
 		/// <summary>
 		/// The XML file will always write the type of the object. 
 		/// </summary>
 		AlwaysIncludeTypes = 16,
+	}
+	/// <summary>
+	/// How it should handle readonly fields.
+	/// </summary>
+	public enum ReadonlyFieldHandle : byte
+	{
+		/// <summary>
+		/// Ignores the readonly field entirely.
+		/// </summary>
+		Ignore = 0,
+		/// <summary>
+		/// Allows the parser to continue serializing the field.
+		/// </summary>
+		Continue = 8,
+		/// <summary>
+		/// Throws an error if a readonly field is encountered.
+		/// </summary>
+		ThrowError = 16,
 	}
 }

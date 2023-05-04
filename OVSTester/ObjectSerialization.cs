@@ -31,9 +31,9 @@ public class ObjectSerialization
 	{
 
 		StandardClass value = null;
-		XmlSerializer<StandardClass> xmlSerializer = new();
+		XmlSerializer xmlSerializer = new();
 		using var stream = xmlSerializer.Serialize(value);
-		StandardClass result = xmlSerializer.Deserialize(stream);
+		StandardClass result = (StandardClass)xmlSerializer.Deserialize(stream);
 		Assert.IsTrue(result is null);
 	}
 	[TestMethod("Null Item in Class")]
@@ -53,6 +53,12 @@ public class ObjectSerialization
 		XmlSerializer serializer = new(typeof(string));
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
+	}
+	[TestMethod("Readonly Serialize Serialization")]
+	public void ReadonlySerialize()
+	{
+		object @readonly = new Readonly(4);
+		Assert.ThrowsException<InvalidOperationException>(() => new XmlSerializer().Serialize(@readonly));
 	}
 	[TestMethod("Key/Value Pair Serialization")]
 	public void KeyValueSerializer()
@@ -138,8 +144,8 @@ public class ObjectSerialization
 	public void XmlSerializerInterface()
 	{
 		ByteArraySim simulator = ByteArraySim.WithRandomValues();
-		MemoryStream stream = XmlSerializer.Default.Serialize(simulator);
-		ByteArraySim result = (ByteArraySim)XmlSerializer.Default.Deserialize(stream);
+		MemoryStream stream = XmlSerializer<ByteArraySim>.Default.Serialize(simulator);
+		ByteArraySim result = XmlSerializer<ByteArraySim>.Default.Deserialize(stream);
 		Assert.IsTrue(simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
 	}
 	[TestMethod("False Xml Serializer Interface")]
@@ -235,5 +241,17 @@ internal class Program : IEquatable<Program>
 		if (obj is Program program)
 			return Equals(program);
 		return false;
+	}
+}
+internal class Readonly
+{
+	public readonly int h = 3;
+	public Readonly()
+	{
+
+	}
+	public Readonly(int h)
+	{
+		this.h = h;
 	}
 }
