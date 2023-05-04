@@ -2,6 +2,7 @@
 {
 	using System;
 	using System.Globalization;
+	using System.Security;
 	using System.Text;
 	using System.Xml;
 
@@ -110,9 +111,11 @@
 		/// </summary>
 		public IncludeTypes TypeHandling { get; set; } = IncludeTypes.SmartTypes;
 		/// <summary>
-		/// How the writer should handle readonly field.
+		/// How the writer should handle readonly field. <see cref="ReadonlyFieldHandle.Continue"/>
+		/// as default. This can be manipulated when concerning coding in restricted 
+		/// environment.when it throws a <see cref="VerificationException"/>
 		/// </summary>
-		public ReadonlyFieldHandle HandleReadonlyFields { get; set; } = ReadonlyFieldHandle.ThrowError;
+		public ReadonlyFieldHandle HandleReadonlyFields { get; set; } = ReadonlyFieldHandle.Continue;
 		/// <summary>
 		/// The encoding of the result of the file.
 		/// </summary>

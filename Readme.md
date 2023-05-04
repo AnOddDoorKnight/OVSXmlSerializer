@@ -39,21 +39,17 @@ There are 3 options you can enable:
 
 Like the default system XML serializer, they pose the same requirements such as:
 1. Requiring to have a public or private parameterless constructor.
-2. The fields you want to serialize 
-3. Having all fields follow the same constraint as above.
-
-
+2. Having all fields follow the same constraint as above.
+3. During certain restrictions like a limited environment may cause issues; Modifying
+the readonly handle option in the config seems to fix this.
 
 There are two serializers, the generic and the non-generic. The non-generic derives
 from the generic as object for performance reasons, and is created as instances
 due to configurations.
 
-The method returns a `MemoryStream`, a stream that can be used for overriding specific
-file systems as such, but can be converted to a string if needed by other systems.
+When done serializing as an XML, it typically returns a stream, or applies to a
+new or existing file.
 
-The system provides its own interface called `IXmlSerializable`, which is not
-the same as the traditional system. Luckily, instead of using `XmlReader`, it uses
-a `XmlNode` instead. `XmlWriter` is here to stay, though.
 
 ## Deserializing
 
