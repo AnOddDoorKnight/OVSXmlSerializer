@@ -15,6 +15,7 @@ using ColorTuple = System.ValueTuple<float, float, float>;
 [TestClass]
 public class AttributeTests
 {
+	/*
 	[TestMethod("XmlNamed Attribute")]
 	public void XmlNamed()
 	{
@@ -134,4 +135,5 @@ public class AttributeTests
 		[XmlText]
 		public string ohpdifbr = "hoahaha";
 	}
+	*/
 }

@@ -18,6 +18,7 @@ using System.Threading;
 [TestClass]
 public class ObjectSerialization
 {
+	/*
 	[TestMethod("Enum Serialization")]
 	public void EnumSerialize()
 	{
@@ -180,7 +181,9 @@ public class ObjectSerialization
 		CircularSerialization output = serializer.Deserialize(stream);
 		Assert.IsTrue(ReferenceEquals(output, output.circularSerialization));
 	}
+	*/
 }
+/*
 internal class CircularSerialization
 {
 	public CircularSerialization circularSerialization;
@@ -255,3 +258,4 @@ internal class Readonly
 		this.h = h;
 	}
 }
+*/

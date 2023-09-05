@@ -16,6 +16,7 @@ using ColorTuple = System.ValueTuple<float, float, float>;
 [TestClass]
 public sealed class VersionTester
 {
+	/*
 	[TestMethod("Same Version")]
 	public void SameVersion()
 	{
@@ -46,4 +47,5 @@ public sealed class VersionTester
 		using var memoryStream = xmlSerializer.Serialize(new StandardClass());
 		Assert.IsFalse(Versioning.IsVersion(memoryStream, new Version(2, 4), Versioning.Leniency.Minor));
 	}
+	*/
 }

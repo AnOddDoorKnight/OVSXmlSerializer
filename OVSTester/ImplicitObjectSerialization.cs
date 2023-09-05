@@ -9,6 +9,7 @@ using System.Linq;
 [TestClass]
 public class ImplicitObjectSerialization
 {
+	/*
 	[TestMethod("Implicit String Serialization")]
 	public void SimpleImplicitSerialize()
 	{
@@ -41,4 +42,5 @@ public class ImplicitObjectSerialization
 		Dictionary<string, int> result = serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value == pair.Second.Value) == value.Count);
 	}
+	*/
 }

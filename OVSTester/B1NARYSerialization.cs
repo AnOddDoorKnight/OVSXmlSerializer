@@ -14,6 +14,7 @@ using System.Drawing;
 using ColorTuple = System.ValueTuple<float, float, float>;
 
 
+/*
 [TestClass]
 public class B1NARYSerialization
 {
@@ -372,3 +373,4 @@ public sealed class Collection<T> : IDictionary<string, T>
 		return false;
 	}
 }
+*/

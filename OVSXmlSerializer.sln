@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSXmlSerializer", "OVSXmlSerializer\OVSXmlSerializer.csproj", "{70BB7073-CBCD-4E3B-BF19-53EC56E476CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OVSTester", "OVSTester\OVSTester.csproj", "{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSTester", "OVSTester\OVSTester.csproj", "{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OVSXmlSerializer 3.0", "OVSXmlSerializer 3.0\OVSXmlSerializer 3.0.csproj", "{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
