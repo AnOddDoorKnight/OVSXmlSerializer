@@ -49,6 +49,9 @@
 		{
 			if (IsAlreadyReferenced(input))
 				throw new InvalidCastException();
+			XmlAttribute att = element.OwnerDocument.CreateAttribute(REFERENCE_ATTRIBUTE);
+			att.Value = objects.Count.ToString();
+			element.Attributes.Prepend(att);
 			objects.Add(new ReferencedObject { objectReference = input, original = element });
 		}
 

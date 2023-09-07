@@ -1,10 +1,6 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OVSXmlSerializer;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 [TestClass]
 public class ImplicitObjectSerialization

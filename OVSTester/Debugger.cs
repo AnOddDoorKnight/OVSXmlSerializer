@@ -1,12 +1,11 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OVSXmlSerializer;
-using System;
-
 namespace OVSTester;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
 public class DebuggingTest
 {
+	/*
 	[TestMethod]
 	public void TestDebug()
 	{
@@ -28,4 +27,5 @@ public class DebuggingTest
 		StandardClass result = xmlSerializer.Deserialize(stream);
 		//Assert.AreEqual(value, result);
 	}
+	*/
 }

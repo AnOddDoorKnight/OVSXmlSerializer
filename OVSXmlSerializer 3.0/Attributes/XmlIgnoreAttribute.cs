@@ -10,12 +10,12 @@
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class XmlIgnoreAttribute : Attribute
 	{
-		internal static bool Ignore(StructuredObject @object)
+		public static bool Ignore(StructuredObject @object)
 		{
 			return @object.HasAttribute<XmlIgnoreAttribute>() 
 				|| @object.HasAttribute<System.Xml.Serialization.XmlIgnoreAttribute>();
 		}
-		internal static bool Ignore(FieldInfo field)
+		public static bool Ignore(FieldInfo field)
 		{
 			Type type = field.FieldType;
 			if (type.GetCustomAttribute<XmlIgnoreAttribute>() != null)

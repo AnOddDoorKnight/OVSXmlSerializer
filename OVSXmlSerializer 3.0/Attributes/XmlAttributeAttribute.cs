@@ -29,7 +29,7 @@
 			return castie == null ? null : new XmlAttributeAttribute(castie.AttributeName);
 		}
 
-		internal static bool IsAttribute(StructuredObject @object, out XmlAttributeAttribute attribute)
+		public static bool IsAttribute(StructuredObject @object, out XmlAttributeAttribute attribute)
 		{
 			if (@object.HasAttribute(out attribute))
 				return true;
@@ -46,7 +46,7 @@
 		/// <param name="contents"> 
 		/// If <see langword="true"/>, then it will return the attribute contents.
 		/// </param>
-		internal protected static bool IsAttribute(FieldInfo field, out XmlAttributeAttribute contents)
+		public static bool IsAttribute(FieldInfo field, out XmlAttributeAttribute contents)
 		{
 			Type type = field.FieldType;
 			// Retrieve type attributes, first the type and then field for performance,
@@ -79,7 +79,7 @@
 			return false;
 		}
 
-		internal static bool IsAttribute(Type currentType, out XmlAttributeAttribute output)
+		public static bool IsAttribute(Type currentType, out XmlAttributeAttribute output)
 		{
 			var attributeType = currentType.GetCustomAttribute<XmlAttributeAttribute>();
 			if (attributeType != null)
@@ -101,7 +101,7 @@
 		/// The name to override the attribute name with. Note that it will override
 		/// the value from <see cref="XmlNamedAsAttribute.Name"/>.
 		/// </summary>
-		public string CustomName { get; set; }
+		public string CustomName { get; set; } = null;
 		/// <summary>
 		/// Creates a new <see cref="XmlAttributeAttribute"/> that utilizes the
 		/// attribute's field name to assign to.

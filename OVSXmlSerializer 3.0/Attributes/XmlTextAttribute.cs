@@ -9,12 +9,12 @@
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class XmlTextAttribute : Attribute
 	{
-		internal static bool IsText(StructuredObject @object)
+		public static bool IsText(StructuredObject @object)
 		{
 			return @object.HasAttribute<XmlTextAttribute>()
 				|| @object.HasAttribute<System.Xml.Serialization.XmlTextAttribute>();
 		}
-		internal static bool IsText(FieldInfo field)
+		public static bool IsText(FieldInfo field)
 		{
 			Type type = field.FieldType;
 			if (type.GetCustomAttribute<XmlTextAttribute>() != null)

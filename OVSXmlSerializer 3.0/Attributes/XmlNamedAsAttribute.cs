@@ -11,7 +11,7 @@
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class XmlNamedAsAttribute : Attribute
 	{
-		internal static bool HasName(StructuredObject @object, out string name)
+		public static bool HasName(StructuredObject @object, out string name)
 		{
 			XmlNamedAsAttribute attribute = @object.ValueType.GetCustomAttribute<XmlNamedAsAttribute>();
 			if (attribute is null)
@@ -24,7 +24,7 @@
 			name = attribute.Name;
 			return true;
 		}
-		internal static bool HasName(FieldInfo field, out string name)
+		public static bool HasName(FieldInfo field, out string name)
 		{
 			Type type = field.FieldType;
 			XmlNamedAsAttribute attribute = type.GetCustomAttribute<XmlNamedAsAttribute>();

@@ -1,16 +1,6 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.IO;
-using OVSXmlSerializer;
-using OVSXmlSerializer.Extras;
-using System.Xml;
-using System.Numerics;
-using System.Drawing;
-using ColorTuple = System.ValueTuple<float, float, float>;
 
 [TestClass]
 public class AttributeTests

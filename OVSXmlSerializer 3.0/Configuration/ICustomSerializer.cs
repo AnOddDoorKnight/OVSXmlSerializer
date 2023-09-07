@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using global::OVSXmlSerializer.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Reflection;
@@ -12,9 +13,12 @@
 	/// </summary>
 	public interface IInterfaceSerializer
 	{
-
 		Type TargetedInterface { get; }
-		void Write<T>(OVSXmlWriter<T> writer, XmlNode targetNode);
+		void Write<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject @object, string suggestedName);
+	}
+	public interface ICustomSerializer
+	{
+		bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject @object, string suggestedName);
 	}
 	/// <summary>
 	/// A custom-made list that handles parsing various interfaces and objects
@@ -22,12 +26,6 @@
 	/// </summary>
 	public class InterfaceSerializer
 	{
-		public static bool ImplementsInterface(IInterfaceSerializer serializer, Type member)
-		{
-			if (!serializer.TargetedInterface.IsInterface)
-				throw new InvalidOperationException($"{serializer.TargetedInterface} is not an interface!");
-			return serializer.TargetedInterface.IsAssignableFrom(member);
-		}
 		public static InterfaceSerializer GetDefault()
 		{
 			var serializer = new InterfaceSerializer();
@@ -47,18 +45,32 @@
 		{
 			if (obj is IInterfaceSerializer)
 				serializerInterfaces.Add(obj);
+			else if (obj is ICustomSerializer) 
+				serializerInterfaces.Add(obj);
 			else
 				throw new InvalidCastException(obj.GetType().FullName);
 		}
 		public void Add(IInterfaceSerializer serializer) => serializerInterfaces.Add(serializer);
+		public void Add(ICustomSerializer serializer) => serializerInterfaces.Add(serializer);
 
-		internal void Write<T>(OVSXmlWriter<T> writer, XmlNode node)
+		internal bool Write<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject structuredObject, string name)
 		{
 			for (int i = serializerInterfaces.Count; i > 0; i--)
 			{
 				if (serializerInterfaces[i] is IInterfaceSerializer interfacer)
-					interfacer.Write<T>(writer, node);
+				{
+					if (!interfacer.TargetedInterface.IsAssignableFrom(structuredObject.ValueType))
+						continue;
+					interfacer.Write<T>(writer, parentNode, structuredObject, name);
+					return true;
+				}
+				if (serializerInterfaces[i] is ICustomSerializer customSerializer)
+				{
+					if (customSerializer.CheckAndWrite<T>(writer, parentNode, structuredObject, name))
+						return true;
+				}
 			}
+			return false;
 		}
 	}
 }

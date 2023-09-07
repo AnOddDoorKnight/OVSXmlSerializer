@@ -25,7 +25,7 @@
 		/// constructor. Otherwise does nothing.
 		/// </summary>
 		/// <param name="type"> The type to check if it has one. </param>
-		internal void EnsureParameterlessConstructor(Type type)
+		internal static void EnsureParameterlessConstructor(Type type)
 		{
 			if (type.GetConstructor(OVSXmlSerializer.defaultFlags, null, Array.Empty<Type>(), null) == null && type.IsClass)
 			{
@@ -34,6 +34,9 @@
 			}
 		}
 
+		/// <summary>
+		/// All changes that is written to. Not thread safe.
+		/// </summary>
 		public XmlDocument Document { get; private set; }
 		public OVSXmlSerializer<T> Source { get; }
 		public OVSConfig Config => Source.Config;
@@ -135,10 +138,10 @@
 				return;
 			if (TryWritePrimitive(name, obj, parent))
 				return;
+			if (TryWriteCustoms(name, obj, parent))
+				return;
 			if (XmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 				throw new Exception($"{obj.Value} is not a primitive type!");
-			if (TryWriteEnumerable(name, obj, parent))
-				return;
 
 			EnsureParameterlessConstructor(obj.ValueType);
 			XmlNode currentNode = CreateElement(parent, name, obj);
@@ -151,8 +154,8 @@
 			{
 				FieldInfo field = infos[i];
 				FieldObject fieldObject = new FieldObject(field, obj.Value);
-				if (field.IsInitOnly && !(obj is EnumeratedObject))
-					switch (config.HandleReadonlyFields)
+				if (field.IsInitOnly)
+					switch (Config.HandleReadonlyFields)
 					{
 						case ReadonlyFieldHandle.Ignore:
 							continue;
@@ -163,9 +166,7 @@
 					}
 				// Doing ignore again for compatibility with text attribute
 				if (XmlIgnoreAttribute.Ignore(field))
-				{
 					continue;
-				}
 
 				if (XmlTextAttribute.IsText(field))
 				{
@@ -174,28 +175,31 @@
 					if (hasElements)
 						throw new InvalidOperationException($"There are elements in the field in {obj.Value}, be sure to ignore or put them as attributes!");
 					didText = true;
-					if (!TryWritePrimitive(ref currentNode, fieldObject, parent))
-						throw new InvalidCastException();
+					currentNode.InnerText = ToStringPrimitive(fieldObject);
 					continue;
 				}
 				if (XmlAttributeAttribute.IsAttribute(field, out var contents))
 				{
-					WriteObject(fieldObject, currentNode, EnsureName(field.Name, fieldObject));
+					WriteObject(fieldObject, currentNode, StructuredObject.EnsureName(field.Name, fieldObject));
 					continue;
 				}
 				if (didText)
 					throw new Exception();
 				hasElements = true;
-				WriteObject(fieldObject, currentNode, EnsureName(field.Name, fieldObject));
+				WriteObject(fieldObject, currentNode, StructuredObject.EnsureName(field.Name, fieldObject));
 			}
 		}
 
 
-		internal bool ReferenceType(in string name, StructuredObject obj, XmlNode parent)
+		/// <summary>
+		/// Turns the ordinary field into a reference, given there is a reference
+		/// defined first.
+		/// </summary>
+		/// <exception cref="NotImplementedException"></exception>
+		public bool ReferenceType(in string name, StructuredObject obj, XmlNode parent)
 		{
 			if (!Config.UseSingleInstanceInsteadOfMultiple)
 				return false;
-			throw new NotImplementedException();
 			if (OVSXmlReferencer.CanReference(obj) == false)
 				return false;
 			if (Referencer.IsAlreadyReferenced(obj, out int indexID))
@@ -206,153 +210,148 @@
 			}
 			return false;
 		}
-		internal bool TryWriteEnum(in string name, StructuredObject @enum, XmlNode parent)
+		/// <summary>
+		/// 
+		/// Tries to write an enum with the name, ensuring that it is a XML element or
+		/// XML attribute via class attribute.
+		/// </summary>
+		public bool TryWriteEnum(in string name, StructuredObject @enum, XmlNode parent)
 		{
 			if (!@enum.ValueType.IsEnum)
 				return false;
+			CreateNode(parent, name, @enum.Value.ToString(), @enum);
 			XmlElement element = CreateElement(parent, name, @enum);
 			element.InnerText = @enum.Value.ToString();
 			return true;
 		}
-		internal bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent)
+		/// <summary>
+		/// Tries to write a primitive, ensuring that it is a XML element or
+		/// XML attribute via class attribute.
+		/// </summary>
+		/// <param name="name">The name of the element or attribute.</param>
+		/// <param name="primitive">The object that is hopefully primitive to serialize.</param>
+		/// <param name="parent">The parent of the attribute or element.</param>
+		/// <returns>If it successfully serialized it as primitive.</returns>
+		public bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent)
 		{
 			if (!primitive.IsPrimitive)
 				return false;
-			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
+			CreateNode(parent, name, ToStringPrimitive(primitive), primitive);
+			return true;
+		}
+
+		/// <summary>
+		/// Converts a primitive data type, considering formattable interfaces.
+		/// </summary>
+		/// <param name="value">The primitive data type.</param>
+		/// <returns>The string sexy boy</returns>
+		private string ToStringPrimitive(StructuredObject value)
+		{
+			if (!value.IsPrimitive)
+				throw new InvalidCastException(value.ValueType.FullName);
+			if (value.Value is IFormattable formattable)
+				return formattable.ToString(null, Config.CurrentCulture);
+			return value.Value.ToString();
+		}
+		/// <summary>
+		/// Tries to handle the object with custom interface serializers that
+		/// is outside of primitive data type abilities.
+		/// </summary>
+		/// <param name="name">The chosen name of the </param>
+		internal bool TryWriteCustoms(string name, StructuredObject values, XmlNode parent)
+		{
+			//if (XMLIgnoreCustomsAttribute.Ignore(values))
+			//	return false;
+			InterfaceSerializer serializer = Config.CustomSerializers;
+			return serializer.Write(this, parent, values, name);
+		}
+
+		/// <summary>
+		/// Creates a node and stores information in the value or inner text
+		/// depending on the settings. Useful for things that print primitive
+		/// values.
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="name">The name of the element or attribute.</param>
+		/// <param name="value"></param>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public XmlNode CreateNode(XmlNode parent, string name, string value, StructuredObject obj)
+		{
+			if (XmlAttributeAttribute.IsAttribute(obj, out var attribute))
 			{
-				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
+				if (XmlNamedAsAttribute.HasName(obj, out string namedAs))
 					name = namedAs;
 				if (!string.IsNullOrEmpty(attribute.CustomName))
 					name = attribute.CustomName;
-				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
+				if (obj is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
 					throw new Exception($"Cannot serialize {name} as the field " +
 						"type doesn't match the object type. This is typically " +
 						"caused as the primitive value is derived off of object " +
 						"in an XML Attribute, unable to write the derived attribute " +
 						"type.");
-				XmlAttribute xmlAttribute = CreateAttribute(parent, name, ToStringPrimitive(primitive.Value));
-				return true;
+				XmlAttribute xmlAttribute = CreateAttribute(parent, name, value);
+				return xmlAttribute;
 			}
-			XmlNode currentNode = CreateElement(parent, name, primitive);
-			currentNode.InnerText = ToStringPrimitive(primitive.Value);
-			return true;
+			XmlElement element = CreateElement(parent, name, obj);
+			element.InnerText = value;
+			return element;
 		}
-		internal bool TryWritePrimitive(ref XmlNode currentNode, StructuredObject primitive, XmlNode parent)
-		{
-			if (!IsPrimitive(primitive))
-				return false;
-			if (XmlAttributeAttribute.IsAttribute(primitive, out var attribute))
-			{
-				if (!(currentNode is XmlAttribute))
-					throw new Exception();
-				if (primitive is FieldObject fieldObj && fieldObj.IsDerivedFromBase)
-				{
-					const string MESSAGE_ERROR = "Cannot serialize as the field " +
-						"type doesn't match the object type. This is typically " +
-						"caused as the primitive value is derived off of object " +
-						"in an XML Attribute, unable to write the derived attribute " +
-						"type.";
-					config.Logger?.InvokeMessage(SOURCE_WRITER, MESSAGE_ERROR);
-					throw new Exception(MESSAGE_ERROR);
-				}
-				if (XmlNamedAsAttribute.HasName(primitive, out string namedAs))
-				{
-					parent.RemoveChild(currentNode);
-					currentNode = CreateAttribute(parent, namedAs, "");
-					config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is renamed to '{namedAs}', as having the {nameof(XmlNamedAsAttribute)} attribute");
-				}
-				currentNode.Value = ToStringPrimitive(primitive.Value);
-				return true;
-			}
-			config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(primitive)} is a {primitive.ValueType}, serializing primitive..");
-			currentNode.InnerText = ToStringPrimitive(primitive.Value);
-			return true;
-		}
-		private string ToStringPrimitive(object value)
-		{
-			if (value is IFormattable formattable)
-				return formattable.ToString(null, config.CurrentCulture);
-			return value.ToString();
-		}
-		internal bool TryWriteEnumerable(string name, StructuredObject values, XmlNode parent)
-		{
-			if (XMLIgnoreEnumerableAttribute.Ignore(values))
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"{StartLogObject(values)} may be an enumerable, but not serialize as one due to {nameof(XMLIgnoreEnumerableAttribute)} being present");
-				return false;
-			}
-			if (values.ValueType.IsArray)
-			{
-				XmlElement arrayElement = CreateElement(parent, name, values);
-				Array arrValue = (Array)values.Value;
-				Type elementType = values.ValueType.GetElementType();
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an array with {arrValue.Length} elements..");
-				for (int i = 0; i < arrValue.Length; i++)
-				{
-					StructuredObject currentValue = new EnumeratedObject(arrValue.GetValue(i), elementType);
-					WriteObject(currentValue, arrayElement, "Item");
-				}
-				return true;
-			}
-			object value = values.Value;
-			if (value is IEnumerable enumerable)
-			{
-				config.Logger?.InvokeMessage(SOURCE_WRITER, $"Serializing {StartLogObject(values)} as an ordinary enumerable..");
-				EnsureParameterlessConstructor(values.ValueType);
-				XmlElement enumerableElement = CreateElement(parent, name, values);
-				Type elementType = values.ValueType.GetGenericArguments()[0];
-				IEnumerator enumerator = enumerable.GetEnumerator();
-				while (enumerator.MoveNext())
-				{
-					StructuredObject currentValue = new EnumeratedObject(enumerator.Current, elementType);
-					WriteObject(currentValue, enumerableElement, "Item");
-				}
-				try { enumerator.Reset(); } catch { }
-				return true;
-			}
-			return false;
-		}
-
-
-
-
+		/// <summary>
+		/// Creates a new element, adding derived types and references.
+		/// </summary>
+		/// <param name="parent">The parent node to append to.</param>
+		/// <param name="name">The name of the new element.</param>
+		/// <param name="obj">The object to consider to add types and references.</param>
+		/// <returns>The new element to modify and change.</returns>
 		public XmlElement CreateElement(XmlNode parent, string name, StructuredObject obj)
 		{
 			XmlElement element = CreateElement(parent, name);
 			WriteTypeAttribute(element, obj);
-			AddReferenceType(obj, element);
+			if (Config.UseSingleInstanceInsteadOfMultiple && OVSXmlReferencer.CanReference(obj))
+				Referencer.AddReference(obj, element);
 			return element;
 		}
+		/// <summary>
+		/// Creates a new empty element.
+		/// </summary>
+		/// <param name="parent">The parent to append.</param>
+		/// <param name="elementName">The name of the new element.</param>
+		/// <returns>An empty element with the custom name.</returns>
 		public XmlElement CreateElement(XmlNode parent, string elementName)
 		{
 			XmlElement element = Document.CreateElement(elementName);
-			(parent ?? Document).AppendChild(element);
+			parent.AppendChild(element);
 			return element;
 		}
-		public XmlAttribute CreateAttribute(XmlNode parent, string name, string value)
+		/// <summary>
+		/// Adds an attribute to a <see cref="XmlElement"/>
+		/// </summary>
+		/// <param name="parentElement"></param>
+		/// <param name="name"></param>
+		/// <param name="value"></param>
+		/// <returns>The attribute that has the value assigned.</returns>
+		public XmlAttribute CreateAttribute(XmlNode parentElement, string name, string value)
 		{
 			XmlAttribute attribute = Document.CreateAttribute(name);
 			attribute.Value = value;
-			parent.Attributes.Append(attribute);
+			parentElement.Attributes.Append(attribute);
 			return attribute;
 		}
-		public XmlAttribute WriteTypeAttribute(XmlNode parent, StructuredObject obj)
+		/// <summary>
+		/// Adds a type attribute to a element
+		/// </summary>
+		/// <param name="element"></param>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public XmlAttribute WriteTypeAttribute(XmlElement element, StructuredObject obj)
 		{
 			if (Config.TypeHandling == IncludeTypes.AlwaysIncludeTypes)
-			{
-				return CreateAttribute(parent, OVSXmlSerializer.ATTRIBUTE, obj.ValueType.FullName);
-			}
+				return CreateAttribute(element, OVSXmlSerializer.ATTRIBUTE, obj.ValueType.FullName);
 			if (Config.TypeHandling == IncludeTypes.SmartTypes)
 				if (obj.IsDerivedFromBase)
-				{
-					return CreateAttribute(parent, OVSXmlSerializer.ATTRIBUTE, obj.ValueType.FullName);
-				}
+					return CreateAttribute(element, OVSXmlSerializer.ATTRIBUTE, obj.ValueType.FullName);
 			return null;
 		}
-		//internal bool AddReferenceType(StructuredObject obj, XmlElement representingNode)
-		//{
-		//	Referencer.AddReference(obj, representingNode);
-		//	return true;
-		//}
 	}
 }
