@@ -1,10 +1,16 @@
 namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Xml;
 
 [TestClass]
 public class DebuggingTest
 {
+	[TestMethod]
+	public void Test()
+	{
+
+	}
 	/*
 	[TestMethod]
 	public void TestDebug()

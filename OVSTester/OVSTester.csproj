@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OVSXmlSerializer 3.0\OVSXmlSerializer 3.0.csproj" />
+    <ProjectReference Include="..\OVSXmlSerializer 3.0\OVSXmlSerializer3.csproj" />
   </ItemGroup>
 
 </Project>

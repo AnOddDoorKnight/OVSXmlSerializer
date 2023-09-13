@@ -1,29 +1,32 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OVSXmlSerializer;
+using System;
+using System.IO;
 
 [TestClass]
 public class ObjectSerialization
 {
-	/*
 	[TestMethod("Enum Serialization")]
 	public void EnumSerialize()
 	{
-		const Environment.SpecialFolder specialFolder = Environment.SpecialFolder.MyDocuments;
-		XmlSerializer serializer = new(typeof(Environment.SpecialFolder));
-		var stream = serializer.Serialize(specialFolder);
-		Assert.AreEqual(specialFolder, (Environment.SpecialFolder)serializer.Deserialize(stream));
+		OVSXmlSerializer<Environment.SpecialFolder> serializer = new();
+		serializer.Config.OmitXmlDelcaration = false;
+		using MemoryStream stream = serializer.Serialize(Environment.SpecialFolder.System);
+		serializer.Deserialize(stream);
+		return;
 	}
 	[TestMethod("Null Class")]
 	public void NullSerialize()
 	{
-
-		StandardClass value = null;
-		XmlSerializer xmlSerializer = new();
+		Random? value = null;
+		OVSXmlSerializer<Random> xmlSerializer = new();
 		using var stream = xmlSerializer.Serialize(value);
-		StandardClass result = (StandardClass)xmlSerializer.Deserialize(stream);
-		Assert.IsTrue(result is null);
+		//StandardClass result = (StandardClass)xmlSerializer.Deserialize(stream);
+		//Assert.IsTrue(result is null);
 	}
+	/*
 	[TestMethod("Null Item in Class")]
 	public void NullItemSerialize()
 	{

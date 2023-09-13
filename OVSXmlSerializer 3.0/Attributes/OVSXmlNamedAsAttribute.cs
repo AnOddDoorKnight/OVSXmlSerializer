@@ -1,5 +1,6 @@
-﻿namespace OVSXmlSerializer.Internals
+﻿namespace OVSXmlSerializer
 {
+	using global::OVSXmlSerializer.Internals;
 	using System;
 	using System.Reflection;
 
@@ -9,11 +10,11 @@
 	/// 
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
-	public class XmlNamedAsAttribute : Attribute
+	public class OVSXmlNamedAsAttribute : Attribute
 	{
 		public static bool HasName(StructuredObject @object, out string name)
 		{
-			XmlNamedAsAttribute attribute = @object.ValueType.GetCustomAttribute<XmlNamedAsAttribute>();
+			OVSXmlNamedAsAttribute attribute = @object.ValueType.GetCustomAttribute<OVSXmlNamedAsAttribute>();
 			if (attribute is null)
 			{
 				if (@object is FieldObject fieldObject)
@@ -27,13 +28,13 @@
 		public static bool HasName(FieldInfo field, out string name)
 		{
 			Type type = field.FieldType;
-			XmlNamedAsAttribute attribute = type.GetCustomAttribute<XmlNamedAsAttribute>();
+			OVSXmlNamedAsAttribute attribute = type.GetCustomAttribute<OVSXmlNamedAsAttribute>();
 			if (attribute != null)
 			{
 				name = attribute.Name;
 				return true;
 			}
-			attribute = field.GetCustomAttribute<XmlNamedAsAttribute>();
+			attribute = field.GetCustomAttribute<OVSXmlNamedAsAttribute>();
 			if (attribute != null)
 			{
 				name = attribute.Name;
@@ -48,11 +49,11 @@
 		/// </summary>
 		public string Name { get; set; }
 		/// <summary>
-		/// Creates a new <see cref="XmlNamedAsAttribute"/> for naming elements
+		/// Creates a new <see cref="OVSXmlNamedAsAttribute"/> for naming elements
 		/// and attributes.
 		/// </summary>
 		/// <param name="name"> The name to rename the object in the XML file. </param>
-		public XmlNamedAsAttribute(string name)
+		public OVSXmlNamedAsAttribute(string name)
 		{
 			Name = name;
 		}

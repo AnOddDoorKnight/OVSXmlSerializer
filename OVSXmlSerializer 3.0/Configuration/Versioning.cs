@@ -85,14 +85,10 @@
 		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(XmlDocument document, Version version, Leniency leniency = Leniency.Strict)
 		{
-			XmlNode rootNode = document.FirstChild;
+			XmlNode rootNode = document.LastChild;
 			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_NAME);
-			if (versionNode != null)
-			{
-				Version inputVersion = Version.Parse(versionNode.Value);
-				return IsVersion(inputVersion, version, leniency);
-			}
-			return version == null;
+			Version inputVersion = versionNode == null ? new Version(1, 0) : Version.Parse(versionNode.Value);
+			return IsVersion(inputVersion, version, leniency); ;
 		}
 		/// <summary>
 		/// Checks the version of the XML file.

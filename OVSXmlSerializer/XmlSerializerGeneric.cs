@@ -273,7 +273,6 @@
 		}
 		#endregion
 
-
 		#region Other
 		/// <summary>
 		/// Deeply copies all the data down into primitives into a separate created 
@@ -299,5 +298,6 @@
 			return (T)output;
 		}
 		#endregion
+
 	}
 }

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSXmlSerializer", "OVSXmlS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSTester", "OVSTester\OVSTester.csproj", "{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OVSXmlSerializer 3.0", "OVSXmlSerializer 3.0\OVSXmlSerializer 3.0.csproj", "{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSXmlSerializer3", "OVSXmlSerializer 3.0\OVSXmlSerializer3.csproj", "{7CE445F1-3CB2-48C3-B343-5FDE30CFD548}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

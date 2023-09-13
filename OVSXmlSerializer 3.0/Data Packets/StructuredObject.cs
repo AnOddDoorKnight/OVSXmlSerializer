@@ -16,7 +16,7 @@
 		{
 			if (obj.IsNull)
 				return "";
-			if (XmlNamedAsAttribute.HasName(obj, out string namedAtt))
+			if (OVSXmlNamedAsAttribute.HasName(obj, out string namedAtt))
 				name = namedAtt;
 			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
 				name = RemoveAutoPropertyTags(name);
