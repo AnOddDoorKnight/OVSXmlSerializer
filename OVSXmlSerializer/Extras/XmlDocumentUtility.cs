@@ -10,7 +10,7 @@
 	/// <summary>
 	/// Extra helper methods to make making XML Documents easier.
 	/// </summary>
-	public static class XmlDocumentExtras
+	public static class XmlDocumentUtility
 	{
 		#region Load a new file
 		/// <summary>

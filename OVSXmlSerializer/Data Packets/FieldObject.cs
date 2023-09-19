@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSXmlSerializer.Internals
 {
 	using System.Reflection;
 	using System;

@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer
 {
+	using global::OVSXmlSerializer.Internals;
 	using System;
 	using System.Reflection;
 
@@ -7,30 +8,30 @@
 	/// Writes the value as a primitive type, with some additional elements left over.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
-	public class XmlTextAttribute : Attribute
+	public class OVSXmlTextAttribute : Attribute
 	{
-		internal static bool IsText(StructuredObject @object)
+		public static bool IsText(StructuredObject @object)
 		{
-			return @object.HasAttribute<XmlTextAttribute>()
+			return @object.HasAttribute<OVSXmlTextAttribute>()
 				|| @object.HasAttribute<System.Xml.Serialization.XmlTextAttribute>();
 		}
-		internal static bool IsText(FieldInfo field)
+		public static bool IsText(FieldInfo field)
 		{
 			Type type = field.FieldType;
-			if (type.GetCustomAttribute<XmlTextAttribute>() != null)
+			if (type.GetCustomAttribute<OVSXmlTextAttribute>() != null)
 				return true;
 			if (type.GetCustomAttribute<System.Xml.Serialization.XmlTextAttribute>() != null)
 				return true;
-			if (field.GetCustomAttribute<XmlTextAttribute>() != null)
+			if (field.GetCustomAttribute<OVSXmlTextAttribute>() != null)
 				return true;
 			if (field.GetCustomAttribute<System.Xml.Serialization.XmlTextAttribute>() != null)
 				return true;
 			return false;
 		}
 		/// <summary>
-		/// Creates a new instance of <see cref="XmlTextAttribute"/>
+		/// Creates a new instance of <see cref="OVSXmlTextAttribute"/>
 		/// </summary>
-		public XmlTextAttribute()
+		public OVSXmlTextAttribute()
 		{
 
 		}

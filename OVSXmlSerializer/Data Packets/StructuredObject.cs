@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSXmlSerializer.Internals
 {
 	using System;
 	using System.Collections.Generic;
@@ -6,14 +6,33 @@
 	using System.Reflection;
 	using System.Runtime.InteropServices;
 	using System.Xml.Serialization;
-	using static XmlSerializer;
 
-	internal class StructuredObject
+	/// <summary>
+	/// A single standalone object, accounting for its type.
+	/// </summary>
+	public class StructuredObject
 	{
+		public static string EnsureName(string name, StructuredObject obj)
+		{
+			if (obj.IsNull)
+				return "";
+			if (OVSXmlNamedAsAttribute.HasName(obj, out string namedAtt))
+				name = namedAtt;
+			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
+				name = RemoveAutoPropertyTags(name);
+			name = name.Replace('`', '_');
+			name = name.TrimEnd('[', ']');
+			return name;
+		}
+
 		public static bool IsProbablyAutoImplementedProperty(string name)
 			=> name.Contains("<") && name.Contains(">");
 		public static string RemoveAutoPropertyTags(string name) =>
 			name.Substring(1, name.IndexOf('>') - 1);
+		public static string TryRemoveAutoImplementedPropertyTags(in string input)
+			=> IsProbablyAutoImplementedProperty(input) 
+			? RemoveAutoPropertyTags(input)
+			: input;
 
 		public object Value { get; }
 		public Type ValueType { get; }
@@ -30,6 +49,7 @@
 
 		public bool IsNull { get; }
 
+		public bool IsPrimitive => ValueType.IsPrimitive || ValueType == typeof(string);
 
 
 		public StructuredObject(object value)

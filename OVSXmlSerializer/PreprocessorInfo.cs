@@ -1,0 +1,4 @@
+﻿#define OVS_XML_SERIALIZER
+
+#define OVS_XML_SERIALIZER_3_0_0
+//#define OVS_XML_SERIALIZER_3_0_1

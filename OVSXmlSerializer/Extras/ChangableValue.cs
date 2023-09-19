@@ -16,12 +16,12 @@
 		{
 			return input.Value;
 		}
-		[XmlText]
+		[OVSXmlText]
 		private T value;
 		/// <summary>
 		/// All delegates are invoked when the value is changed.
 		/// </summary>
-		[field: XmlIgnore]
+		[field: OVSXmlIgnore]
 		public event Action<T> ValueChanged;
 		/// <summary>
 		/// Gets or sets the current Value.
@@ -35,9 +35,12 @@
 				ValueChanged?.Invoke(value);
 			}
 		}
-		private ChangableValue()
+		/// <summary>
+		/// Creates a new value, using default values as initializer.
+		/// </summary>
+		public ChangableValue()
 		{
-
+			value = default;
 		}
 		/// <summary>
 		/// Creates a new value.

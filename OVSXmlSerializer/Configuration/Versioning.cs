@@ -9,7 +9,7 @@
 	/// </summary>
 	public static class Versioning
 	{
-		internal const string VERSION_ATTRIBUTE = "ver";
+		public const string VERSION_NAME = "version";
 		/// <summary>
 		/// Measurement on how <see cref="Versioning"/> should handle variation changes
 		/// 
@@ -86,13 +86,9 @@
 		public static bool IsVersion(XmlDocument document, Version version, Leniency leniency = Leniency.Strict)
 		{
 			XmlNode rootNode = document.LastChild;
-			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_ATTRIBUTE);
-			if (versionNode != null)
-			{
-				Version inputVersion = Version.Parse(versionNode.Value);
-				return IsVersion(inputVersion, version, leniency);
-			}
-			return version == null;
+			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_NAME);
+			Version inputVersion = versionNode == null ? new Version(1, 0) : Version.Parse(versionNode.Value);
+			return IsVersion(inputVersion, version, leniency); ;
 		}
 		/// <summary>
 		/// Checks the version of the XML file.
