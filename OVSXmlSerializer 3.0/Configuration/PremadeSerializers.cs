@@ -12,7 +12,7 @@
 	{
 		public bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)
 		{
-			if (!(@object is IList list))
+			if (!(@object.Value is IList list))
 			{
 				output = null;
 				return false;
@@ -34,10 +34,13 @@
 				output = null;
 				return false;
 			}
-			List<XmlNode> nodeList = node.GetAllChildren();
+			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
 			IList list = (IList)Activator.CreateInstance(type, true);
-			for (int i = 0; i < nodeList.Count; i++)
-				list.Add(reader.ReadObject(nodeList[i], null));
+			for (int i = 0; i < xmlNodes.Count; i++)
+			{
+				object input = reader.ReadObject(xmlNodes[i], typeof(object));
+				list.Add(input);
+			}
 			output = list;
 			return true;
 		}
@@ -78,7 +81,7 @@
 			{
 				object key = enumerator.Key;
 				object value = enumerator.Value;
-				XmlElement pair = writer.CreateElement(parent, "item");
+				XmlElement pair = writer.CreateElement(enumerableElement, "item");
 				writer.WriteObject(new StructuredObject(key, typeof(object)), pair, "key");
 				writer.WriteObject(new StructuredObject(value, typeof(object)), pair, "value");
 			}
@@ -139,7 +142,7 @@
 		}
 		public bool CheckAndRead<T>(OVSXmlReader<T> reader, Type type, XmlNode node, out object output)
 		{
-			if (type == typeof(DateTime))
+			if (type != typeof(DateTime))
 			{
 				output = null;
 				return false;
@@ -152,7 +155,7 @@
 	{
 		public bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output)
 		{
-			if (@object.ValueType != typeof(DateTime))
+			if (@object.ValueType != typeof(TimeSpan))
 			{
 				output = null;
 				return false;
@@ -163,7 +166,7 @@
 		}
 		public bool CheckAndRead<T>(OVSXmlReader<T> reader, Type type, XmlNode node, out object output)
 		{
-			if (type == typeof(TimeSpan))
+			if (type != typeof(TimeSpan))
 			{
 				output = null;
 				return false;

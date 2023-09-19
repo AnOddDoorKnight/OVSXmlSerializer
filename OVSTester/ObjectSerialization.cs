@@ -3,7 +3,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OVSXmlSerializer;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Xml;
 
 [TestClass]
 public class ObjectSerialization
@@ -22,17 +25,16 @@ public class ObjectSerialization
 	{
 		Random? value = null;
 		OVSXmlSerializer<Random> xmlSerializer = new();
-		using var stream = xmlSerializer.Serialize(value);
-		//StandardClass result = (StandardClass)xmlSerializer.Deserialize(stream);
-		//Assert.IsTrue(result is null);
+		using MemoryStream stream = xmlSerializer.Serialize(value);
+		Random? result = xmlSerializer.Deserialize(stream);
+		Assert.IsTrue(result is null);
 	}
-	/*
 	[TestMethod("Null Item in Class")]
 	public void NullItemSerialize()
 	{
 
 		StandardClass value = new StandardClass() { sex = null };
-		XmlSerializer<StandardClass> xmlSerializer = new();
+		OVSXmlSerializer<StandardClass> xmlSerializer = new();
 		using var stream = xmlSerializer.Serialize(value);
 		StandardClass result = xmlSerializer.Deserialize(stream);
 		Assert.IsTrue(result.sex is null);
@@ -41,7 +43,7 @@ public class ObjectSerialization
 	public void SimpleSerialize()
 	{
 		const string value = "bruh";
-		XmlSerializer serializer = new(typeof(string));
+		OVSXmlSerializer serializer = new();
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
 	}
@@ -49,17 +51,17 @@ public class ObjectSerialization
 	public void ReadonlySerialize()
 	{
 		object @readonly = new Readonly(4);
-		Assert.ThrowsException<InvalidOperationException>(() => new XmlSerializer().Serialize(@readonly));
+		Assert.ThrowsException<InvalidOperationException>(() => new OVSXmlSerializer().Serialize(@readonly));
 	}
 	[TestMethod("Key/Value Pair Serialization")]
 	public void KeyValueSerializer()
 	{
 		KeyValuePair<string, int> value = new("bruh", 4);
-		XmlSerializer serializer = new(typeof(KeyValuePair<string, int>));
-		var stream = serializer.Serialize(value, "Pair");
+		var stream = OVSXmlSerializer.Shared.Serialize(value, "Pair");
 		string report = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
-		var output = (KeyValuePair<string, int>)serializer.Deserialize(stream);
+		object obj = OVSXmlSerializer.Shared.Deserialize(stream);
+		KeyValuePair<string, int> output = (KeyValuePair<string, int>)obj;
 		Assert.IsTrue(value.Key == output.Key && value.Value == output.Value);//(value, (KeyValuePair<string, int>)serializer.Deserialize(stream));
 	}
 	[TestMethod("List Serialization")]
@@ -68,9 +70,9 @@ public class ObjectSerialization
 		List<string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add("bruh");
-		XmlSerializer<List<string>> serializer = new();
-		var stream = serializer.Serialize(value);
-		List<string> result = serializer.Deserialize(stream);
+		var stream = OVSXmlSerializer<List<string>>.Shared.Serialize(value);
+		string output = new StreamReader(stream).ReadToEnd(); stream.Position = 0;
+		List<string> result = OVSXmlSerializer<List<string>>.Shared.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
 	}
 	[TestMethod("Dictionary Serialization")]
@@ -79,7 +81,7 @@ public class ObjectSerialization
 		Dictionary<int, string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
-		XmlSerializer<Dictionary<int, string>> serializer = new(new XmlSerializerConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		OVSXmlSerializer<Dictionary<int, string>> serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
 		var stream = serializer.Serialize(value, "Dictionary");
 		string report = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -91,7 +93,7 @@ public class ObjectSerialization
 	public void ClassSerialization()
 	{
 		Program value = new();
-		XmlSerializer<Program> xmlSerializer = new();
+		OVSXmlSerializer<Program> xmlSerializer = new();
 		using var stream = xmlSerializer.Serialize(value);
 		Program result = xmlSerializer.Deserialize(stream);
 		Assert.AreEqual(value, result);
@@ -100,17 +102,16 @@ public class ObjectSerialization
 	public void IndentFormatting()
 	{
 		string[] value = { "bruh" };
-		XmlSerializer serializer = new(typeof(string));
-		var stream = serializer.Serialize(value);
+		var stream = OVSXmlSerializer.Shared.Serialize(value);
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
-		Assert.IsTrue(strings[3].StartsWith("\t"), $"'{strings[3]}' Does not match '{serializer.Config.IndentChars}'!");
+		Assert.IsTrue(strings[2].StartsWith("\t"), $"'{strings[3]}' Does not match '{OVSXmlSerializer.Shared.Config.IndentChars}'!");
 	}
 	[TestMethod("Class Serialization")]
 	public void StandardSerialization()
 	{
 		StandardClass value = new();
 		value.value = null;
-		XmlSerializer<StandardClass> xmlSerializer = new();
+		OVSXmlSerializer<StandardClass> xmlSerializer = new();
 		xmlSerializer.Config.IgnoreUndefinedValues = true;
 		using var stream = xmlSerializer.Serialize(value);
 		StandardClass result = xmlSerializer.Deserialize(stream);
@@ -120,23 +121,17 @@ public class ObjectSerialization
 	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]
 	public void DisallowParameterConstructor()
 	{
-		try
-		{
-			XmlSerializer<XmlParameteredClassTest> tester = new();
-			tester.Serialize(new XmlParameteredClassTest("h"));
-		}
-		catch (NullReferenceException ex) when (ex.Message.EndsWith("does not have an empty constructor!"))
-		{
-			return;
-		}
-		Assert.Fail();
+		OVSXmlSerializer<XmlParameteredClassTest> tester = new();
+		void Action() => tester.Serialize(new XmlParameteredClassTest("h"));
+		Assert.ThrowsException<NullReferenceException>(Action);
+
 	}
 	[TestMethod("Xml Serializer Interface")]
 	public void XmlSerializerInterface()
 	{
 		ByteArraySim simulator = ByteArraySim.WithRandomValues();
-		MemoryStream stream = XmlSerializer<ByteArraySim>.Default.Serialize(simulator);
-		ByteArraySim result = XmlSerializer<ByteArraySim>.Default.Deserialize(stream);
+		MemoryStream stream = OVSXmlSerializer<ByteArraySim>.Shared.Serialize(simulator);
+		ByteArraySim result = OVSXmlSerializer<ByteArraySim>.Shared.Deserialize(stream);
 		Assert.IsTrue(simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
 	}
 	[TestMethod("False Xml Serializer Interface")]
@@ -144,7 +139,7 @@ public class ObjectSerialization
 	{
 		ByteArraySim simulator = new();
 		simulator.ShouldWrite = false;
-		XmlSerializer<ByteArraySim> serializer = new();
+		OVSXmlSerializer<ByteArraySim> serializer = new();
 		var stream = serializer.Serialize(simulator);
 		ByteArraySim result = serializer.Deserialize(stream);
 		Assert.IsTrue(result is null || simulator.values.Zip(result.values).Count(pair => pair.First == pair.Second) == simulator.values.Length);
@@ -153,7 +148,7 @@ public class ObjectSerialization
 	public void PropertySerialization()
 	{
 		AutoProp autoProp = new() { bruh = "bruh" };
-		XmlSerializer<AutoProp> serializer = new();
+		OVSXmlSerializer<AutoProp> serializer = new();
 		var stream = serializer.Serialize(autoProp);
 		AutoProp result = serializer.Deserialize(stream);
 		Assert.IsTrue(result.bruh == autoProp.bruh);
@@ -164,21 +159,20 @@ public class ObjectSerialization
 	{
 		CircularSerialization serialization = new();
 		serialization.circularSerialization = serialization;
-		XmlSerializer<CircularSerialization> serializer = new();
+		OVSXmlSerializer<CircularSerialization> serializer = new();
+		serializer.Config.UseSingleInstanceInsteadOfMultiple = true;
 		using var stream = serializer.Serialize(serialization);
 		string outputStr = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
 		CircularSerialization output = serializer.Deserialize(stream);
 		Assert.IsTrue(ReferenceEquals(output, output.circularSerialization));
 	}
-	*/
 }
-/*
 internal class CircularSerialization
 {
 	public CircularSerialization circularSerialization;
 }
-internal class ByteArraySim : IXmlSerializable
+internal class ByteArraySim : IOVSXmlSerializable
 {
 	public static ByteArraySim WithRandomValues()
 	{
@@ -195,14 +189,14 @@ internal class ByteArraySim : IXmlSerializable
 
 	public bool ShouldWrite { get; set; } = true;
 
-	void IXmlSerializable.Read(XmlNode obj)
+	void IOVSXmlSerializable.Read(XmlNode obj)
 	{
 		if (obj is null)
 			return;
 		values = Array.ConvertAll(obj.InnerText.Split('.'), @string => byte.Parse(@string));
 	}
 
-	void IXmlSerializable.Write(XmlDocument document, XmlNode writer)
+	void IOVSXmlSerializable.Write(XmlDocument document, XmlNode writer)
 	{
 		writer.InnerText = string.Join(".", values);
 	}
@@ -248,4 +242,3 @@ internal class Readonly
 		this.h = h;
 	}
 }
-*/

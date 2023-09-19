@@ -29,6 +29,10 @@
 			=> name.Contains("<") && name.Contains(">");
 		public static string RemoveAutoPropertyTags(string name) =>
 			name.Substring(1, name.IndexOf('>') - 1);
+		public static string TryRemoveAutoImplementedPropertyTags(in string input)
+			=> IsProbablyAutoImplementedProperty(input) 
+			? RemoveAutoPropertyTags(input)
+			: input;
 
 		public object Value { get; }
 		public Type ValueType { get; }
@@ -45,7 +49,7 @@
 
 		public bool IsNull { get; }
 
-		public bool IsPrimitive => ValueType != null && (ValueType.IsPrimitive || ValueType == typeof(string));
+		public bool IsPrimitive => ValueType.IsPrimitive || ValueType == typeof(string);
 
 
 		public StructuredObject(object value)

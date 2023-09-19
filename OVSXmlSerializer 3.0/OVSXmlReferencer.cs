@@ -14,6 +14,8 @@
 		public static bool CanReference(in object obj) => CanReference(obj.GetType());
 		public static bool CanReference(in Type type)
 		{
+			if (type.IsPrimitive)
+				return false;
 			if (type.IsValueType)
 				return false;
 			if (type == typeof(string))

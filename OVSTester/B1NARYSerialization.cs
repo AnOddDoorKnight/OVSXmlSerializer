@@ -1,8 +1,13 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OVSXmlSerializer;
+using OVSXmlSerializer.Extras;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
-/*
 [TestClass]
 public class B1NARYSerialization
 {
@@ -12,7 +17,7 @@ public class B1NARYSerialization
 		Dictionary<string, object> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
-		XmlSerializer serializer = new(typeof(Dictionary<string, object>), new XmlSerializerConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		OVSXmlSerializer serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.SmartTypes });
 		var stream = serializer.Serialize(value, "PlayerConfig");
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -27,7 +32,7 @@ public class B1NARYSerialization
 		{
 			FormatName = "Default",
 		};
-		XmlSerializer<ColorFormat> formatter = new();
+		OVSXmlSerializer<ColorFormat> formatter = new();
 		var stream = formatter.Serialize(colorFormat);
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -37,7 +42,7 @@ public class B1NARYSerialization
 	public void ChangableValueSerialization()
 	{
 		Storer storer = new();
-		XmlSerializer<Storer> formatter = new();
+		OVSXmlSerializer<Storer> formatter = new();
 		var stream = formatter.Serialize(storer);
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -47,7 +52,7 @@ public class B1NARYSerialization
 	public void PlayerConfigSerialization()
 	{
 		PlayerConfig storer = new();
-		XmlSerializer<PlayerConfig> formatter = new();
+		OVSXmlSerializer<PlayerConfig> formatter = new();
 		var stream = formatter.Serialize(storer);
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -59,7 +64,7 @@ public class B1NARYSerialization
 		Collection<string> storer = new();
 		storer.Add("bruh", "hot");
 		storer.Add("haha", () => "no");
-		XmlSerializer<Collection<string>> formatter = new();
+		OVSXmlSerializer<Collection<string>> formatter = new();
 		var stream = formatter.Serialize(storer);
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -68,6 +73,7 @@ public class B1NARYSerialization
 
 	internal class ColorFormat
 	{
+		public record ColorTuple(float R, float G, float B) { public ColorTuple() : this(0f, 0f, 0f) { } };
 		/// <summary>
 		/// Converts a byte to a float ranging from 0 to 1 into 0 to 255.
 		/// </summary>
@@ -86,25 +92,25 @@ public class B1NARYSerialization
 		/// <summary>
 		/// 
 		/// </summary>
-		[XmlAttribute("name")]
+		[OVSXmlAttribute("name")]
 		public string FormatName;
 		/// <summary>
 		/// The primary color to be used by all UI. Defaulted to this color by
 		/// default if something happens.
 		/// </summary>
-		[XmlNamedAs("Primary")]
+		[OVSXmlNamedAs("Primary")]
 		public ColorTuple primaryUI = new ColorTuple(ToPercent(47), ToPercent(161), ToPercent(206));
 		/// <summary>
 		/// The secondary color to be used by all UI. The yang to the 
 		/// <see cref="primaryUI"/> ying.
 		/// </summary>
-		[XmlNamedAs("Secondary")]
+		[OVSXmlNamedAs("Secondary")]
 		public ColorTuple SecondaryUI = new ColorTuple(ToPercent(47), ToPercent(206), ToPercent(172));
 		/// <summary>
 		/// 
 		/// </summary>
-		[XmlNamedAs("Extras")]
-		public Dictionary<string, Color> ExtraUIColors = new Dictionary<string, Color>();
+		[OVSXmlNamedAs("Extras")]
+		public Dictionary<string, ColorTuple> ExtraUIColors = new Dictionary<string, ColorTuple>();
 
 		/// <summary>
 		/// 
@@ -150,14 +156,14 @@ public class B1NARYSerialization
 		{
 
 			public float cameraBobLookMultiplier = 1f;
-			[XmlNamedAs("enabled")]
+			[OVSXmlNamedAs("enabled")]
 			public bool cameraBobLookEnabled = true;
 			public float movementBobMultiplier = 1f;
-			[XmlNamedAs("bobEnabled")]
+			[OVSXmlNamedAs("bobEnabled")]
 			public bool movementBobEnabled = true;
-			[XmlNamedAs("maxMultiplier")]
+			[OVSXmlNamedAs("maxMultiplier")]
 			public float cameraBobLookMaxMultiplier = 5f;
-			[XmlNamedAs("bobCap")]
+			[OVSXmlNamedAs("bobCap")]
 			public float movementBobCap = 3f;
 			public ChangableValue<float> fieldOfView = new(78f);
 		}
@@ -189,16 +195,16 @@ public class B1NARYSerialization
 /// </summary>
 public delegate void UpdatedConstantValue<T>(string key, T oldValue, T newValue, Collection<T> source);
 
-[Serializable, XMLIgnoreEnumerable]
+[Serializable]
 public sealed class Collection<T> : IDictionary<string, T>
 {
 	/// <summary>
 	/// Sends out an event that happens when a value is changed.
 	/// </summary>
-	[field: NonSerialized, XmlIgnore]
+	[field: NonSerialized, OVSXmlIgnore]
 	public event UpdatedConstantValue<T> UpdatedValue;
 	private Dictionary<string, T> constants = new Dictionary<string, T>();
-	[field: NonSerialized, XmlIgnore]
+	[field: NonSerialized, OVSXmlIgnore]
 	private Dictionary<string, Func<T>> pointers = new Dictionary<string, Func<T>>();
 
 	public T this[string key]
@@ -324,16 +330,16 @@ public sealed class Collection<T> : IDictionary<string, T>
 		//		yield return new KeyValuePair<string, T>(enumerator.Current.Key, enumerator.Current.Value.Invoke());
 	}
 
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-		using (var enumerator = constants.AsEnumerable().GetEnumerator())
-			while (enumerator.MoveNext())
-				yield return enumerator.Current;
-		// XML parser doesn't like it
-		//using (var enumerator = pointers.AsEnumerable().GetEnumerator())
-		//	while (enumerator.MoveNext())
-		//		yield return new KeyValuePair<string, T>(enumerator.Current.Key, enumerator.Current.Value.Invoke());
-	}
+	//IEnumerator IEnumerable.GetEnumerator()
+	//{
+	//	using (var enumerator = constants.AsEnumerable().GetEnumerator())
+	//		while (enumerator.MoveNext())
+	//			yield return enumerator.Current;
+	//	// XML parser doesn't like it
+	//	//using (var enumerator = pointers.AsEnumerable().GetEnumerator())
+	//	//	while (enumerator.MoveNext())
+	//	//		yield return new KeyValuePair<string, T>(enumerator.Current.Key, enumerator.Current.Value.Invoke());
+	//}
 
 	public bool Remove(string key)
 	{
@@ -360,5 +366,9 @@ public sealed class Collection<T> : IDictionary<string, T>
 		}
 		return false;
 	}
+
+	System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+	{
+		throw new NotImplementedException();
+	}
 }
-*/

@@ -23,10 +23,10 @@
 		<PackageReleaseNotes>
 			Its been awhile lol
 			- Made most classes into a separate 'OVS' prefix to separate them from the system xml serialization more
-			- Versions feature works a a bit differently, i think null values are treated as 1.0 now? cant remember for certain
-			- Things like date-time can have their own external compile config.
+			- Versions feature works a bit differently, i think null values are treated as 1.0 now?
+			- Things like date-time and lists can have their own external compile config.
+			- Normal IEnumerables are no longer written/serialized.
 			- Removed the ignore xml enumerable and instead added a new attribute titled xmlignoreconfigs instead
-			Since im not feeling burned out working on this alone anymore, feel free to report issues in the project url so I can look into it more
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>

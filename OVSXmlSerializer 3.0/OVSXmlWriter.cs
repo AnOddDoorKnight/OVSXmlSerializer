@@ -40,7 +40,13 @@
 		/// All changes that is written to. Not thread safe.
 		/// </summary>
 		public XmlDocument Document { get; private set; }
+		/// <summary>
+		/// The creator source
+		/// </summary>
 		public OVSXmlSerializer<T> Source { get; }
+		/// <summary>
+		/// Taking from <see cref="Source"/> to get the config.
+		/// </summary>
 		public OVSConfig Config => Source.Config;
 		internal OVSXmlReferencer Referencer { get; private set; }
 
@@ -135,8 +141,6 @@
 
 				if (ReferenceType(name, obj, parent, out XmlNode output))
 					return output;
-				if (TryWriteEnum(name, obj, parent, out output))
-					return output;
 				if (TryWritePrimitive(name, obj, parent, out output))
 					return output;
 				if (Config.CustomSerializers.Write(this, parent, obj, name, out output))
@@ -146,7 +150,7 @@
 
 				EnsureParameterlessConstructor(obj.ValueType);
 				XmlNode currentNode = CreateElement(parent, name, obj);
-
+				
 				FieldInfo[] infos = obj.ValueType.GetFields(OVSXmlSerializer.defaultFlags);
 
 				bool didText = false;
@@ -225,19 +229,6 @@
 			return false;
 		}
 		/// <summary>
-		/// 
-		/// Tries to write an enum with the name, ensuring that it is a XML element or
-		/// XML attribute via class attribute.
-		/// </summary>
-		public bool TryWriteEnum(in string name, StructuredObject @enum, XmlNode parent, out XmlNode output)
-		{
-			output = null;
-			if (!@enum.ValueType.IsEnum)
-				return false;
-			output = CreateNode(parent, name, @enum.Value.ToString(), @enum);
-			return true;
-		}
-		/// <summary>
 		/// Tries to write a primitive, ensuring that it is a XML element or
 		/// XML attribute via class attribute.
 		/// </summary>
@@ -247,11 +238,18 @@
 		/// <returns>If it successfully serialized it as primitive.</returns>
 		public bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent, out XmlNode output)
 		{
+			if (primitive.IsPrimitive)
+			{
+				output = CreateNode(parent, name, ToStringPrimitive(primitive), primitive);
+				return true;
+			}
+			if (primitive.ValueType.IsEnum)
+			{
+				output = CreateNode(parent, name, primitive.Value.ToString(), primitive);
+				return true;
+			}
 			output = null;
-			if (!primitive.IsPrimitive)
-				return false;
-			output = CreateNode(parent, name, ToStringPrimitive(primitive), primitive);
-			return true;
+			return false;
 		}
 
 		/// <summary>

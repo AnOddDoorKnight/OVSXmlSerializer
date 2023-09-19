@@ -42,18 +42,18 @@
 		}
 
 
-		private List<ICustomSerializer> serializerInterfaces;
+		private LinkedList<ICustomSerializer> serializerInterfaces;
 		public InterfaceSerializer()
 		{
-			serializerInterfaces = new List<ICustomSerializer>();
+			serializerInterfaces = new LinkedList<ICustomSerializer>();
 		}
-		public void Add(ICustomSerializer serializer) => serializerInterfaces.Add(serializer);
+		public void Add(ICustomSerializer serializer) => serializerInterfaces.AddLast(serializer);
 
 		internal bool Write<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject structuredObject, string name, out XmlNode output)
 		{
-			for (int i = serializerInterfaces.Count; i > 0; i--)
+			for (var node = serializerInterfaces.Last; node != null; node = node.Previous)
 			{
-				if (serializerInterfaces[i].CheckAndWrite<T>(writer, parentNode, structuredObject, name, out output))
+				if (node.Value.CheckAndWrite<T>(writer, parentNode, structuredObject, name, out output))
 					return true;
 			}
 			output = null;
@@ -61,9 +61,9 @@
 		}
 		internal bool Read<T>(OVSXmlReader<T> reader, in Type type, in XmlNode node, out object output)
 		{
-			for (int i = serializerInterfaces.Count; i > 0; i--)
+			for (var listNode = serializerInterfaces.Last; listNode != null; listNode = listNode.Previous)
 			{
-				if (serializerInterfaces[i].CheckAndRead<T>(reader, type, node, out output))
+				if (listNode.Value.CheckAndRead<T>(reader, type, node, out output))
 					return true;
 			}
 			output = null;

@@ -22,7 +22,7 @@
 		/// to refer to said instance. Disabling this removes this feature. Disabled
 		/// by default.
 		/// </summary>
-		public bool UseSingleInstanceInsteadOfMultiple { get; set; } = false;
+		public bool UseSingleInstanceInsteadOfMultiple { get; set; } = true;
 		/// <summary>
 		/// The current version of the XML file. Null if you don't want any
 		/// attributes assigned to the root element

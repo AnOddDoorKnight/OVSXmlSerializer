@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer.Extras
 {
+	using global::OVSXmlSerializer.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Text;
@@ -7,6 +8,14 @@
 
 	public static class XMLNodeUtility
 	{
+		public static List<XmlNode> ToList(this XmlNodeList list)
+		{
+			List<XmlNode> result = new List<XmlNode>(list.Count);
+			for (int i = 0; i < list.Count; i++)
+				result.Add(list[i]);
+			return result;
+		}
+
 		public static int FindIndex(this XmlNodeList childNodes, Predicate<XmlNode> match)
 		{
 			for (int i = 0; i < childNodes.Count; i++)
@@ -51,8 +60,21 @@
 					children.Add(node.ChildNodes[i]);
 			if (!(node.Attributes is null))
 				for (int i = 0; i < node.Attributes.Count; i++)
-					children.Add(node.Attributes[i]);
+				{
+					if (node.Attributes[i].Name != OVSXmlSerializer.ATTRIBUTE 
+						&& node.Attributes[i].Name != OVSXmlReferencer.REFERENCE_ATTRIBUTE)
+						children.Add(node.Attributes[i]);
+				}
 			return children;
+		}
+
+		public static string ReadValue(this XmlNode node)
+		{
+			if (node is XmlElement element)
+				return element.InnerText;
+			else if (node is XmlAttribute attribute)
+				return attribute.Value;
+			throw new InvalidCastException();
 		}
 	}
 }

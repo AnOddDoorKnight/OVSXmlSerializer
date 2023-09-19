@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer.Internals
 {
+	using global::OVSXmlSerializer.Extras;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -13,24 +14,19 @@
 
 	public class OVSXmlReader<T>
 	{
-		/// <summary>
-		/// Gets a type 
-		/// </summary>
-		public static IReadOnlyDictionary<string, Type> Types { get; } = ((Func<IReadOnlyDictionary<string, Type>>)(() =>
+		private static readonly IReadOnlyList<Assembly> allAssemblies = AppDomain.CurrentDomain.GetAssemblies().Reverse().ToArray();
+		public static Type ByName(string fullName)
 		{
-			var output = new Dictionary<string, Type>();
-			Assembly[] allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-			for (int i = 0; i < allAssemblies.Length; i++)
+			for (int i = 0; i < allAssemblies.Count; i++)
 			{
-				Assembly assembly = allAssemblies[i];
-				Type[] allTypes = assembly.GetTypes();
-				for (int ii = 0; ii < allTypes.Length; ii++)
-				{
-					output.Add(allTypes[ii].FullName, allTypes[ii]);
-				}
+				Type type = allAssemblies[i].GetType(fullName, false);
+				if (type == null)
+					continue;
+				return type;
 			}
-			return output;
-		})).Invoke();
+			throw new MissingMemberException(fullName);
+		}
+
 		/// <summary>
 		/// Adds the auto-implementation tag to an existing name.
 		/// </summary>
@@ -64,66 +60,65 @@
 			T returnObject = (T)ReadObject(rootNode, rootType);
 			return returnObject;
 		}
-		public virtual object ReadObject(XmlNode node, Type currentType = null)
+		public object ReadObject(XmlNode targetNode, Type toType = null)
 		{
-			if (node == null)
+			if (targetNode == null)
 				return null;
 
-			// Handling types
-			if (currentType == null)
+			if (toType == null)
 			{
-				XmlNode attributeNode = node.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE);
-				string typeValue = null;
-				if (attributeNode != null)
-					typeValue = attributeNode.Value;
-				if (string.IsNullOrEmpty(typeValue))
-					throw new Exception();
-				currentType = Types[typeValue];
+				if (targetNode is XmlAttribute)
+					throw new InvalidCastException($"{targetNode.Name} is an attribute with a null type!");
+				XmlAttribute attributeNode = (XmlAttribute)targetNode.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE);
+				if (attributeNode is null)
+					throw new MissingFieldException();
+				toType = ByName(attributeNode.Value);
 			}
-			else if (!currentType.IsValueType && !OVSXmlAttributeAttribute.IsAttribute(currentType, out _) && node.Attributes != null)
+			else if (!toType.IsValueType && !OVSXmlAttributeAttribute.IsAttribute(toType, out _) && targetNode.Attributes != null)
 			{
-				// Class Type probably is defined, but not derived. Only if
-				// - its not a struct or attribute (& has attributes).
-				XmlNode attributeNode = node.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE);
+				// Class Type probably is defined, but not derived. 
+				XmlNode attributeNode = targetNode.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE);
 				string possibleDerivedTypeName = null;
 				if (attributeNode != null)
 					possibleDerivedTypeName = attributeNode.Value;
 				if (!string.IsNullOrEmpty(possibleDerivedTypeName))
 				{
-					Type possibleDerivedType = Types[possibleDerivedTypeName];
-					bool isDerived = currentType.IsAssignableFrom(possibleDerivedType);
+					Type possibleDerivedType = ByName(possibleDerivedTypeName);
+					bool isDerived = toType.IsAssignableFrom(possibleDerivedType);
 					if (isDerived)
-						currentType = possibleDerivedType;
+					{
+						toType = possibleDerivedType;
+					}
 				}
 			}
-
-			if (TryReadReference(currentType, node, out object @ref))
+			if (TryReadReference(out object @ref))
 				return @ref;
 
+
 			// Letting the jesus take the wheel
-			if (typeof(IOVSXmlSerializable).IsAssignableFrom(currentType))
+			if (typeof(IOVSXmlSerializable).IsAssignableFrom(toType))
 			{
-				object serializableOutput = Activator.CreateInstance(currentType, true);
-				AddReferenceTypeToDictionary((XmlElement)node, serializableOutput);
+				object serializableOutput = Activator.CreateInstance(toType, true);
+				AddReferenceTypeToDictionary((XmlElement)targetNode, serializableOutput);
 				IOVSXmlSerializable xmlSerializable = (IOVSXmlSerializable)serializableOutput;
-				xmlSerializable.Read(node);
+				xmlSerializable.Read(targetNode);
 				return serializableOutput;
 			}
-			if (TryReadEnum(currentType, node, out object objectEnum))
-				return objectEnum;
-			if (TryReadPrimitive(currentType, node, out object output))
+
+			if (TryReadPrimitive(toType, targetNode, out object output))
 				return output;
-			if (TryReadCustom(currentType, node, out object objectCustom))
-				return objectCustom;
+			if (Config.CustomSerializers.Read(this, toType, targetNode, out object customOut))
+				return customOut;
+
 
 
 			// Standard class with regular serialization.
-			object obj = Activator.CreateInstance(currentType, true);
-			AddReferenceTypeToDictionary((XmlElement)node, obj);
+			object obj = Activator.CreateInstance(toType, true);
+			AddReferenceTypeToDictionary((XmlElement)targetNode, obj);
 
 			// Serializes fields by getting fields by name, and matching it from
 			// - the node list.
-			FieldInfo[] allFields = currentType.GetFields(OVSXmlSerializer.defaultFlags);
+			FieldInfo[] allFields = toType.GetFields(OVSXmlSerializer.defaultFlags);
 			string[] keys = new string[allFields.Length];
 			Dictionary<string, FieldInfo> fieldDictionary = new Dictionary<string, FieldInfo>(allFields.Length);
 			// Modify for auto-implemented properties
@@ -144,9 +139,7 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo field = allFields[i];
-				string fieldName = FieldObject.IsProbablyAutoImplementedProperty(field.Name)
-					? FieldObject.RemoveAutoPropertyTags(field.Name)
-					: field.Name;
+				string fieldName = StructuredObject.TryRemoveAutoImplementedPropertyTags(field.Name);
 				// Getting Named Arguments
 				if (OVSXmlNamedAsAttribute.HasName(field, out string name))
 					fieldName = name;
@@ -164,23 +157,23 @@
 			for (int i = 0; i < attributes.Count; i++)
 			{
 				string key = attributes[i].Key;
-				XmlNode attribute = node.Attributes.GetNamedItem(key);
+				XmlNode attribute = targetNode.Attributes.GetNamedItem(key);
 				FieldInfo field = attributes[i].Value;
 				SetFieldValue(field, obj, ReadObject(attribute, field.FieldType));
 			}
 			// Reading elements
 			if (text.HasValue)
 			{
-				TryReadPrimitive(text.Value.Value.FieldType, node, out object textOutput);
+				TryReadPrimitive(text.Value.Value.FieldType, targetNode, out object textOutput);
 				SetFieldValue(text.Value.Value, obj, textOutput);
 			}
 			else
 				for (int i = 0; i < elements.Count; i++)
 				{
 					string key = elements[i].Key;
-					XmlNode element = node.SelectSingleNode(key);
+					XmlNode element = targetNode.SelectSingleNode(key);
 					if (element == null)
-						element = node.SelectSingleNode($"Reference_{elements[i].Key}");
+						element = targetNode.SelectSingleNode($"Reference_{elements[i].Key}");
 					FieldInfo field = elements[i].Value;
 					object outputField = ReadObject(element, field.FieldType);
 					if (outputField is null)
@@ -191,100 +184,57 @@
 					SetFieldValue(field, obj, outputField);
 				}
 			return obj;
-		}
-		internal protected virtual bool TryReadEnum(Type type, XmlNode node, out object output)
-		{
-			if (!type.IsEnum)
+
+			bool TryReadPrimitive(Type type, XmlNode node, out object primitiveOut)
 			{
-				output = null;
+				// Since string is arguably a class or char array, its it own check.
+				if (type.IsPrimitive || type == typeof(string))
+				{
+					string unparsed = node.ReadValue();
+					primitiveOut = Convert.ChangeType(unparsed, type, Config.CurrentCulture);
+					return true;
+				}
+				if (type.IsEnum)
+				{
+					primitiveOut = Enum.Parse(toType, targetNode.InnerText);
+					return true;
+				}
+				primitiveOut = null;
 				return false;
 			}
-			output = Enum.Parse(type, node.ReadValue());
-			return true;
-		}
-		internal protected virtual bool TryReadPrimitive(Type type, XmlNode node, out object output)
-		{
-			// Since string is arguably a class or char array, its it own check.
-			if (!type.IsPrimitive && type != typeof(string))
+			bool TryReadReference(out object reference)
 			{
-				output = null;
-				return false;
+				if (toType.IsValueType)
+				{
+					reference = null;
+					return false;
+				}
+				if (toType == typeof(string))
+				{
+					reference = null;
+					return false;
+				}
+				if (!targetNode.Name.StartsWith("Reference_"))
+				{
+					reference = null;
+					return false;
+				}
+				int ID = int.Parse(targetNode.InnerText);
+				reference = referenceTypes[ID];
+				return true;
 			}
-			string unparsed = node.ReadValue();
-			output = Convert.ChangeType(unparsed, type, Config.CurrentCulture);
-			return true;
 		}
-		/// <summary>
-		/// Parses the enumerable if it implements <see cref="ICollection"/>.
-		/// </summary>
-		/// <param name="type"> The type. </param>
-		/// <param name="node"> The data. </param>
-		/// <param name="output"> The resulting item. </param>
-		/// <returns>If it has successfully parsed. </returns>
-		/// <exception cref="NotImplementedException"> 
-		/// If there is no implementation for the collection. 
-		/// </exception>
-		internal protected virtual bool TryReadCustom(Type type, XmlNode node, out object output)
+		public void AddReferenceTypeToDictionary(XmlElement element, object value)
 		{
-			if (type.GetCustomAttribute<OVSXmlIgnoreConfigsAttribute>() != null)
-			{
-				output = null;
-				return false;
-			}
-			return Config.CustomSerializers.Read(this, type, node, out output);
-		}
-		internal bool IsPrimitive(StructuredObject primitive)
-		{
-			return primitive.ValueType.IsPrimitive || primitive.ValueType == typeof(string);
-		}
-		/// <summary>
-		/// tries to get the reference ID to dictionary from the attribute stored.
-		/// </summary>
-		/// <param name="node"></param>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		internal void AddReferenceTypeToDictionary(XmlElement element, object value)
-		{
-			XmlAttribute attribute = (XmlAttribute)element.Attributes.GetNamedItem(OVSXmlReferencer.REFERENCE_ATTRIBUTE)
-				?? throw new InvalidOperationException();
+			if (Config.UseSingleInstanceInsteadOfMultiple == false)
+				return;
+			if (element.Attributes == null || element.Attributes.Count == 0)
+				return;
+			XmlAttribute attribute = (XmlAttribute)element.Attributes.GetNamedItem(OVSXmlReferencer.REFERENCE_ATTRIBUTE);
+			if (attribute is null)
+				return;
 			int id = int.Parse(attribute.Value);
 			referenceTypes.Add(id, value);
-		}
-		internal protected virtual bool TryReadReference(Type type, XmlNode node, out object reference)
-		{
-			if (type.IsValueType)
-			{
-				reference = null;
-				return false;
-			}
-			if (type == typeof(string))
-			{
-				reference = null;
-				return false;
-			}
-			if (!node.Name.StartsWith("Reference_"))
-			{
-				reference = null;
-				return false;
-			}
-			int ID = int.Parse(node.InnerText);
-			reference = referenceTypes[ID];
-			return true;
-		}
-		public void SetFieldValue(FieldInfo info, object parent, object setting)
-		{
-			if (info.IsInitOnly)
-				switch (Config.HandleReadonlyFields)
-				{
-					case ReadonlyFieldHandle.ThrowError:
-						throw new Exception($"{info.Name} field is readonly!");
-					case ReadonlyFieldHandle.Ignore:
-						return;
-					case ReadonlyFieldHandle.Continue:
-						goto normal;
-				}
-			normal:
-			info.SetValue(parent, setting);
 		}
 		public string GetStringValue(in FieldInfo info, XmlNode parent)
 		{
@@ -302,6 +252,20 @@
 
 			return element.InnerText;
 		}
-
+		public void SetFieldValue(FieldInfo info, object parent, object setting)
+		{
+			if (info.IsInitOnly)
+				switch (Config.HandleReadonlyFields)
+				{
+					case ReadonlyFieldHandle.ThrowError:
+						throw new Exception($"{info.Name} field is readonly!");
+					case ReadonlyFieldHandle.Ignore:
+						return;
+					case ReadonlyFieldHandle.Continue:
+						goto normal;
+				}
+			normal:
+			info.SetValue(parent, setting);
+		}
 	}
 }
