@@ -13,13 +13,15 @@
 	using System.Xml.Serialization;
 
 	/// <summary>
-	/// 
+	/// A writer that converts a single object into a full <see cref="XmlDocument"/>,
+	/// which can be written as a memory stream for serializing in documents on the
+	/// computer.
 	/// </summary>
 	/// <remarks>
 	/// Not thread safe if you want to use the writer for multiple serializers; 
 	/// uses quite a bit of global variables.
 	/// </remarks>
-	/// <typeparam name="T"></typeparam>
+	/// <typeparam name="T">The object being serialized as their own 'parent' type.</typeparam>
 	public class OVSXmlWriter<T>
 	{
 		/// <summary>
@@ -32,7 +34,7 @@
 			if (type.GetConstructor(OVSXmlSerializer.defaultFlags, null, Array.Empty<Type>(), null) == null && type.IsClass)
 			{
 				string message = $"{type.Name} does not have an empty constructor!";
-				throw new NullReferenceException(message);
+				throw new ParameteredOnlyException(message);
 			}
 		}
 
@@ -50,6 +52,9 @@
 		public OVSConfig Config => Source.Config;
 		internal OVSXmlReferencer Referencer { get; private set; }
 
+		/// <summary>
+		/// Creates a new instance with a source serializer, which tracks configs.
+		/// </summary>
 		public OVSXmlWriter(OVSXmlSerializer<T> source)
 		{
 			this.Source = source;

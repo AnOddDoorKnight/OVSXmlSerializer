@@ -9,6 +9,9 @@
 	/// </summary>
 	public static class Versioning
 	{
+		/// <summary>
+		/// The attribute's name for finding the version on the document.
+		/// </summary>
 		public const string VERSION_NAME = "version";
 		/// <summary>
 		/// Measurement on how <see cref="Versioning"/> should handle variation changes

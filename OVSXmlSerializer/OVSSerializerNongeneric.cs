@@ -31,6 +31,7 @@
 		/// </summary>
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
+
 		/// <summary>
 		/// Creates a new instance of a non-generic XML Serializer. Uses default
 		/// config. References to default <see cref="object"/> as default type.

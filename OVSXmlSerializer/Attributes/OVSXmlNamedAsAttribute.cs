@@ -5,13 +5,17 @@
 	using System.Reflection;
 
 	/// <summary>
-	/// When being serialized by <see cref="XmlSerializer"/>, it will write the
+	/// When being serialized by <see cref="OVSXmlSerializer"/>, it will write the
 	/// name listed here instead of the field name. 
 	/// 
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class OVSXmlNamedAsAttribute : Attribute
 	{
+		/// <summary>
+		/// Checks if the object has the overrided name. If <see langword="true"/>,
+		/// then returns said custom name.
+		/// </summary>
 		public static bool HasName(StructuredObject @object, out string name)
 		{
 			OVSXmlNamedAsAttribute attribute = @object.ValueType.GetCustomAttribute<OVSXmlNamedAsAttribute>();
@@ -25,6 +29,10 @@
 			name = attribute.Name;
 			return true;
 		}
+		/// <summary>
+		/// Checks if the field has the overrided name. If <see langword="true"/>,
+		/// then returns said custom name.
+		/// </summary>
 		public static bool HasName(FieldInfo field, out string name)
 		{
 			Type type = field.FieldType;

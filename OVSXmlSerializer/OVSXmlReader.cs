@@ -1,5 +1,6 @@
 ﻿namespace OVSXmlSerializer.Internals
 {
+	using global::OVSXmlSerializer.Exceptions;
 	using global::OVSXmlSerializer.Extras;
 	using System;
 	using System.Collections;
@@ -12,9 +13,24 @@
 	using System.Xml.Linq;
 	using System.Xml.Serialization;
 
+	/// <summary>
+	/// A reader that converts a single XML document by breaking down types to
+	/// read their fields.
+	/// </summary>
+	/// <remarks>
+	/// Not thread safe if you want to use the writer for multiple serializers; 
+	/// uses quite a bit of global variables.
+	/// </remarks>
+	/// <typeparam name="T">The object being de-serialized as their own 'parent' type.</typeparam>
 	public class OVSXmlReader<T>
 	{
 		private static readonly IReadOnlyList<Assembly> allAssemblies = AppDomain.CurrentDomain.GetAssemblies().Reverse().ToArray();
+		/// <summary>
+		/// Searches through all assemblies trying to match the string name
+		/// given, considering generics along the way.
+		/// </summary>
+		/// <returns>The type that is defined by <paramref name="fullName"/>.</returns>
+		/// <exception cref="MissingMemberException">The <paramref name="fullName"/> is invalid and doesn't lead to anything. </exception>
 		public static Type ByName(string fullName)
 		{
 			for (int i = 0; i < allAssemblies.Count; i++)
@@ -35,31 +51,61 @@
 			return $"<{input}>k__BackingField";
 		}
 
+		/// <summary>
+		/// Gets all reference types by the index.
+		/// </summary>
 		protected Dictionary<int, object> referenceTypes;
 
 		/// <summary>
 		/// All changes that is written to. Not thread safe.
 		/// </summary>
 		public XmlDocument Document { get; private set; }
+		/// <summary>
+		/// The creator or source of the reader.
+		/// </summary>
 		public OVSXmlSerializer<T> Source { get; }
+		/// <summary>
+		/// The source's configurations.
+		/// </summary>
 		public OVSConfig Config => Source.Config;
 		internal OVSXmlReferencer Referencer { get; private set; }
 
+		/// <summary>
+		/// Creates a new instance, assuming that <paramref name="source"/> is its
+		/// creator.
+		/// </summary>
+		/// <param name="source">The creator.</param>
 		public OVSXmlReader(OVSXmlSerializer<T> source)
 		{
 			this.Source = source;
 			referenceTypes = new Dictionary<int, object>();
 		}
 
+		/// <summary>
+		/// Reads a document, checking the version before trying to read it as
+		/// a node or element.
+		/// </summary>
+		/// <param name="document">The document to deserialize.</param>
+		/// <param name="rootType">The root type, this is most likely have been gotten by <typeparamref name="T"/>.</param>
+		/// <returns></returns>
+		/// <exception cref="VersionMismatchException"></exception>
 		public virtual T ReadDocument(XmlDocument document, Type rootType)
 		{
 			referenceTypes.Clear();
 			XmlNode rootNode = document.LastChild;
 			if (!Versioning.IsVersion(document, Config.Version, Config.VersionLeniency))
-				throw new InvalidCastException($"object '{rootNode.Name}' of version '{rootNode.Attributes.GetNamedItem(Versioning.VERSION_NAME).Value}' is not version '{Config.Version}'!");
+				throw new VersionMismatchException(Version.Parse(rootNode.Attributes.GetNamedItem(Versioning.VERSION_NAME).Value), Config.Version);//$"object '{rootNode.Name}' of version '{}' is not version '{Config.Version}'!");
 			T returnObject = (T)ReadObject(rootNode, rootType);
 			return returnObject;
 		}
+		/// <summary>
+		/// Reads an object, and hopefully returning a result.
+		/// </summary>
+		/// <param name="targetNode">The current object's representative node.</param>
+		/// <param name="toType">The objects assumed defined type.</param>
+		/// <returns>The parsed object, and the fields under it.</returns>
+		/// <exception cref="InvalidCastException"></exception>
+		/// <exception cref="MissingFieldException"></exception>
 		public object ReadObject(XmlNode targetNode, Type toType = null)
 		{
 			if (targetNode == null)
@@ -224,6 +270,12 @@
 				return true;
 			}
 		}
+		/// <summary>
+		/// Adds a reference type to its internal dictionary, assuming it is enabled
+		/// and has attributes to find such data.
+		/// </summary>
+		/// <param name="element">The element to search through and mark.</param>
+		/// <param name="value">The created class to reference to.</param>
 		public void AddReferenceTypeToDictionary(XmlElement element, object value)
 		{
 			if (Config.UseSingleInstanceInsteadOfMultiple == false)
@@ -236,22 +288,14 @@
 			int id = int.Parse(attribute.Value);
 			referenceTypes.Add(id, value);
 		}
-		public string GetStringValue(in FieldInfo info, XmlNode parent)
-		{
-			string nameToSearch = info.Name;
-			if (OVSXmlNamedAsAttribute.HasName(info, out string namedAs))
-				nameToSearch = namedAs;
-			if (OVSXmlAttributeAttribute.IsAttribute(info, out var contents))
-			{
-				if (!string.IsNullOrEmpty(contents.CustomName))
-					nameToSearch = contents.CustomName;
-				XmlNode attribute = parent.Attributes.GetNamedItem(nameToSearch);
-				return attribute.Value;
-			}
-			XmlNode element = parent.SelectSingleNode(nameToSearch);
-
-			return element.InnerText;
-		}
+		/// <summary>
+		/// Sets the field info via the <paramref name="parent"/>. It is its own
+		/// method for considering readonly fields.
+		/// </summary>
+		/// <param name="info"></param>
+		/// <param name="parent"></param>
+		/// <param name="setting"></param>
+		/// <exception cref="Exception"></exception>
 		public void SetFieldValue(FieldInfo info, object parent, object setting)
 		{
 			if (info.IsInitOnly)

@@ -48,8 +48,17 @@
 		private static OSDirectory m_streaming;
 #endif
 
+		/// <summary>
+		/// Creates a new instance based off of an existing info directory.
+		/// </summary>
 		public OSDirectory(DirectoryInfo info) : this(info.FullName) { }
+		/// <summary>
+		/// Copies the directory as a separate reference type.
+		/// </summary>
 		public OSDirectory(OSDirectory source) : base(source.FullPath) { }
+		/// <summary>
+		/// Initializes a directory info from a string path.
+		/// </summary>
 		public OSDirectory(OSPath fullPath) : base(fullPath) { }
 
 		/// <summary>

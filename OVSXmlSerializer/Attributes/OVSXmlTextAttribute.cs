@@ -10,11 +10,17 @@
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class OVSXmlTextAttribute : Attribute
 	{
+		/// <summary>
+		/// Checks if an object is the text field, instead of having elements.
+		/// </summary>
 		public static bool IsText(StructuredObject @object)
 		{
 			return @object.HasAttribute<OVSXmlTextAttribute>()
 				|| @object.HasAttribute<System.Xml.Serialization.XmlTextAttribute>();
 		}
+		/// <summary>
+		/// Checks if an field is the text field, instead of having elements.
+		/// </summary>
 		public static bool IsText(FieldInfo field)
 		{
 			Type type = field.FieldType;

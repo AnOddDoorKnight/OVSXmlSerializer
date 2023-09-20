@@ -151,7 +151,7 @@
 			return true;
 		}
 	}
-	internal class TimespanSerializer : ICustomSerializer
+	internal class TimeSpanSerializer : ICustomSerializer
 	{
 		public bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output)
 		{

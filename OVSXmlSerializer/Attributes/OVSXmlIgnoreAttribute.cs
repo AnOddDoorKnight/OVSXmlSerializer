@@ -5,17 +5,25 @@
 	using System.Reflection;
 
 	/// <summary>
-	/// When being serialized by <see cref="XmlSerializer"/>, it will write the
+	/// When being serialized by <see cref="OVSXmlSerializer"/>, it will write the
 	/// name listed here instead of the field name.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum, AllowMultiple = false, Inherited = true)]
 	public class OVSXmlIgnoreAttribute : Attribute
 	{
+		/// <summary>
+		/// Checks if the object has the ignore attribute, or the normal system
+		/// xml equivalent.
+		/// </summary>
 		public static bool Ignore(StructuredObject @object)
 		{
 			return @object.HasAttribute<OVSXmlIgnoreAttribute>() 
 				|| @object.HasAttribute<System.Xml.Serialization.XmlIgnoreAttribute>();
 		}
+		/// <summary>
+		/// Checks if the field has the ignore attribute, the object itself, 
+		/// along with the normal xml system equivalent.
+		/// </summary>
 		public static bool Ignore(FieldInfo field)
 		{
 			Type type = field.FieldType;

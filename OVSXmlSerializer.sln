@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSXmlSerializer", "OVSXmlS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OVSTester", "OVSTester\OVSTester.csproj", "{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Console Test", "Console Test\Console Test.csproj", "{C9293863-78EC-49AF-8BCF-088A7AD8E560}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAB6F46B-3BDA-4F10-9D85-4135E0194B8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9293863-78EC-49AF-8BCF-088A7AD8E560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9293863-78EC-49AF-8BCF-088A7AD8E560}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9293863-78EC-49AF-8BCF-088A7AD8E560}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9293863-78EC-49AF-8BCF-088A7AD8E560}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -58,6 +58,7 @@
 
 	<ItemGroup>
 		<Folder Include="bin\Debug\netcoreapp2.0\" />
+		<Folder Include="Version Auto-Converters\" />
 		<Folder Include="Properties\PublishProfiles\" />
 	</ItemGroup>
 

@@ -30,6 +30,12 @@
 			return castie == null ? null : new OVSXmlAttributeAttribute(castie.AttributeName);
 		}
 
+		/// <summary>
+		/// Checks if the object is an attribute attribute, or the xml attribute's
+		/// attribute attribute.
+		/// </summary>
+		/// <param name="object">The object to check.</param>
+		/// <param name="attribute">Gets the attributed attributes attribute for the object that wants to be an attribute for the xml elements that can hold attributes.</param>
 		public static bool IsAttribute(StructuredObject @object, out OVSXmlAttributeAttribute attribute)
 		{
 			if (@object.HasAttribute(out attribute))
@@ -80,6 +86,12 @@
 			return false;
 		}
 
+		/// <summary>
+		/// Checks if the type has an attribute attribute, or the xml attribute's
+		/// attribute attribute.
+		/// </summary>
+		/// <param name="currentType">The object to check.</param>
+		/// <param name="output">Gets the attributed attributes attribute for the object that wants to be an attribute for the xml elements that can hold attributes.</param>
 		public static bool IsAttribute(Type currentType, out OVSXmlAttributeAttribute output)
 		{
 			var attributeType = currentType.GetCustomAttribute<OVSXmlAttributeAttribute>();

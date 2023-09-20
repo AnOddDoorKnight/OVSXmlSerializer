@@ -10,10 +10,26 @@
 	/// </summary>
 	public sealed class OSFile : OSSystemInfo
 	{
+		/// <summary>
+		/// Explicitly converts a <see cref="FileInfo"/> to an <see cref="OSFile"/>
+		/// </summary>
 		public static explicit operator FileInfo(OSFile file) => new FileInfo(file.FullPath);
+		/// <summary>
+		/// Explicitly converts a <see cref="OSFile"/> to an <see cref="FileInfo"/>
+		/// </summary>
 		public static explicit operator OSFile(FileInfo file) => new OSFile(file);
+
+		/// <summary>
+		/// Creates a metadata or file info via directory or path.
+		/// </summary>
 		public OSFile(OSPath fullPath) : base(fullPath) { }
+		/// <summary>
+		/// Copies an OSFile as another reference.
+		/// </summary>
 		public OSFile(OSFile source) : base(source.FullPath) { }
+		/// <summary>
+		/// Converts a fileinfo to an OSfile.
+		/// </summary>
 		public OSFile(FileInfo info) : base(info.FullName) { }
 
 		/// <summary>

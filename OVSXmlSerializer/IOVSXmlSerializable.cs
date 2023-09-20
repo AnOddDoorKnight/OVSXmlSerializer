@@ -11,6 +11,10 @@
 	/// Instead of writing automatically, this allows you to have more control
 	/// over saving the object.
 	/// </summary>
+	/// <remarks>
+	/// Something like <see cref="ICustomSerializer"/> as their own class provides
+	/// more control and allows usage of writers and readers to serialize.
+	/// </remarks>
 	public interface IOVSXmlSerializable
 	{
 		/// <summary>

@@ -4,6 +4,10 @@
 	using System;
 	using System.Reflection;
 
+	/// <summary>
+	/// An attribute that specifically causes an object or field to ignore
+	/// an end-user's custom serializers. Useful for considering interfaces.
+	/// </summary>
 	public class OVSXmlIgnoreConfigsAttribute : Attribute
 	{
 		internal static bool Ignore(StructuredObject @object)

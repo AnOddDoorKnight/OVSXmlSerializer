@@ -1,17 +1,19 @@
-﻿namespace OVSTester;
+﻿/*
+namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OVSXmlSerializer;
+using System.IO;
 
 [TestClass]
 public class AttributeTests
 {
-	/*
 	[TestMethod("XmlNamed Attribute")]
 	public void XmlNamed()
 	{
 		const int IGNORED_VALUE = 5;
 		var test = new XmlNamedStructTest() { bruh = true, bruhhy = IGNORED_VALUE };
-		XmlSerializer<XmlNamedStructTest> serializer = new();
+		OVSXmlSerializer<XmlNamedStructTest> serializer = new();
 		MemoryStream stream = serializer.Serialize(test);
 		Assert.IsTrue(XmlDocumentExtras.LoadNew(stream).SelectSingleNode($"{nameof(XmlNamedStructTest)}//Sex") != null);
 		stream.Position = 0;
@@ -125,5 +127,6 @@ public class AttributeTests
 		[XmlText]
 		public string ohpdifbr = "hoahaha";
 	}
-	*/
+	
 }
+*/
