@@ -1,6 +1,6 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSSerializer
 {
-	using global::OVSXmlSerializer.Internals;
+	using global::OVSSerializer.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Reflection;
@@ -75,6 +75,9 @@
 		{
 			serializerInterfaces = new LinkedList<ICustomSerializer>();
 		}
+		/// <summary>
+		/// Adds a new custom serializer to parse in a custom way.
+		/// </summary>
 		public void Add(ICustomSerializer serializer) => serializerInterfaces.AddLast(serializer);
 
 		internal bool Write<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject structuredObject, string name, out XmlNode output)

@@ -1,7 +1,7 @@
-﻿namespace OVSXmlSerializer.Internals
+﻿namespace OVSSerializer.Internals
 {
-	using global::OVSXmlSerializer.Exceptions;
-	using global::OVSXmlSerializer;
+	using global::OVSSerializer.Exceptions;
+	using global::OVSSerializer;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -11,6 +11,7 @@
 	using System.Xml;
 	using System.Xml.Linq;
 	using System.Xml.Serialization;
+	using System.Data;
 
 	/// <summary>
 	/// A writer that converts a single object into a full <see cref="XmlDocument"/>,
@@ -170,7 +171,7 @@
 							case ReadonlyFieldHandle.Ignore:
 								continue;
 							case ReadonlyFieldHandle.ThrowError:
-								throw new InvalidOperationException($"{field.Name} from {obj.ValueType.Name} is readonly!");
+								throw new ReadOnlyException($"{field.Name} from {obj.ValueType.Name} is readonly!");
 							case ReadonlyFieldHandle.Continue:
 								break;
 						}

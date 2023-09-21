@@ -1,6 +1,6 @@
-﻿namespace OVSXmlSerializer.Internals
+﻿namespace OVSSerializer.Internals
 {
-	using global::OVSXmlSerializer.Extras;
+	using global::OVSSerializer.Extras;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -8,6 +8,9 @@
 	using System.Xml;
 	using System.Xml.Linq;
 
+	/// <summary>
+	/// 
+	/// </summary>
 	public class ListInterfaceSerializer : ICustomSerializer
 	{
 		public bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)

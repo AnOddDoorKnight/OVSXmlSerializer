@@ -1,11 +1,11 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSSerializer
 {
 	using System.IO;
 	using System;
 	using System.Reflection;
 	using System.Xml;
 	using System.Xml.Serialization;
-	using global::OVSXmlSerializer.Internals;
+	using global::OVSSerializer.Internals;
 
 	/// <summary>
 	/// A class that serializes or deserializes an object assuming that base class is a

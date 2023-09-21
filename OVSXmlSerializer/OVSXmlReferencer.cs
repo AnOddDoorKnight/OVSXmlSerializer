@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer.Internals
+﻿namespace OVSSerializer.Internals
 {
 	using System;
 	using System.Collections.Generic;

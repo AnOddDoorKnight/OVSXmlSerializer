@@ -1,9 +1,11 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OVSXmlSerializer;
+using OVSSerializer;
+using OVSSerializer.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -51,7 +53,7 @@ public class ObjectSerialization
 	public void ReadonlySerialize()
 	{
 		object @readonly = new Readonly(4);
-		Assert.ThrowsException<InvalidOperationException>(() => new OVSXmlSerializer().Serialize(@readonly));
+		Assert.ThrowsException<SerializationFailedException>(() => new OVSXmlSerializer(new OVSConfig() { HandleReadonlyFields = ReadonlyFieldHandle.ThrowError }).Serialize(@readonly));
 	}
 	[TestMethod("Key/Value Pair Serialization")]
 	public void KeyValueSerializer()
@@ -123,7 +125,7 @@ public class ObjectSerialization
 	{
 		OVSXmlSerializer<XmlParameteredClassTest> tester = new();
 		void Action() => tester.Serialize(new XmlParameteredClassTest("h"));
-		Assert.ThrowsException<NullReferenceException>(Action);
+		Assert.ThrowsException<SerializationFailedException>(Action);
 
 	}
 	[TestMethod("Xml Serializer Interface")]
@@ -196,7 +198,7 @@ internal class ByteArraySim : IOVSXmlSerializable
 		values = Array.ConvertAll(obj.InnerText.Split('.'), @string => byte.Parse(@string));
 	}
 
-	void IOVSXmlSerializable.Write(XmlDocument document, XmlNode writer)
+	void IOVSXmlSerializable.Write(XmlNode writer)
 	{
 		writer.InnerText = string.Join(".", values);
 	}

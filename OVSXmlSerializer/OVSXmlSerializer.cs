@@ -1,7 +1,7 @@
-﻿namespace OVSXmlSerializer
+﻿namespace OVSSerializer
 {
-	using global::OVSXmlSerializer.Internals;
-	using global::OVSXmlSerializer.IO;
+	using global::OVSSerializer.Internals;
+	using global::OVSSerializer.IO;
 	using System;
 	using System.IO;
 	using System.Xml;
@@ -149,6 +149,14 @@
 			using (MemoryStream stream = Serialize(item, rootElementName))
 			using (FileStream fileStream = File.Open(fileLocation, FileMode.Create))
 				stream.CopyTo(fileStream);
+		}
+		/// <summary>
+		/// Serializes into the inputted stream as an XML document.
+		/// </summary>
+		public void Serialize(Stream writeTo, T item)
+		{
+			using (MemoryStream memoryStream = Serialize(item))
+				memoryStream.CopyTo(writeTo);
 		}
 		#endregion
 

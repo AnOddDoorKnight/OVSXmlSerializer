@@ -1,7 +1,7 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OVSXmlSerializer;
+using OVSSerializer;
 using System;
 using System.IO;
 

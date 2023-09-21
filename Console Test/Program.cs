@@ -1,4 +1,4 @@
-﻿using OVSXmlSerializer;
+﻿using OVSSerializer;
 
 internal class Program
 {

@@ -1,10 +1,11 @@
-﻿namespace OVSXmlSerializer.Internals
+﻿namespace OVSSerializer.Internals
 {
-	using global::OVSXmlSerializer.Exceptions;
-	using global::OVSXmlSerializer.Extras;
+	using global::OVSSerializer.Exceptions;
+	using global::OVSSerializer.Extras;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Data;
 	using System.Linq;
 	using System.Reflection;
 	using System.Runtime.InteropServices;
@@ -302,7 +303,7 @@
 				switch (Config.HandleReadonlyFields)
 				{
 					case ReadonlyFieldHandle.ThrowError:
-						throw new Exception($"{info.Name} field is readonly!");
+						throw new ReadOnlyException($"{info.Name} field is readonly!");
 					case ReadonlyFieldHandle.Ignore:
 						return;
 					case ReadonlyFieldHandle.Continue:

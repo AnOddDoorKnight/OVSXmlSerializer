@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer.IO
+﻿namespace OVSSerializer.IO
 {
 	using System.Collections.Generic;
 	using System.IO;
@@ -98,7 +98,7 @@
 		/// <summary>
 		/// Opens the file as a stream.
 		/// </summary>
-		public FileStream Open(FileMode fileMode, FileAccess fileAccess) => 
+		public FileStream Open(FileMode fileMode, FileAccess fileAccess) =>
 			File.Open(FullPath.Normalized, fileMode, fileAccess);
 		/// <summary>
 		/// Opens and keeps the data on the file to add onto, write-only. 
@@ -120,7 +120,7 @@
 		public string ReadAllText()
 		{
 			using (FileStream stream = OpenRead())
-			return new StreamReader(stream).ReadToEnd();
+				return new StreamReader(stream).ReadToEnd();
 		}
 		/// <summary>
 		/// Reads all text and splits on new line, or the input parameter.

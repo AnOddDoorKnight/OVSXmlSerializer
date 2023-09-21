@@ -1,4 +1,4 @@
-﻿namespace OVSXmlSerializer.Exceptions
+﻿namespace OVSSerializer.Exceptions
 {
 	using System;
 	using System.Collections.Generic;
