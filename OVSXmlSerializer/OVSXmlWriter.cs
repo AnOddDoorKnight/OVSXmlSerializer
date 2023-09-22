@@ -23,7 +23,7 @@
 	/// uses quite a bit of global variables.
 	/// </remarks>
 	/// <typeparam name="T">The object being serialized as their own 'parent' type.</typeparam>
-	public class OVSXmlWriter<T>
+	public class OVSXmlWriter
 	{
 		/// <summary>
 		/// Throws an exception if the specified type does not have a parameterless
@@ -44,42 +44,36 @@
 		/// </summary>
 		public XmlDocument Document { get; private set; }
 		/// <summary>
-		/// The creator source
-		/// </summary>
-		public OVSXmlSerializer<T> Source { get; }
-		/// <summary>
 		/// Taking from <see cref="Source"/> to get the config.
 		/// </summary>
-		public OVSConfig Config => Source.Config;
+		public IOVSConfig Config { get; }
 		internal OVSXmlReferencer Referencer { get; private set; }
 
 		/// <summary>
 		/// Creates a new instance with a source serializer, which tracks configs.
 		/// </summary>
-		public OVSXmlWriter(OVSXmlSerializer<T> source)
+		public OVSXmlWriter(IOVSConfig config)
 		{
-			this.Source = source;
+			Config = config;
 		}
 
 		/// <summary>
 		/// Serializes a single object into a xml file, using <see cref="Document"/>
 		/// as to save its changes.
 		/// </summary>
-		/// <param name="obj"></param>
-		/// <param name="name"></param>
-		/// <returns><see cref="Document"/></returns>
-		/// <exception cref="Exception"></exception>
-		public XmlDocument SerializeObject(in T obj, string name)
+		/// <param name="obj">The object to serialize.</param>
+		/// <param name="type">The assumed base type of field.</param>
+		/// <param name="name">The root name of the XML document.</param>
+		public XmlDocument SerializeObject(in object obj, Type type, string name)
 		{
 			Document = new XmlDocument();
-			if (Source.Config.UseSingleInstanceInsteadOfMultiple)
+			if (Config.UseSingleInstanceInsteadOfMultiple)
 				Referencer = new OVSXmlReferencer(Document, Config);
 			else
 				Referencer = null; 
-			Type startingType = typeof(object); 
-			Type[] genericTypes = Source.GetType().GetGenericArguments();
-			if (genericTypes.Length > 0)
-				startingType = genericTypes[0];
+			Type startingType = typeof(object);
+			if (type.IsAssignableFrom(obj?.GetType() ?? typeof(object)))
+				startingType = type;
 			var structuredObject = new StructuredObject(obj, startingType);
 			if (!structuredObject.IsNull)
 			{
@@ -98,7 +92,7 @@
 					Document.PrependChild(declaration);
 				}
 				// Then write version number if enabled
-				if (!(Config.Version is null) && Config.Version != new Version(1, 0))
+				if (!(Config.Version is null) && Document?.LastChild?.Attributes != null)
 				{
 					XmlAttribute versionAttribute = Document.CreateAttribute(Versioning.VERSION_NAME);
 					versionAttribute.Value = Config.Version.ToString();

@@ -13,7 +13,7 @@ public class ImplicitObjectSerialization
 	public void SimpleImplicitSerialize()
 	{
 		const string value = "bruh";
-		OVSXmlSerializer serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		OVSXmlSerializer serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
 		Assert.AreEqual(value, (string)serializer.Deserialize(stream));
 	}
@@ -23,7 +23,7 @@ public class ImplicitObjectSerialization
 		List<string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add("bruh");
-		OVSXmlSerializer<List<string>> serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		OVSXmlSerializer<List<string>> serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
 		List<string> result = serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
@@ -34,7 +34,7 @@ public class ImplicitObjectSerialization
 		Dictionary<string, int> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add($"bruh{i}", i);
-		OVSXmlSerializer<Dictionary<string, int>> serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		OVSXmlSerializer<Dictionary<string, int>> serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
 		string XML = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;

@@ -17,7 +17,7 @@ public class ObjectSerialization
 	public void EnumSerialize()
 	{
 		OVSXmlSerializer<Environment.SpecialFolder> serializer = new();
-		serializer.Config.OmitXmlDelcaration = false;
+		serializer.OmitXmlDelcaration = false;
 		using MemoryStream stream = serializer.Serialize(Environment.SpecialFolder.System);
 		serializer.Deserialize(stream);
 		return;
@@ -53,7 +53,7 @@ public class ObjectSerialization
 	public void ReadonlySerialize()
 	{
 		object @readonly = new Readonly(4);
-		Assert.ThrowsException<SerializationFailedException>(() => new OVSXmlSerializer(new OVSConfig() { HandleReadonlyFields = ReadonlyFieldHandle.ThrowError }).Serialize(@readonly));
+		Assert.ThrowsException<SerializationFailedException>(() => new OVSXmlSerializer() { HandleReadonlyFields = ReadonlyFieldHandle.ThrowError }.Serialize(@readonly));
 	}
 	[TestMethod("Key/Value Pair Serialization")]
 	public void KeyValueSerializer()
@@ -83,7 +83,7 @@ public class ObjectSerialization
 		Dictionary<int, string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue), "bruh");
-		OVSXmlSerializer<Dictionary<int, string>> serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.AlwaysIncludeTypes });
+		OVSXmlSerializer<Dictionary<int, string>> serializer = new();
 		var stream = serializer.Serialize(value, "Dictionary");
 		string report = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
@@ -106,7 +106,7 @@ public class ObjectSerialization
 		string[] value = { "bruh" };
 		var stream = OVSXmlSerializer.Shared.Serialize(value);
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
-		Assert.IsTrue(strings[2].StartsWith("\t"), $"'{strings[3]}' Does not match '{OVSXmlSerializer.Shared.Config.IndentChars}'!");
+		Assert.IsTrue(strings[2].StartsWith("\t"), $"'{strings[3]}' Does not match '{OVSXmlSerializer.Shared.IndentChars}'!");
 	}
 	[TestMethod("Class Serialization")]
 	public void StandardSerialization()
@@ -114,7 +114,7 @@ public class ObjectSerialization
 		StandardClass value = new();
 		value.value = null;
 		OVSXmlSerializer<StandardClass> xmlSerializer = new();
-		xmlSerializer.Config.IgnoreUndefinedValues = true;
+		xmlSerializer.IgnoreUndefinedValues = true;
 		using var stream = xmlSerializer.Serialize(value);
 		StandardClass result = xmlSerializer.Deserialize(stream);
 		Assert.AreEqual(new StandardClass().value, result.value);
@@ -162,7 +162,7 @@ public class ObjectSerialization
 		CircularSerialization serialization = new();
 		serialization.circularSerialization = serialization;
 		OVSXmlSerializer<CircularSerialization> serializer = new();
-		serializer.Config.UseSingleInstanceInsteadOfMultiple = true;
+		serializer.UseSingleInstanceInsteadOfMultiple = true;
 		using var stream = serializer.Serialize(serialization);
 		string outputStr = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;

@@ -23,7 +23,7 @@
 		/// <param name="suggestedName">The name to write as the element or attribute.</param>
 		/// <param name="output">The given XmlNode. Note that you still need to write to the <paramref name="parentNode"/>, this is for niche internals.</param>
 		/// <returns>If it can actually parse the item.</returns>
-		bool CheckAndWrite<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output);
+		bool CheckAndWrite(OVSXmlWriter writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output);
 		/// <summary>
 		/// Checks if it can first parse the item, then attempts to read it
 		/// given the parameters.
@@ -37,7 +37,7 @@
 		/// <param name="node">The node where which it came from.</param>
 		/// <param name="output">The read node.</param>
 		/// <returns>If it can actually parse the item.</returns>
-		bool CheckAndRead<T>(OVSXmlReader<T> reader, Type type, XmlNode node, out object output);
+		bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output);
 	}
 	/// <summary>
 	/// A custom-made list that handles parsing various interfaces and objects
@@ -80,21 +80,21 @@
 		/// </summary>
 		public void Add(ICustomSerializer serializer) => serializerInterfaces.AddLast(serializer);
 
-		internal bool Write<T>(OVSXmlWriter<T> writer, XmlNode parentNode, StructuredObject structuredObject, string name, out XmlNode output)
+		internal bool Write(OVSXmlWriter writer, XmlNode parentNode, StructuredObject structuredObject, string name, out XmlNode output)
 		{
 			for (var node = serializerInterfaces.Last; node != null; node = node.Previous)
 			{
-				if (node.Value.CheckAndWrite<T>(writer, parentNode, structuredObject, name, out output))
+				if (node.Value.CheckAndWrite(writer, parentNode, structuredObject, name, out output))
 					return true;
 			}
 			output = null;
 			return false;
 		}
-		internal bool Read<T>(OVSXmlReader<T> reader, in Type type, in XmlNode node, out object output)
+		internal bool Read(OVSXmlReader reader, in Type type, in XmlNode node, out object output)
 		{
 			for (var listNode = serializerInterfaces.Last; listNode != null; listNode = listNode.Previous)
 			{
-				if (listNode.Value.CheckAndRead<T>(reader, type, node, out output))
+				if (listNode.Value.CheckAndRead(reader, type, node, out output))
 					return true;
 			}
 			output = null;

@@ -3,7 +3,6 @@
 	using System;
 	using SysPath = System.IO.Path;
 
-	/*
 	public sealed class OSExtension
 	{
 		public static bool HasExtension(in string inputPath) =>
@@ -11,7 +10,7 @@
 		public static bool HasExtension(in string inputPath, out int startExtension)
 		{
 			string trimmed = inputPath.Trim();
-			if (trimmed.EndsWith(OSPath.DirectorySeparatorChar))
+			if (trimmed.EndsWith(OSPath.DirectorySeparatorChar.ToString()))
 			{
 				startExtension = -1;
 				return false;
@@ -29,10 +28,10 @@
 		public static string AddExtension(string input, string extension)
 		{
 			string trimmed = input.Trim();
-			if (trimmed.EndsWith(OSPath.DirectorySeparatorChar))
+			if (trimmed.EndsWith(OSPath.DirectorySeparatorChar.ToString()))
 				throw new InvalidCastException($"'{input}' is not a file path!");
 			trimmed = RemoveExtension(trimmed);
-			if (!extension.StartsWith('.'))
+			if (!extension.StartsWith("."))
 				extension = '.' + extension;
 			string output = trimmed + extension;
 			return output;
@@ -65,5 +64,4 @@
 		public override string ToString() => extension;
 		public string NameWithoutExtension() => SysPath.GetFileNameWithoutExtension(FullPath);
 	}
-	*/
 }

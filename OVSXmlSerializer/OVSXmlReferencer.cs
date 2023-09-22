@@ -27,9 +27,9 @@
 
 
 		private readonly List<ReferencedObject> objects; 
-		public OVSConfig Config { get; }
+		public IOVSConfig Config { get; }
 		public XmlDocument Document { get; }
-		public OVSXmlReferencer(XmlDocument document, OVSConfig config)
+		public OVSXmlReferencer(XmlDocument document, IOVSConfig config)
 		{
 			this.Config = config;
 			this.Document = document;

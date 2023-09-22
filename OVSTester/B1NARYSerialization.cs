@@ -17,7 +17,7 @@ public class B1NARYSerialization
 		Dictionary<string, object> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add(Random.Shared.Next(int.MinValue, int.MaxValue).ToString(), Random.Shared.Next(int.MinValue, int.MaxValue));
-		OVSXmlSerializer serializer = new(new OVSConfig() { TypeHandling = IncludeTypes.SmartTypes });
+		OVSXmlSerializer serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value, "PlayerConfig");
 		string str = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;

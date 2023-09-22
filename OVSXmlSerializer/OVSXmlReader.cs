@@ -22,8 +22,7 @@
 	/// Not thread safe if you want to use the writer for multiple serializers; 
 	/// uses quite a bit of global variables.
 	/// </remarks>
-	/// <typeparam name="T">The object being de-serialized as their own 'parent' type.</typeparam>
-	public class OVSXmlReader<T>
+	public class OVSXmlReader
 	{
 		private static readonly IReadOnlyList<Assembly> allAssemblies = AppDomain.CurrentDomain.GetAssemblies().Reverse().ToArray();
 		/// <summary>
@@ -64,21 +63,17 @@
 		/// <summary>
 		/// The creator or source of the reader.
 		/// </summary>
-		public OVSXmlSerializer<T> Source { get; }
-		/// <summary>
-		/// The source's configurations.
-		/// </summary>
-		public OVSConfig Config => Source.Config;
+		public IOVSConfig Config { get; }
 		internal OVSXmlReferencer Referencer { get; private set; }
 
 		/// <summary>
-		/// Creates a new instance, assuming that <paramref name="source"/> is its
+		/// Creates a new instance, assuming that <paramref name="config"/> is its
 		/// creator.
 		/// </summary>
-		/// <param name="source">The creator.</param>
-		public OVSXmlReader(OVSXmlSerializer<T> source)
+		/// <param name="config">The creator.</param>
+		public OVSXmlReader(IOVSConfig config)
 		{
-			this.Source = source;
+			Config = config;
 			referenceTypes = new Dictionary<int, object>();
 		}
 
@@ -87,16 +82,15 @@
 		/// a node or element.
 		/// </summary>
 		/// <param name="document">The document to deserialize.</param>
-		/// <param name="rootType">The root type, this is most likely have been gotten by <typeparamref name="T"/>.</param>
-		/// <returns></returns>
+		/// <param name="rootType">The root type.</param>
 		/// <exception cref="VersionMismatchException"></exception>
-		public virtual T ReadDocument(XmlDocument document, Type rootType)
+		public virtual object ReadDocument(XmlDocument document, Type rootType)
 		{
 			referenceTypes.Clear();
 			XmlNode rootNode = document.LastChild;
 			if (!Versioning.IsVersion(document, Config.Version, Config.VersionLeniency))
 				throw new VersionMismatchException(Version.Parse(rootNode.Attributes.GetNamedItem(Versioning.VERSION_NAME).Value), Config.Version);//$"object '{rootNode.Name}' of version '{}' is not version '{Config.Version}'!");
-			T returnObject = (T)ReadObject(rootNode, rootType);
+			object returnObject = ReadObject(rootNode, rootType);
 			return returnObject;
 		}
 		/// <summary>
