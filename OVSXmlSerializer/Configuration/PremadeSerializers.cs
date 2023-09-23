@@ -4,13 +4,61 @@
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
+	using System.Linq;
+	using System.Reflection;
 	using System.Text;
 	using System.Xml;
 	using System.Xml.Linq;
 
-	/// <summary>
-	/// 
-	/// </summary>
+	public class LinkedListSerializer : ICustomSerializer
+	{
+		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)
+		{
+			if (!CanSerialize(@object.ValueType))
+			{
+				output = null;
+				return false;
+			}
+			OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
+			XmlElement enumerableElement = writer.CreateElement(parent, suggestedName, @object);
+			IEnumerator enumerator = ((IEnumerable)@object.Value).GetEnumerator();
+			while (enumerator.MoveNext())
+			{
+				StructuredObject currentValue = new StructuredObject(enumerator.Current, typeof(object));
+				writer.WriteObject(currentValue, enumerableElement, "LinkedItem");
+			}
+			output = enumerableElement;
+			return true;
+		}
+		public bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output)
+		{
+			if (!CanSerialize(type))
+			{
+				output = null;
+				return false;
+			}
+			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
+			object linkedList = Activator.CreateInstance(type, true);
+			MethodInfo addItem = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
+				.Where(meth => meth.Name == "AddLast")
+				.First(meth => !meth.GetParameters()[0].ParameterType.Name.StartsWith("LinkedListNode"));
+			for (int i = 0; i < xmlNodes.Count; i++)
+			{
+				object input = reader.ReadObject(xmlNodes[i], typeof(object));
+				addItem.Invoke(linkedList, new object[] { input });
+			}
+			output = linkedList;
+			return true;
+		}
+		private bool CanSerialize(Type inType)
+		{
+			if (inType.Namespace != inType.Namespace)
+				return false;
+			if (!inType.Name.StartsWith(nameof(LinkedList<object>)))
+				return false;
+			return true;
+		}
+	}
 	public class ListInterfaceSerializer : ICustomSerializer
 	{
 		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)

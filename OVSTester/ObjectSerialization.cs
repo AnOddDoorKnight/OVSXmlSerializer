@@ -91,6 +91,48 @@ public class ObjectSerialization
 		Assert.IsTrue(output.Count > 0, "output dictionary contains nothing!");
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key) == value.Count, "output doesn't match the contents of the original!");
 	}
+	[TestMethod("Stack Serialization")]
+	public void StackSerialization()
+	{
+		Stack<int> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Push(Random.Shared.Next(int.MinValue, int.MaxValue));
+		OVSXmlSerializer<Stack<int>> serializer = new();
+		var stream = serializer.Serialize(value, "Stack");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		Stack<int> output = serializer.Deserialize(stream);
+		Assert.IsTrue(output.Count > 0, "output list contains nothing!");
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count, "output doesn't match the contents of the original!");
+	}
+	[TestMethod("Queue Serialization")]
+	public void QueueSerialization()
+	{
+		Queue<int> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Enqueue(Random.Shared.Next(int.MinValue, int.MaxValue));
+		OVSXmlSerializer<Queue<int>> serializer = new();
+		var stream = serializer.Serialize(value, "Queue");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		Queue<int> output = serializer.Deserialize(stream);
+		Assert.IsTrue(output.Count > 0, "output list contains nothing!");
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count, "output doesn't match the contents of the original!");
+	}
+	[TestMethod("Linked List Serialization")]
+	public void LinkedListSerialization()
+	{
+		LinkedList<int> value = new();
+		for (int i = 0; i < 10; i++)
+			value.AddLast(Random.Shared.Next(int.MinValue, int.MaxValue));
+		OVSXmlSerializer<LinkedList<int>> serializer = new();
+		var stream = serializer.Serialize(value, "LinkedList");
+		string report = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		LinkedList<int> output = serializer.Deserialize(stream);
+		Assert.IsTrue(output.Count > 0, "output list contains nothing!");
+		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count, "output doesn't match the contents of the original!");
+	}
 	[TestMethod("Empty Class Serialization")]
 	public void ClassSerialization()
 	{

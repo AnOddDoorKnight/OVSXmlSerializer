@@ -61,6 +61,7 @@
 			serializer.Add(new ListInterfaceSerializer());
 			serializer.Add(new ArraySerializer());
 			serializer.Add(new DictionarySerializer());
+			serializer.Add(new LinkedListSerializer());
 			serializer.Add(new DatetimeSerializer());
 			serializer.Add(new TimeSpanSerializer());
 			return serializer;
