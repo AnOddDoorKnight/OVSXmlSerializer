@@ -12,7 +12,7 @@
 		/// <summary>
 		/// The attribute's name for finding the version on the document.
 		/// </summary>
-		public const string VERSION_NAME = "version";
+		public const string VERSION_NAME = "ver";
 		/// <summary>
 		/// Measurement on how <see cref="Versioning"/> should handle variation changes
 		/// 
@@ -91,7 +91,7 @@
 			XmlNode rootNode = document.LastChild;
 			XmlNode versionNode = rootNode.Attributes.GetNamedItem(VERSION_NAME);
 			Version inputVersion = versionNode == null ? new Version(1, 0) : Version.Parse(versionNode.Value);
-			return IsVersion(inputVersion, version, leniency); ;
+			return IsVersion(inputVersion, version, leniency);
 		}
 		/// <summary>
 		/// Checks the version of the XML file.
@@ -101,6 +101,10 @@
 		/// <param name="leniency">The leinency of the check</param>
 		public static bool IsVersion(Version version, Version altVersion, Leniency leniency = Leniency.Strict)
 		{
+			if (version is null)
+				version = new Version(1, 0);
+			if (altVersion is null)
+				altVersion = new Version(1, 0);
 			switch (leniency)
 			{
 				case Leniency.Strict:

@@ -7,7 +7,7 @@
 
 	/// <summary>
 	/// An error that appears when a version checker is mis-matched. Mostly used
-	/// by <see cref="OVSXmlReader{T}"/>
+	/// by <see cref="OVSXmlReader"/>
 	/// </summary>
 	public class VersionMismatchException : Exception
 	{

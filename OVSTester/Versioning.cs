@@ -8,6 +8,13 @@ using System.IO;
 [TestClass]
 public sealed class VersionTester
 {
+	[TestMethod("Null Version")]
+	public void NullVersion()
+	{
+		OVSXmlSerializer<StandardClass> xmlSerializer = new() { Version = null };
+		using var memoryStream = xmlSerializer.Serialize(new StandardClass());
+		Assert.IsTrue(Versioning.IsVersion(memoryStream, new Version(1, 0)));
+	}
 	[TestMethod("Same Version")]
 	public void SameVersion()
 	{

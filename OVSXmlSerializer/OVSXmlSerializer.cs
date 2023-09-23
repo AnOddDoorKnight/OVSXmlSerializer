@@ -27,7 +27,7 @@
 		/// <inheritdoc/>
 		public bool UseSingleInstanceInsteadOfMultiple { get; set; } = true;
 		/// <inheritdoc/>
-		public Version Version { get; set; } = new Version(1, 0);
+		public Version Version { get; set; } = null;
 		/// <inheritdoc/>
 		public bool IgnoreUndefinedValues { get; set; } = false;
 		/// <inheritdoc/>
@@ -53,9 +53,9 @@
 		/// <inheritdoc/>
 		public Encoding Encoding { get; set; } = Encoding.UTF8;
 		/// <inheritdoc/>
-		public XmlWriterSettings AsWriterSettings()
+		public XmlWriterSettings WriterSettings
 		{
-			return new XmlWriterSettings()
+			get => new XmlWriterSettings()
 			{
 				Indent = Indent,
 				IndentChars = IndentChars,
@@ -63,6 +63,14 @@
 				OmitXmlDeclaration = OmitXmlDelcaration,
 				NewLineOnAttributes = NewLineOnAttributes,
 			};
+			set
+			{
+				Indent = value.Indent;
+				IndentChars = value.IndentChars;
+				Encoding = value.Encoding;
+				OmitXmlDelcaration = value.OmitXmlDeclaration;
+				NewLineOnAttributes = value.NewLineOnAttributes;
+			}
 		}
 		#endregion
 
@@ -121,7 +129,7 @@
 			MemoryStream stream = new MemoryStream();
 			if (testOutput is null)
 				return stream;
-			var writer = XmlWriter.Create(stream, AsWriterSettings());
+			var writer = XmlWriter.Create(stream, WriterSettings);
 			var OVSwriter = new OVSXmlWriter(this);
 			XmlDocument document = OVSwriter.SerializeObject(item, typeof(T), rootElementName);
 			document.Save(writer);
@@ -240,6 +248,30 @@
 			return (T)output;
 		}
 		/// <summary>
+		/// Converts a xml file into an object. 
+		/// </summary>
+		/// <param name="input"> The stream that contains the XML file. </param>
+		/// <param name="rootElementName">The root element name.</param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
+		public virtual T Deserialize(Stream input, out string rootElementName)
+		{
+			XmlDocument document = new XmlDocument();
+			try
+			{
+				document.Load(input);
+			}
+			catch (XmlException exception) when (exception.Message == "Root element is missing.")
+			{
+				rootElementName = null;
+				return default;
+			}
+			rootElementName = document.LastChild.Name;
+			object output = new OVSXmlReader(this).ReadDocument(document, typeof(T));
+			return (T)output;
+		}
+		/// <summary>
 		/// Converts a xml file into an object.
 		/// </summary>
 		/// <param name="fileLocation">The file location that contains the XML contents. </param>
@@ -250,6 +282,18 @@
 		{
 			using (FileStream stream = fileLocation.OpenRead())
 				return Deserialize(stream);
+		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
+		public T Deserialize(FileInfo fileLocation, out string rootElementName)
+		{
+			using (FileStream stream = fileLocation.OpenRead())
+				return Deserialize(stream, out rootElementName);
 		}
 		/// <summary>
 		/// Converts a xml file into an object.
@@ -270,10 +314,34 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
+		public T Deserialize(OSFile fileLocation, out string rootElementName)
+		{
+			using (FileStream stream = fileLocation.OpenRead())
+				return Deserialize(stream, out rootElementName);
+		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
 		public T Deserialize(string fileLocation)
 		{
 			using (FileStream stream = File.OpenRead(fileLocation))
 				return Deserialize(stream);
+		}
+		/// <summary>
+		/// Converts a xml file into an object.
+		/// </summary>
+		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <returns> 
+		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
+		/// </returns>
+		public T Deserialize(string fileLocation, out string rootElementName)
+		{
+			using (FileStream stream = File.OpenRead(fileLocation))
+				return Deserialize(stream, out rootElementName);
 		}
 		#endregion
 

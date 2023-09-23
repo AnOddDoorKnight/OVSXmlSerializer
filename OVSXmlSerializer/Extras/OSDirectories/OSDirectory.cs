@@ -14,7 +14,9 @@
 	/// </summary>
 	public sealed class OSDirectory : OSSystemInfo, IEquatable<OSDirectory>, IEquatable<string>
 	{
+		/// <summary> Converts OSDir to system directory info.</summary>
 		public static explicit operator DirectoryInfo(OSDirectory file) => new DirectoryInfo(file.FullPath);
+		/// <summary> Converts system directory info to OSDir.</summary>
 		public static explicit operator OSDirectory(DirectoryInfo file) => new OSDirectory(file);
 
 #if UNITY_2017_1_OR_NEWER
@@ -281,11 +283,13 @@
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(OSDirectory other)
 		{
 			return Equals(other.FullPath);
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(string other)
 		{
 			string left = FullPath.ToString();

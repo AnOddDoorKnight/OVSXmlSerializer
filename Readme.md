@@ -2,22 +2,16 @@
 
 ..Or OVSXmlSerializer for short.
 
-
-
-The system itself works very similar to how the XML serializer works normally, 
-but is meant to be worked with the `object` or more 'undefined' data that the 
-ordinary XML serializer have difficulty handling. You can turn this off for 
-more traditional formatting with the config class, but it does reveal the issue 
-once again. Additionally, It can handle reference types; allowing multiple 
-separate fields that contain the same instance; It also allows you to connect a 
-built-in debugger to specifically track what is wrong with the 
-serialization/deserialization if needed. 
+The system functions very simply: You put an object inside and it will serialize
+into a file or such in around 1-2 lines of code. Additionally, is meant to be 
+worked with the `object` or more 'undefined' data that the ordinary XML serializer 
+have difficulty handling, along with simulating reference types via ID.
 
 
 Unlike the traditional XML Serializer, this will use the type parameters in the
-class to automatically differentiate enums and arrays, which will remove the need
-to mark fields as `[XmlArray]` or `[XmlEnum]`.
-
+class to automatically differentiate enums and arrays, which will remove the 
+need to mark fields as `[XmlArray]` or `[XmlEnum]`. In place, there are custom 
+serializers that you can insert in the config.
 
 ## Explicit Types
 
@@ -26,9 +20,9 @@ handling.* What this does is that it allows it to reserve its derived types when
 considering base types, down to the level of `object`. This feature can be turned
 on or off.
 
-This feature is enabled by default, but creating `OVSConfig`, this can be turned 
-off. It will also implicitly convert `System.Xml.XmlWriterSettings` to the config
-to ensure smooth transtion between systems.
+This feature is enabled by default, but modifying the serializer/config interface, 
+this can be turned  off. It will also implicitly convert `System.Xml.XmlWriterSettings` 
+to the config to ensure smooth transtion between systems.
 
 There are 3 options you can enable:
 1. **Always Included** - Regardless of the situation, it will write the type.
@@ -44,11 +38,12 @@ Like the default system XML serializer, they pose the same requirements such as:
 the readonly handle option in the config seems to fix this.
 
 There are two serializers, the generic and the non-generic. The non-generic derives
-from the generic as object for performance reasons, and is created as instances
-due to configurations.
+from the generic as object for simplicity, and is typically created as instances
+due to configurations. Though, there is a shared static parameter for both generic
+and non-generic serializers.
 
 When done serializing as an XML, it typically returns a stream, or applies to a
-new or existing file.
+new or existing file or stream.
 
 Note that it does removes the initial xml version and encoding at the top, as it
 always to be assumed UTF-8 and on version 1.0. This can be changed in the config
@@ -97,3 +92,13 @@ added first:
    provide generics.
 4. `DatetimeSerializer` Serializes datetime as normal
 5. `TimeSpanSerializer` First, and serializes timespan as normal
+
+## OSDirectories
+
+*introduced in 3.0.0*
+
+Sub-branch of the current serializer, and included as an extra. Simply put, I
+couldn't find a good library replacement for fileInfo since it doesn't perform 
+well with Unix systems; So i took someone else's (cant remember who) and added
+some additional functions. Have fun with that i suppose! Uses their own pre-processor
+definition in case i manage to port it as a standalone library.

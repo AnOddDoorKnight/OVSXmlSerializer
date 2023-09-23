@@ -3,7 +3,10 @@
 	using System;
 	using SysPath = System.IO.Path;
 
-	public sealed class OSExtension
+	/// <summary>
+	/// A class that handles extensions. Exists to easily modify extensions easily.
+	/// </summary>
+	public static class OSExtension
 	{
 		public static bool HasExtension(in string inputPath) =>
 			HasExtension(inputPath, out _);
@@ -40,28 +43,28 @@
 
 
 
-		private string extension;
-		private readonly OSFile pairedFile;
-		private OSPath FullPath { get => pairedFile.FullPath; set => pairedFile.FullPath = value; }
-		internal OSExtension(OSFile pairedFile)
-		{
-			this.pairedFile = pairedFile;
-			extension = SysPath.GetExtension(pairedFile.FullPath);
-		}
-
-		public bool Exists => !string.IsNullOrEmpty(extension);
-
-		public void Set(string newExtension)
-		{
-			string fullPath = FullPath.ToString();
-			if (Exists)
-				FullPath = fullPath.Remove(fullPath.IndexOf(extension)) + newExtension;
-			else
-				FullPath = fullPath + newExtension;
-			extension = newExtension;
-		}
-
-		public override string ToString() => extension;
-		public string NameWithoutExtension() => SysPath.GetFileNameWithoutExtension(FullPath);
+		//private string extension;
+		//private readonly OSFile pairedFile;
+		//private OSPath FullPath { get => pairedFile.FullPath; set => pairedFile.FullPath = value; }
+		//internal OSExtension(OSFile pairedFile)
+		//{
+		//	this.pairedFile = pairedFile;
+		//	extension = SysPath.GetExtension(pairedFile.FullPath);
+		//}
+		//
+		//public bool Exists => !string.IsNullOrEmpty(extension);
+		//
+		//public void Set(string newExtension)
+		//{
+		//	string fullPath = FullPath.ToString();
+		//	if (Exists)
+		//		FullPath = fullPath.Remove(fullPath.IndexOf(extension)) + newExtension;
+		//	else
+		//		FullPath = fullPath + newExtension;
+		//	extension = newExtension;
+		//}
+		//
+		//public override string ToString() => extension;
+		//public string NameWithoutExtension() => SysPath.GetFileNameWithoutExtension(FullPath);
 	}
 }

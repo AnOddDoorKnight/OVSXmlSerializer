@@ -107,7 +107,7 @@
 		/// <summary>
 		/// Converts all data from the config to the relevant writer settings.
 		/// </summary>
-		XmlWriterSettings AsWriterSettings();
+		XmlWriterSettings WriterSettings { get; set; }
 		//{
 		//	return new XmlWriterSettings()
 		//	{
