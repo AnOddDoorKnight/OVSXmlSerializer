@@ -10,8 +10,12 @@
 	using System.Xml;
 	using System.Xml.Linq;
 
+	/// <summary>
+	/// Serializer that serializes linked lists.
+	/// </summary>
 	public class LinkedListSerializer : ICustomSerializer
 	{
+		/// <inheritdoc/>
 		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)
 		{
 			if (!CanSerialize(@object.ValueType))
@@ -30,6 +34,7 @@
 			output = enumerableElement;
 			return true;
 		}
+		/// <inheritdoc/>
 		public bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output)
 		{
 			if (!CanSerialize(type))
@@ -59,8 +64,12 @@
 			return true;
 		}
 	}
+	/// <summary>
+	/// Serializes <see cref="IList"/>, can take generic types if it is <see cref="List{T}"/>
+	/// </summary>
 	public class ListInterfaceSerializer : ICustomSerializer
 	{
+		/// <inheritdoc/>
 		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parent, StructuredObject @object, string suggestedName, out XmlNode output)
 		{
 			if (!(@object.Value is IList list))
@@ -79,6 +88,7 @@
 			output = enumerableElement;
 			return true;
 		}
+		/// <inheritdoc/>
 		public bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output)
 		{
 			if (typeof(IList).IsAssignableFrom(type) == false)
@@ -105,6 +115,9 @@
 			return output;
 		}
 	}
+	/// <summary>
+	/// Serializes <see cref="IDictionary"/>, can take generic types if it is <see cref="Dictionary{TKey, TValue}"/>
+	/// </summary>
 	internal class DictionarySerializer : ICustomSerializer
 	{
 		public bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output)
@@ -160,6 +173,9 @@
 			return new KeyValuePair<Type, Type>(typeof(object), typeof(object));
 		}
 	}
+	/// <summary>
+	/// Serializes arrays.
+	/// </summary>
 	internal class ArraySerializer : ICustomSerializer
 	{
 		public bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output)
@@ -198,6 +214,9 @@
 			return true;
 		}
 	}
+	/// <summary>
+	/// Serializes <see cref="DateTime"/> with its own parsing system.
+	/// </summary>
 	internal class DatetimeSerializer : ICustomSerializer
 	{
 		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output)
@@ -222,6 +241,9 @@
 			return true;
 		}
 	}
+	/// <summary>
+	/// Serializes <see cref="TimeSpan"/> with its own parsing system.
+	/// </summary>
 	internal class TimeSpanSerializer : ICustomSerializer
 	{
 		public bool CheckAndWrite(OVSXmlWriter writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output)

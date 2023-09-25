@@ -287,6 +287,10 @@
 		/// Converts a xml file into an object.
 		/// </summary>
 		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <param name="rootElementName">
+		/// The root element name, in contrast of the <see cref="Serialize(FileInfo, T, string)"/>
+		/// element name.
+		/// </param>
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
@@ -311,6 +315,10 @@
 		/// Converts a xml file into an object.
 		/// </summary>
 		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <param name="rootElementName">
+		/// The root element name, in contrast of the <see cref="Serialize(FileInfo, T, string)"/>
+		/// element name.
+		/// </param>
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
@@ -335,6 +343,10 @@
 		/// Converts a xml file into an object.
 		/// </summary>
 		/// <param name="fileLocation">The file location that contains the XML contents. </param>
+		/// <param name="rootElementName">
+		/// The root element name, in contrast of the <see cref="Serialize(FileInfo, T, string)"/>
+		/// element name.
+		/// </param>
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
@@ -344,7 +356,6 @@
 				return Deserialize(stream, out rootElementName);
 		}
 		#endregion
-
 
 		/// <summary>
 		/// Uses <see cref="object.MemberwiseClone"/> to create a new object,

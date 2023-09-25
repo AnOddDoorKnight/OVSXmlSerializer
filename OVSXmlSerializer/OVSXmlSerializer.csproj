@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Title>OVSXmlSerializer</Title>
-		<VersionPrefix>3.0.0</VersionPrefix>
+		<VersionPrefix>3.0.1</VersionPrefix>
 		<RepositoryType>git</RepositoryType>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -21,22 +21,9 @@
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
 		<PackageReleaseNotes>
-			- Made most classes into a separate 'OVS' prefix to separate them from the system xml serialization more
-			- Versions feature works a bit differently, i think null values are treated as 1.0 now?
-			- Things like date-time and lists can have their own external compile config.
-			- Normal IEnumerables are no longer written/serialized.
-			- Removed the ignore xml enumerable and instead added a new attribute titled xmlignoreconfigs instead
-			- Added some OSFile implementation that considers Unix and Windows systems for pathing info as an extra that probably would do better as its own library, leaving it here for now.
-			- Added pre-processor info about the serializer
-			- Wrote some additional minor xml documentation.
-			- Updated the readme a bit
-			- Changed the namespace from OVSXmlSerializer to OVSSerializer to prevent some weird issues that may have to be fixed by using global::
-			- Made some errors properly throw some exceptions.
-			- Changed directive from easy system.xml.serialization to its own thing.
-			- Updated the description.
-			- Removed the config, and the serializers fill that role instead. IOVSConfigs interface are now in place if you still need something like it.
-			- System.Collections.Generic.List{T} and dictionary now has detectable generics and thus will try to simplify.
-			- Writer settings is now a get; set property instead of a get method.
+			- Added an Inheritor class that allows to copy info from the deserailized object into the object.
+			- Added the ignore custom serializers attribute during writing that i forgot to uncomment
+			- Dramatically improved custom serializer performance.
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>

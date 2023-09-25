@@ -148,8 +148,8 @@
 
 			if (TryReadPrimitive(toType, targetNode, out object output))
 				return output;
-			if (Config.CustomSerializers.Read(this, toType, targetNode, out object customOut))
-				return customOut;
+			if (TryReadCustom(toType, targetNode, out output))
+				return output;
 
 
 
@@ -212,9 +212,8 @@
 				for (int i = 0; i < elements.Count; i++)
 				{
 					string key = elements[i].Key;
-					XmlNode element = targetNode.SelectSingleNode(key);
-					if (element == null)
-						element = targetNode.SelectSingleNode($"Reference_{elements[i].Key}");
+					XmlNode element = targetNode.SelectSingleNode(key) 
+						?? targetNode.SelectSingleNode($"Reference_{elements[i].Key}");
 					FieldInfo field = elements[i].Value;
 					object outputField = ReadObject(element, field.FieldType);
 					if (outputField is null)
@@ -282,6 +281,12 @@
 				return;
 			int id = int.Parse(attribute.Value);
 			referenceTypes.Add(id, value);
+		}
+		internal bool TryReadCustom(in Type toType, in XmlNode targetNode, out object customOut)
+		{
+			if (Config.CustomSerializers.Read(this, toType, targetNode, out customOut))
+				return true;
+			return false;
 		}
 		/// <summary>
 		/// Sets the field info via the <paramref name="parent"/>. It is its own

@@ -8,6 +8,9 @@
 	using System.Xml.Serialization;
 	using System.Xml;
 
+	/// <summary>
+	/// An interface to act as a configuration tool to modify and take info from.
+	/// </summary>
 	public interface IOVSConfig
 	{
 		/// <summary>

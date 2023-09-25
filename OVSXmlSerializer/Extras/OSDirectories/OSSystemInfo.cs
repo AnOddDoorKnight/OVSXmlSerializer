@@ -20,8 +20,7 @@
 		/// </summary>
 		public virtual OSPath FullPath { get; set; }
 		/// <summary>
-		/// The name of the ending path. Setting only changes <see cref="FullPath"/>;
-		/// use <see cref="Rename"/> for such.
+		/// The name of the ending path. Setting only changes <see cref="FullPath"/>.
 		/// </summary>
 		public abstract string Name { get; set; }
 		/// <summary>

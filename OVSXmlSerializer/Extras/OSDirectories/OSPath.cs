@@ -12,7 +12,11 @@
 	/// Do not use this as an actual class that can do stuff!
 	/// </summary>
 	/// <remarks> 
-	/// Prints the path that can be used and is the same as <see cref="Normalized"/>. 
+	/// Prints the path that can be used and is the same as <see cref="Normalized"/>.
+	/// <para>
+	/// Shoutout to that one guy i took this from and forgot who made this, thanks
+	/// for the help ;)
+	/// </para>
 	/// </remarks>
 	public readonly struct OSPath
 	{
@@ -27,10 +31,20 @@
 		/// A path that leads to nothing.
 		/// </summary>
 		public static readonly OSPath Empty = new OSPath("");
+		/// <summary>
+		/// Provides a platform-specific character used to separate directory 
+		/// levels in a path string that reflects a hierarchical file system 
+		/// organization.
+		/// </summary>
 		public static char DirectorySeparatorChar => Path.DirectorySeparatorChar;
-
+		/// <summary>
+		/// Is the currently selected OS is windows.
+		/// </summary>
 		public static bool IsWindows => DirectorySeparatorChar == '\\';
 
+		/// <summary>
+		/// Creates a new path with the specified file path.
+		/// </summary>
 		public OSPath(string text)
 		{
 			Text = text.Trim();

@@ -31,10 +31,12 @@
 		/// </summary>
 		internal static readonly BindingFlags defaultFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance;
 
+		/// <inheritdoc/>
 		public OVSXmlSerializer() : base()
 		{
-			
+
 		}
+		/// <inheritdoc/>
 		public OVSXmlSerializer(IOVSConfig config) : base(config)
 		{
 			

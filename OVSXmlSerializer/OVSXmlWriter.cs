@@ -22,7 +22,6 @@
 	/// Not thread safe if you want to use the writer for multiple serializers; 
 	/// uses quite a bit of global variables.
 	/// </remarks>
-	/// <typeparam name="T">The object being serialized as their own 'parent' type.</typeparam>
 	public class OVSXmlWriter
 	{
 		/// <summary>
@@ -44,7 +43,7 @@
 		/// </summary>
 		public XmlDocument Document { get; private set; }
 		/// <summary>
-		/// Taking from <see cref="Source"/> to get the config.
+		/// The configuration for doing stuff.
 		/// </summary>
 		public IOVSConfig Config { get; }
 		internal OVSXmlReferencer Referencer { get; private set; }
@@ -143,7 +142,7 @@
 					return output;
 				if (TryWritePrimitive(name, obj, parent, out output))
 					return output;
-				if (Config.CustomSerializers.Write(this, parent, obj, name, out output))
+				if (TryWriteCustoms(name, obj, parent, out output))
 					return output;
 				if (OVSXmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 					throw new Exception($"{obj.Value} is not a primitive type!");
@@ -235,6 +234,7 @@
 		/// <param name="name">The name of the element or attribute.</param>
 		/// <param name="primitive">The object that is hopefully primitive to serialize.</param>
 		/// <param name="parent">The parent of the attribute or element.</param>
+		/// <param name="output">The returned node.</param>
 		/// <returns>If it successfully serialized it as primitive.</returns>
 		public bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent, out XmlNode output)
 		{
@@ -288,8 +288,11 @@
 		/// </summary>
 		internal bool TryWriteCustoms(string name, StructuredObject values, XmlNode parent, out XmlNode output)
 		{
-			//if (XMLIgnoreCustomsAttribute.Ignore(values))
-			//	return false;
+			if (OVSXmlIgnoreConfigsAttribute.Ignore(values))
+			{
+				output = null;
+				return false;
+			}
 			InterfaceSerializer serializer = Config.CustomSerializers;
 			return serializer.Write(this, parent, values, name, out output);
 		}

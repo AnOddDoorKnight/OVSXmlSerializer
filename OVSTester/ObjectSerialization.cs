@@ -3,6 +3,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OVSSerializer;
 using OVSSerializer.Exceptions;
+using OVSSerializer.Extras;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -13,6 +14,14 @@ using System.Xml;
 [TestClass]
 public class ObjectSerialization
 {
+	[TestMethod]
+	public void Inheritor()
+	{
+		StandardClass sus = new() { genders = 3 };
+		using MemoryStream memory = OVSXmlSerializer<StandardClass>.Shared.Serialize(new StandardClass());
+		OVSXmlSerializer<StandardClass>.Shared.Inherit(sus, memory);
+		Assert.IsTrue(sus.genders == new StandardClass().genders);
+	}
 	[TestMethod("Enum Serialization")]
 	public void EnumSerialize()
 	{
