@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Title>OVSXmlSerializer</Title>
-		<VersionPrefix>3.0.1</VersionPrefix>
+		<VersionPrefix>3.0.2</VersionPrefix>
 		<RepositoryType>git</RepositoryType>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -21,9 +21,9 @@
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
 		<PackageReleaseNotes>
-			- Added an Inheritor class that allows to copy info from the deserailized object into the object.
-			- Added the ignore custom serializers attribute during writing that i forgot to uncomment
-			- Dramatically improved custom serializer performance.
+			- Will now throw an exception if you try to serialize a non-primitive object as an text attribute.
+			- Added ChangableStructure to allow the same backbone of the value, but allowing serialization of structs.
+			- All future files written will only write references when needed, instead of always.
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>

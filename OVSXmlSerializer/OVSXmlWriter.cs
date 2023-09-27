@@ -183,7 +183,7 @@
 						if (fieldObject.IsPrimitive)
 							currentNode.InnerText = ToStringPrimitive(fieldObject);
 						else
-							throw new NotSupportedException();
+							throw new NotImplementedException($"Cannot serialize structs as internal {nameof(OVSXmlTextAttribute)} yet!");
 						continue;
 					}
 					if (OVSXmlAttributeAttribute.IsAttribute(field, out var contents))
