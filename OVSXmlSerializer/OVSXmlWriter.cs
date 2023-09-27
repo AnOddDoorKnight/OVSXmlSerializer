@@ -222,10 +222,10 @@
 				return false;
 			if (OVSXmlReferencer.CanReference(obj) == false)
 				return false;
-			if (Referencer.IsAlreadyReferenced(obj, out int indexID))
+			if (Referencer.TryGetReference(obj, out var reference))
 			{
 				XmlElement referenceElement = CreateElement(parent, $"Reference_{name}");
-				referenceElement.InnerText = indexID.ToString();
+				referenceElement.InnerText = reference.Value.GetReference().ToString();
 				output = referenceElement;
 				return true;
 			}

@@ -4,6 +4,7 @@
 	using System.Collections.Generic;
 	using System.Text;
 	using System.Xml;
+	using System.Xml.Linq;
 
 	/// <summary>
 	/// Handles references of classes
@@ -36,6 +37,7 @@
 			objects = new List<ReferencedObject>();
 		}
 
+		/*
 		public bool IsAlreadyReferenced(StructuredObject @object)
 		{
 			int index = objects.FindIndex(refer => refer.ReferenceEquals(@object));
@@ -46,27 +48,53 @@
 			index = objects.FindIndex(refer => refer.ReferenceEquals(@object));
 			return index != -1;
 		}
+		*/
+		public bool TryGetReference(StructuredObject input, out ReferencedObject? reference)
+		{
+			int index = objects.FindIndex(refer => refer.ReferenceEquals(input));
+			if (index == -1)
+			{
+				reference = null;
+				return false;
+			}
+			reference = objects[index];
+			return true;
+		}
 
 		public void AddReference(StructuredObject input, XmlElement element)
 		{
-			if (IsAlreadyReferenced(input))
+			if (TryGetReference(input, out _))
 				throw new InvalidCastException();
-			XmlAttribute att = element.OwnerDocument.CreateAttribute(REFERENCE_ATTRIBUTE);
-			att.Value = objects.Count.ToString();
-			element.Attributes.Prepend(att);
-			objects.Add(new ReferencedObject { objectReference = input, original = element });
+			ReferencedObject obj = new ReferencedObject()
+			{ 
+				objectReference = input,
+				original = element,
+				index = objects.Count
+			};
+			objects.Add(obj);
 		}
 
 
-		internal struct ReferencedObject
+		public struct ReferencedObject
 		{
 			public StructuredObject objectReference;
 			public XmlElement original;
+			internal int index;
 			public bool ReferenceEquals(in StructuredObject obj)
 			{
 				if (!CanReference(obj))
 					return false;
 				return ReferenceEquals(obj.Value, objectReference.Value);
+			}
+			public int GetReference()
+			{
+				if (original.Attributes.GetNamedItem(REFERENCE_ATTRIBUTE) == null)
+				{
+					XmlAttribute att = original.OwnerDocument.CreateAttribute(REFERENCE_ATTRIBUTE);
+					att.Value = index.ToString();
+					original.Attributes.Append(att);
+				}
+				return index;
 			}
 		}
 	}
