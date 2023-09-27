@@ -184,6 +184,7 @@
 				// Getting Named Arguments
 				if (OVSXmlNamedAsAttribute.HasName(field, out string name))
 					fieldName = name;
+				// Getting special conditions
 				if (OVSXmlAttributeAttribute.IsAttribute(field, out var attributeContents))
 					attributes.Add(
 						(string.IsNullOrEmpty(attributeContents.CustomName)

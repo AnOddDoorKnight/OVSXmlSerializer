@@ -7,6 +7,7 @@ using OVSSerializer.Extras;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -14,6 +15,24 @@ using System.Xml;
 [TestClass]
 public class ObjectSerialization
 {
+	[TestMethod("Xml Text Structs")]
+	public void XmlTextStructs()
+	{
+		ChangableValue<AssHolder> color = new(new AssHolder() { Ass = new Ass(5, 5) });
+		Assert.ThrowsException<SerializationFailedException>(() => OVSXmlSerializer<AssHolder>.Shared.Serialize(color));
+		return;
+		using MemoryStream stream = OVSXmlSerializer<AssHolder>.Shared.Serialize(color);
+		string xml = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		AssHolder output = OVSXmlSerializer<AssHolder>.Shared.Deserialize(stream);
+		Assert.IsTrue(color.Value.Ass.A ==  output.Ass.A);
+	}
+	class AssHolder
+	{
+		[OVSXmlText]
+		public Ass Ass;
+	}
+	public readonly record struct Ass(int A, int B);
 	[TestMethod]
 	public void Inheritor()
 	{

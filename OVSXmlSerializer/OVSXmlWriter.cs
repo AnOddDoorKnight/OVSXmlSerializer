@@ -12,6 +12,7 @@
 	using System.Xml.Linq;
 	using System.Xml.Serialization;
 	using System.Data;
+	using OVSSerializer.Extras;
 
 	/// <summary>
 	/// A writer that converts a single object into a full <see cref="XmlDocument"/>,
@@ -179,7 +180,10 @@
 						if (hasElements)
 							throw new InvalidOperationException($"There are elements in the field in {obj.Value}, be sure to ignore or put them as attributes!");
 						didText = true;
-						currentNode.InnerText = ToStringPrimitive(fieldObject);
+						if (fieldObject.IsPrimitive)
+							currentNode.InnerText = ToStringPrimitive(fieldObject);
+						else
+							throw new NotSupportedException();
 						continue;
 					}
 					if (OVSXmlAttributeAttribute.IsAttribute(field, out var contents))
@@ -226,6 +230,19 @@
 				return true;
 			}
 			return false;
+		}
+		/// <summary>
+		/// Serializes the object as if it is its own parent.
+		/// </summary>
+		/// <param name="primitive">The object to serialize.</param>
+		/// <param name="output">The output to write to.</param>
+		private void TryWriteInternals(FieldObject primitive, ref XmlNode output)
+		{
+			XmlElement copier = Document.CreateElement("Placeholder");
+			XmlNode newItem = WriteObject(primitive, copier, "child");
+			List<XmlNode> children = newItem.GetAllChildren();
+			for (int i = 0; i < children.Count; i++)
+				output.AppendChild(children[i]);
 		}
 		/// <summary>
 		/// Tries to write a primitive, ensuring that it is a XML element or
