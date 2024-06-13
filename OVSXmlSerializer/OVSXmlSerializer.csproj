@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Title>OVSXmlSerializer</Title>
-		<VersionPrefix>3.0.2</VersionPrefix>
+		<VersionPrefix>3.1.0</VersionPrefix>
 		<RepositoryType>git</RepositoryType>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -21,9 +21,7 @@
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
 		<PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
 		<PackageReleaseNotes>
-			- Will now throw an exception if you try to serialize a non-primitive object as an text attribute.
-			- Added ChangableStructure to allow the same backbone of the value, but allowing serialization of structs.
-			- All future files written will only write references when needed, instead of always.
+			- Nongeneric serializer and generic serializers are no longer connected to eachother; no inheritance in attempt to fix an apparent issue with godot.
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>
