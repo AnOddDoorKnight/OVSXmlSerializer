@@ -1,7 +1,7 @@
 ﻿namespace OVSSerializer
 {
-	using global::OVSSerializer.Internals;
-	using global::OVSSerializer.IO;
+	using OVSSerializer.Internals;
+	using OVSSerializer.IO;
 	using System;
 	using System.Globalization;
 	using System.IO;
@@ -14,12 +14,14 @@
 	/// A class that serializes or deserializes an object given <typeparamref name="T"/>
 	/// into an xml document/format.
 	/// </summary>
-	public class OVSXmlSerializer<T> : IOVSConfig
+	public sealed class OVSXmlSerializer<T> : IOVSConfig
 	{
 		/// <summary>
 		/// Gets the generic shared version of the serializer.
 		/// </summary>
-		public static OVSXmlSerializer<T> Shared { get; } = new OVSXmlSerializer<T>();
+		public static OVSXmlSerializer<T> Shared => m_shared.Value;
+		// In case some issues around unloading assemblies has issues.
+		private static readonly Lazy<OVSXmlSerializer<T>> m_shared = new Lazy<OVSXmlSerializer<T>>(() => new OVSXmlSerializer<T>());
 
 		#region Config
 		/// <inheritdoc/>
@@ -123,7 +125,7 @@
 		/// <param name="item"> The item to serialize. </param>
 		/// <param name="rootElementName">The root element within the xml file. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public virtual MemoryStream Serialize(T item, string rootElementName)
+		public MemoryStream Serialize(T item, string rootElementName)
 		{
 			object testOutput = (object)item;
 			MemoryStream stream = new MemoryStream();
@@ -233,7 +235,7 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public virtual T Deserialize(Stream input)
+		public T Deserialize(Stream input)
 		{
 			XmlDocument document = new XmlDocument();
 			try
@@ -255,7 +257,7 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public virtual T Deserialize(Stream input, out string rootElementName)
+		public T Deserialize(Stream input, out string rootElementName)
 		{
 			XmlDocument document = new XmlDocument();
 			try

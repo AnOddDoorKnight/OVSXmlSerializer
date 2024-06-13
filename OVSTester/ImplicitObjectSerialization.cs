@@ -23,9 +23,9 @@ public class ImplicitObjectSerialization
 		List<string> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add("bruh");
-		OVSXmlSerializer<List<string>> serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
+		OVSXmlSerializer serializer = new(typeof(List<string>)) { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
-		List<string> result = serializer.Deserialize(stream);
+		List<string> result = (List<string>)serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
 	}
 	[TestMethod("Implicit Dictionary Int Serialization")]
@@ -34,11 +34,11 @@ public class ImplicitObjectSerialization
 		Dictionary<string, int> value = new();
 		for (int i = 0; i < 10; i++)
 			value.Add($"bruh{i}", i);
-		OVSXmlSerializer<Dictionary<string, int>> serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
+		OVSXmlSerializer serializer = new(typeof(Dictionary<string, int>)) { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
 		string XML = new StreamReader(stream).ReadToEnd();
 		stream.Position = 0;
-		Dictionary<string, int> result = serializer.Deserialize(stream);
+		Dictionary<string, int> result = (Dictionary<string, int>)serializer.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First.Key == pair.Second.Key && pair.First.Value == pair.Second.Value) == value.Count);
 	}
 }
