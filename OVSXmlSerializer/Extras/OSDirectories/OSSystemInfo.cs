@@ -1,6 +1,7 @@
 ﻿namespace OVSSerializer.IO
 {
 	using System;
+	using System.Diagnostics;
 	using System.IO;
 	using System.Threading.Tasks;
 	using SystemPath = System.IO.Path;
@@ -44,5 +45,11 @@
 		/// The parent of the file or directory.
 		/// </summary>
 		public OSDirectory Parent => new OSDirectory(FullPath.Parent);
+
+
+		/// <summary>
+		/// Starts the file or directory using <see cref="Process.Start()"/>.
+		/// </summary>
+		public Process StartProcess() => Process.Start(FullPath);
 	}
 }

@@ -8,6 +8,7 @@
 	using System.Reflection;
 	using SysPath = System.IO.Path;
 	using System.Threading.Tasks;
+	using System.Xml.Linq;
 
 	/// <summary>
 	/// Directory info that considers unix-based and windows systems.
@@ -72,17 +73,36 @@
 			get
 			{
 				string fullPath = this.FullPath.ToString();
-				fullPath = fullPath.Remove(fullPath.Length - 1);
-				fullPath = fullPath.Substring(fullPath.LastIndexOf(SysPath.DirectorySeparatorChar) + 1);
+				fullPath = fullPath.Remove(fullPath.Length - LENGTH_ADJUSTMENT);
+				fullPath = fullPath.Substring(fullPath.LastIndexOf(SysPath.DirectorySeparatorChar) + LENGTH_ADJUSTMENT);
 				return fullPath;
 			}
 			set
 			{
 				string fullPath = this.FullPath.ToString();
 				string oldName = Name;
-				fullPath = fullPath.Remove(fullPath.Length - 1 - oldName.Length, oldName.Length);
-				this.FullPath = fullPath.Insert(fullPath.Length - 1, value);
+				fullPath = fullPath.Remove(fullPath.Length - LENGTH_ADJUSTMENT - oldName.Length, oldName.Length);
+				this.FullPath = fullPath.Insert(fullPath.Length - LENGTH_ADJUSTMENT, value);
 			}
+		}
+		private const int LENGTH_ADJUSTMENT = 1;
+
+		/// <summary>
+		/// Renames the directory by copying its contents to the location of the new
+		/// folder.
+		/// </summary>
+		/// <param name="newName"></param>
+		public void Rename(string newName)
+		{
+			OSDirectory output = Parent.GetSubdirectories(newName);
+			if (Exists)
+			{
+				OSSystemInfo[] info = GetItems();
+				for (int i = 0; i < info.Length; i++)
+					info[i].CopyTo(output);
+			}
+			Delete();
+			FullPath = output.FullPath;
 		}
 
 		/// <summary>
@@ -131,6 +151,32 @@
 				if (createDirectories && !output.Exists)
 					output.Create();
 			}
+			return output;
+		}
+
+		/// <summary>
+		/// Enumerates through items that is in the current directory.
+		/// </summary>
+		public IEnumerable<OSSystemInfo> EnumerateItems()
+		{
+			using (var enumerator = EnumerateDirectories().GetEnumerator())
+				while (enumerator.MoveNext())
+					yield return enumerator.Current;
+			using (var enumerator = EnumerateFiles().GetEnumerator())
+				while (enumerator.MoveNext())
+					yield return enumerator.Current;
+		}
+		/// <summary>
+		/// Gets all <see cref="OSSystemInfo"/>s into an array.
+		/// </summary>
+		public OSSystemInfo[] GetItems()
+		{
+			OSDirectory[] directories = GetDirectories();
+			OSFile[] files = GetFiles();
+			var output = new OSSystemInfo[directories.Length + files.Length];
+			for (int i = 0; i < output.Length; i++)
+				output[i] = i < directories.Length ? (OSSystemInfo)directories[i]
+					: (OSSystemInfo)files[i - directories.Length];
 			return output;
 		}
 
@@ -274,11 +320,11 @@
 			if (Exists)
 			{
 				OSDirectory[] allDirectories = GetDirectories();
-				OSFile[] allFiles = GetFiles();
 				for (int i = 0; i < allDirectories.Length; i++)
 					allDirectories[i].CopyTo(output);
+				OSFile[] allFiles = GetFiles();
 				for (int i = 0; i < allFiles.Length; i++)
-					allDirectories[i].CopyTo(output);
+					allFiles[i].CopyTo(output);
 			}
 			return output;
 		}

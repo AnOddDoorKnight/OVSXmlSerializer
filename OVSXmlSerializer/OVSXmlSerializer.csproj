@@ -4,7 +4,8 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Title>OVSXmlSerializer</Title>
-		<VersionPrefix>3.1.0</VersionPrefix>
+		<VersionPrefix>4.0.0</VersionPrefix>
+		<VersionSuffix>pre1</VersionSuffix>
 		<RepositoryType>git</RepositoryType>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -19,9 +20,11 @@
 		<Copyright>MIT license</Copyright>
 		<PackageProjectUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</PackageProjectUrl>
 		<PackageReadmeFile>Readme.md</PackageReadmeFile>
-		<PackageTags>C#; Serialization; XML; XML-Parsing</PackageTags>
+		<PackageTags>C#; Serialization; XML; XML-Parsing; IO</PackageTags>
 		<PackageReleaseNotes>
 			- Nongeneric serializer and generic serializers are no longer connected to eachother; no inheritance in attempt to fix an apparent issue with godot.
+			- Some OS/IO updates to make it cooler with zips and makes a bit more sense without the use of extension methods
+			- Fixed a bug where it would use the file array with directory length when copying directories
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>

@@ -94,6 +94,61 @@
 			}
 		}
 
+		/// <summary>
+		/// Renames an existing file, or if it doesn't exist, just changes the name
+		/// normally.
+		/// </summary>
+		/// <param name="extension">The extension to change to. </param>
+		public void RenameExtension(string extension)
+		{
+			var newFile = new OSFile(this) { Extension = extension };
+			if (this.Exists)
+			{
+				using (FileStream from = this.OpenRead())
+				using (FileStream to = newFile.Create())
+					from.CopyTo(to);
+				this.Delete();
+			}
+			FullPath = newFile.FullPath;
+		}
+		/// <summary>
+		/// Renames an existing file, or if it doesn't exist, just changes the name
+		/// normally.
+		/// </summary>
+		/// <param name="name">The new name of the file.</param>
+		public void Rename(string name)
+		{
+			var newFile = new OSFile(this) { Name = name };
+			if (this.Exists)
+			{
+				using (FileStream from = this.OpenRead())
+				using (FileStream to = newFile.Create())
+					from.CopyTo(to);
+				this.Delete();
+			}
+			FullPath = newFile.FullPath;
+		}
+		/// <summary>
+		/// Renames an existing file, or if it doesn't exist, just changes the name
+		/// normally. This particular command allows to keep the same extension.
+		/// </summary>
+		/// <param name="name">The new name of the file, excluding the extension as they are inherited.</param>
+		public void RenameWithoutExtension(string name)
+		{
+			var newFile = new OSFile(this) { NameWithoutExtension = name };
+			if (this.Exists)
+			{
+				FileStream from = this.OpenRead();
+				FileStream to = newFile.Create();
+				from.CopyTo(to);
+				this.Delete();
+				from.Dispose();
+				to.Dispose();
+			}
+			FullPath = newFile.FullPath;
+		}
+
+
 		#region Reading/Writing
 		/// <summary>
 		/// Opens the file as a stream.
