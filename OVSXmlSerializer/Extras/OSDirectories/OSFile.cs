@@ -210,9 +210,9 @@
 		#endregion
 		public override bool Delete()
 		{
-			bool output = Exists;
-			File.Delete(FullPath);
-			return output;
+			if (Exists)
+				File.Delete(FullPath);
+			return Exists;
 		}
 
 		#region Extras

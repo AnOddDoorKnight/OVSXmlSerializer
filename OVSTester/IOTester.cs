@@ -58,6 +58,19 @@ public class IOTester
 	public void DisposeTest()
 	{
 		using OSDirectory directory = Directory.GetSubdirectories("dispose");
-		directory.GetFile("test.txt").Create();
+		using OSFile file = directory.GetFile("test.txt");
+		file.Create().Dispose();
+	}
+
+	[TestMethod("Dispose/Rename Folder Creation")]
+	public void RenameTest()
+	{
+		using OSDirectory directory = Directory.GetSubdirectories("rename");
+		using OSFile file = directory.GetFile("test.txt");
+		file.Create().Dispose();
+		directory.Rename("penis");
+		Assert.IsTrue(directory.Exists);
+		Assert.IsTrue(directory.Name == "penis");
+		Assert.IsTrue(directory.GetFile("test.txt").Exists);
 	}
 }

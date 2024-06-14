@@ -304,9 +304,9 @@
 		/// <returns>if it used to exist.</returns>
 		public override bool Delete()
 		{
-			bool output = Exists;
-			Directory.Delete(FullPath, true);
-			return output;
+			if (Exists)
+				Directory.Delete(FullPath, true);
+			return Exists;
 		}
 
 		/// <summary>
