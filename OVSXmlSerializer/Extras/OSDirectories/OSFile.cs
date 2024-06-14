@@ -4,11 +4,12 @@
 	using System.IO;
 	using SysPath = System.IO.Path;
 	using System.Threading.Tasks;
+	using System;
 
 	/// <summary>
 	/// File info that considers unix-based and windows systems.
 	/// </summary>
-	public sealed class OSFile : OSSystemInfo
+	public sealed class OSFile : OSSystemInfo, IDisposable
 	{
 		/// <summary>
 		/// Explicitly converts a <see cref="FileInfo"/> to an <see cref="OSFile"/>
@@ -188,8 +189,15 @@
 		{
 			using (StreamWriter writer = new StreamWriter(Create()))
 				writer.Write(text);
+
 		}
+		/// <summary>
+		/// Creates a new file, merges it in \n and writes all the text that is given.
+		/// </summary>
 		public void WriteAllLines(string[] lines) => WriteAllText(string.Join("\n", lines));
+		/// <summary>
+		/// Creates a new file, merges it in \n and writes all the text that is given.
+		/// </summary>
 		public void WriteAllLines(IEnumerable<string> lines) => WriteAllText(string.Join("\n", lines));
 
 		public void AppendAllText(string text)
@@ -301,6 +309,13 @@
 			FullPath = copy.FullPath;
 			return copy;
 		}
+
 		#endregion
+
+		
+		void IDisposable.Dispose()
+		{
+			Delete();
+		}
 	}
 }

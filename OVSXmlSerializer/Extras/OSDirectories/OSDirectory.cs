@@ -13,12 +13,19 @@
 	/// <summary>
 	/// Directory info that considers unix-based and windows systems.
 	/// </summary>
-	public sealed class OSDirectory : OSSystemInfo, IEquatable<OSDirectory>, IEquatable<string>
+	public sealed class OSDirectory : OSSystemInfo, IEquatable<OSDirectory>, IEquatable<string>, IDisposable
 	{
 		/// <summary> Converts OSDir to system directory info.</summary>
 		public static explicit operator DirectoryInfo(OSDirectory file) => new DirectoryInfo(file.FullPath);
 		/// <summary> Converts system directory info to OSDir.</summary>
 		public static explicit operator OSDirectory(DirectoryInfo file) => new OSDirectory(file);
+
+		public static OSDirectory CreateTemp(string folderName) => 
+			new OSDirectory(SysPath.GetTempPath()).GetSubdirectories(folderName);
+		public static OSDirectory GetFolderPath(Environment.SpecialFolder folderName)
+			=> new OSDirectory(Environment.GetFolderPath(folderName));
+		public static OSDirectory GetCurrentDirectory() =>
+			new OSDirectory(Environment.CurrentDirectory);
 
 #if UNITY_2017_1_OR_NEWER
 		/// <summary>
@@ -73,19 +80,18 @@
 			get
 			{
 				string fullPath = this.FullPath.ToString();
-				fullPath = fullPath.Remove(fullPath.Length - LENGTH_ADJUSTMENT);
-				fullPath = fullPath.Substring(fullPath.LastIndexOf(SysPath.DirectorySeparatorChar) + LENGTH_ADJUSTMENT);
+				fullPath = fullPath.Remove(fullPath.Length);
+				fullPath = fullPath.Substring(fullPath.LastIndexOf(SysPath.DirectorySeparatorChar) + 1);
 				return fullPath;
 			}
 			set
 			{
 				string fullPath = this.FullPath.ToString();
 				string oldName = Name;
-				fullPath = fullPath.Remove(fullPath.Length - LENGTH_ADJUSTMENT - oldName.Length, oldName.Length);
-				this.FullPath = fullPath.Insert(fullPath.Length - LENGTH_ADJUSTMENT, value);
+				fullPath = fullPath.Remove(fullPath.Length - oldName.Length, oldName.Length);
+				this.FullPath = fullPath + value;
 			}
 		}
-		private const int LENGTH_ADJUSTMENT = 1;
 
 		/// <summary>
 		/// Renames the directory by copying its contents to the location of the new
@@ -127,7 +133,13 @@
 		/// Creates all directories and subdirectories in the path unless they
 		/// already exist.
 		/// </summary>
-		public void Create() => Directory.CreateDirectory(FullPath);
+		public OSDirectory Create()
+		{
+			if (Exists)
+				return this;
+			Directory.CreateDirectory(FullPath);
+			return this;
+		}
 
 		/// <summary>
 		/// Creates subdirectories.
@@ -341,6 +353,15 @@
 			string left = FullPath.ToString();
 			string right = new OSPath(other).ToString();
 			return left == right;
+		}
+
+		/// <summary>
+		/// Deletes the folder, assuming you used something like <see cref="CreateTemp(string)"/>
+		/// and <see langword="using"/> at the same time.
+		/// </summary>
+		void IDisposable.Dispose()
+		{
+			Delete();
 		}
 	}
 }
