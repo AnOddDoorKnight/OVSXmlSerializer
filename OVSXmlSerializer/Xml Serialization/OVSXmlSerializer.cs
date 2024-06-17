@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer
+﻿namespace OVSSerializer.Xml
 {
 	using OVSSerializer.Internals;
 	using OVSSerializer.IO;

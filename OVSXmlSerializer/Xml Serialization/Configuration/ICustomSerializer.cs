@@ -1,18 +1,19 @@
-﻿namespace OVSSerializer
+﻿namespace OVSSerializer.Xml
 {
-	using OVSSerializer.Internals;
+	using global::OVSSerializer.Xml.Internals;
 	using System;
 	using System.Collections.Generic;
+	using System.Reflection;
 	using System.Text;
 	using System.Xml;
+	using System.Xml.Linq;
 
-	/*
 	/// <summary>
-	/// uses a hashcode to serialize specified types.
+	/// A customizable serializer, does custom checks of its own to determine and 
+	/// serialize.
 	/// </summary>
-	public interface ITypeSerializer
+	public interface ICustomSerializer
 	{
-		Type Type { get; }
 		/// <summary>
 		/// Checks if it can first parse the item, then attempts to write it into
 		/// the document given the parameters.
@@ -23,7 +24,7 @@
 		/// <param name="suggestedName">The name to write as the element or attribute.</param>
 		/// <param name="output">The given XmlNode. Note that you still need to write to the <paramref name="parentNode"/>, this is for niche internals.</param>
 		/// <returns>If it can actually parse the item.</returns>
-		void Write(OVSXmlWriter writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output);
+		bool CheckAndWrite(OVSXmlWriter writer, XmlNode parentNode, StructuredObject @object, string suggestedName, out XmlNode output);
 		/// <summary>
 		/// Checks if it can first parse the item, then attempts to read it
 		/// given the parameters.
@@ -36,7 +37,6 @@
 		/// <param name="node">The node where which it came from.</param>
 		/// <param name="output">The read node.</param>
 		/// <returns>If it can actually parse the item.</returns>
-		bool Read(OVSXmlReader reader, Type type, XmlNode node, out object output);
+		bool CheckAndRead(OVSXmlReader reader, Type type, XmlNode node, out object output);
 	}
-	*/
 }

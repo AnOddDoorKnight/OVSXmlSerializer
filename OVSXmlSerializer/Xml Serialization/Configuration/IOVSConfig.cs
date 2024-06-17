@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer
+﻿namespace OVSSerializer.Xml
 {
 	using System;
 	using System.Collections.Generic;

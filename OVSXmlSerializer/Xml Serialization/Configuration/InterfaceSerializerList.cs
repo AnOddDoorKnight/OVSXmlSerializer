@@ -1,6 +1,6 @@
-﻿namespace OVSSerializer
+﻿namespace OVSSerializer.Xml
 {
-	using OVSSerializer.Internals;
+	using OVSSerializer.Xml.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Text;

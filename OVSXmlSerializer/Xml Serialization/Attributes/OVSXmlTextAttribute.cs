@@ -1,6 +1,6 @@
-﻿namespace OVSSerializer
+﻿namespace OVSSerializer.Xml
 {
-	using global::OVSSerializer.Internals;
+	using global::OVSSerializer.Xml.Internals;
 	using System;
 	using System.Reflection;
 

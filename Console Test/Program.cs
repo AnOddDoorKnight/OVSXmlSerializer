@@ -2,15 +2,14 @@
 
 internal class Program
 {
-	public Program(int sex) { }
+	public Program() { }
+	public IEnumerator<string> enumerator = new List<string>() { "br" }.GetEnumerator();
 	private static void Main(string[] args)
 	{
-		const string value = "bruh";
+		Program value = new();
 
 		OVSXmlSerializer serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
 		var stream = serializer.Serialize(value);
-		string output = (string)serializer.Deserialize(stream);
-		Console.WriteLine(output == value);
+		Program output = (Program)serializer.Deserialize(stream);
 	}
 }
-class H : List<object> { }
