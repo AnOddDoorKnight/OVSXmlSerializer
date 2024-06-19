@@ -1,6 +1,6 @@
-﻿namespace OVSSerializer.Xml
+﻿namespace OVS.XmlSerialization.Prefabs
 {
-	using OVSSerializer.Xml.Internals;
+	using OVS.XmlSerialization.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Text;

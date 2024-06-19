@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer.IO
+﻿namespace OVS.IO
 {
 	using System;
 	using SysPath = System.IO.Path;

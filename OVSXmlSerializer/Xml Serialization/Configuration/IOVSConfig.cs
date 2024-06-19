@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer.Xml
+﻿namespace OVS.XmlSerialization
 {
 	using System;
 	using System.Collections.Generic;
@@ -7,6 +7,7 @@
 	using System.Text;
 	using System.Xml.Serialization;
 	using System.Xml;
+	using global::OVS.XmlSerialization.Prefabs;
 
 	/// <summary>
 	/// An interface to act as a configuration tool to modify and take info from.

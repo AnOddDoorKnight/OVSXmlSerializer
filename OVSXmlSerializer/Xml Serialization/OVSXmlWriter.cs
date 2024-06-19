@@ -1,7 +1,9 @@
-﻿namespace OVSSerializer.Xml.Internals
+﻿namespace OVS.XmlSerialization.Internals
 {
-	using global::OVSSerializer.Exceptions;
-	using global::OVSSerializer;
+	using global::OVS.XmlSerialization.Exceptions;
+	using global::OVS.XmlSerialization;
+	using global::OVS.XmlSerialization.Prefabs;
+	using global::OVS.XmlSerialization.Utility;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -12,7 +14,6 @@
 	using System.Xml.Linq;
 	using System.Xml.Serialization;
 	using System.Data;
-	using OVSSerializer.Extras;
 
 	/// <summary>
 	/// A writer that converts a single object into a full <see cref="XmlDocument"/>,

@@ -1,4 +1,5 @@
-﻿namespace OVSSerializer.Properties
+﻿/*
+namespace OVSSerializer.Properties
 {
 	using System;
 	using System.Collections.Generic;
@@ -9,3 +10,4 @@
 
 	}
 }
+*/

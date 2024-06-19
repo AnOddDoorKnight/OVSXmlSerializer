@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer.Extras
+﻿namespace OVS.XmlSerialization.Utility
 {
 	using System;
 

@@ -1,7 +1,7 @@
-﻿namespace OVSSerializer.Xml.Internals
+﻿namespace OVS.XmlSerialization.Internals
 {
-	using global::OVSSerializer.Exceptions;
-	using global::OVSSerializer.Extras;
+	using global::OVS.XmlSerialization.Exceptions;
+	using global::OVS.XmlSerialization.Utility;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -9,6 +9,7 @@
 	using System.Linq;
 	using System.Reflection;
 	using System.Runtime.InteropServices;
+	using System.Runtime.Serialization;
 	using System.Text;
 	using System.Xml;
 	using System.Xml.Linq;
@@ -154,7 +155,8 @@
 
 
 			// Standard class with regular serialization.
-			object obj = Activator.CreateInstance(toType, true);
+			//object obj = Activator.CreateInstance(toType, true);
+			object obj = FormatterServices.GetUninitializedObject(toType);
 			AddReferenceTypeToDictionary((XmlElement)targetNode, obj);
 
 			// Serializes fields by getting fields by name, and matching it from

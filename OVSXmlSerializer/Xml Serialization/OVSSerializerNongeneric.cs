@@ -1,14 +1,14 @@
-﻿namespace OVSSerializer.Xml
+﻿namespace OVS.XmlSerialization
 {
 	using System.IO;
 	using System;
 	using System.Reflection;
 	using System.Xml;
 	using System.Xml.Serialization;
-	using global::OVSSerializer.Internals;
+	using global::OVS.XmlSerialization.Internals;
+	using global::OVS.XmlSerialization.Prefabs;
 	using System.Globalization;
 	using System.Text;
-	using OVSSerializer.IO;
 
 	/// <summary>
 	/// A class that serializes or deserializes an object non-generically.
@@ -214,6 +214,7 @@
 				stream.CopyTo(fileStream);
 		}
 
+#if OSDIRECTORIES
 		/// <summary>
 		/// Serializes the specified <paramref name="item"/> as a XML file in a
 		/// file.
@@ -221,7 +222,7 @@
 		/// <param name="file"> The file to write to. </param>
 		/// <param name="item"> The item to serialize. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public void Serialize(OSFile file, object item)
+		public void Serialize(OVS.IO.OSFile file, object item)
 		{
 			Serialize(file, item, item.GetType().Name);
 		}
@@ -233,12 +234,13 @@
 		/// <param name="item"> The item to serialize. </param>
 		/// <param name="rootElementName">The root element within the xml file. </param>
 		/// <returns> A serialized object with the XML format. </returns>
-		public void Serialize(OSFile file, object item, string rootElementName)
+		public void Serialize(OVS.IO.OSFile file, object item, string rootElementName)
 		{
 			using (MemoryStream stream = Serialize(item, rootElementName))
 			using (FileStream fileStream = file.Create())
 				stream.CopyTo(fileStream);
 		}
+#endif
 
 		/// <summary>
 		/// Serializes the specified <paramref name="item"/> as a XML file in a
@@ -273,7 +275,7 @@
 			using (MemoryStream memoryStream = Serialize(item))
 				memoryStream.CopyTo(writeTo);
 		}
-		#endregion
+#endregion
 
 		#region Deserialization
 		/// <summary>
@@ -349,6 +351,7 @@
 			using (FileStream stream = fileLocation.OpenRead())
 				return Deserialize(stream, out rootElementName);
 		}
+#if OSDIRECTORIES
 		/// <summary>
 		/// Converts a xml file into an object.
 		/// </summary>
@@ -356,7 +359,7 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public object Deserialize(OSFile fileLocation)
+		public object Deserialize(OVS.IO.OSFile fileLocation)
 		{
 			using (FileStream stream = fileLocation.OpenRead())
 				return Deserialize(stream);
@@ -372,11 +375,12 @@
 		/// <returns> 
 		/// The object, default or <see langword="null"/> if the xml file or stream is empty. 
 		/// </returns>
-		public object Deserialize(OSFile fileLocation, out string rootElementName)
+		public object Deserialize(OVS.IO.OSFile fileLocation, out string rootElementName)
 		{
 			using (FileStream stream = fileLocation.OpenRead())
 				return Deserialize(stream, out rootElementName);
 		}
+#endif
 		/// <summary>
 		/// Converts a xml file into an object.
 		/// </summary>
@@ -405,7 +409,7 @@
 			using (FileStream stream = File.OpenRead(fileLocation))
 				return Deserialize(stream, out rootElementName);
 		}
-		#endregion
+#endregion
 
 		/// <summary>
 		/// Uses <see cref="object.MemberwiseClone"/> to create a new object,

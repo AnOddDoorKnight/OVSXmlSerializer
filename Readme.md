@@ -102,3 +102,7 @@ couldn't find a good library replacement for fileInfo since it doesn't perform
 well with Unix systems; So i took someone else's (cant remember who) and added
 some additional functions. Have fun with that i suppose! Uses their own pre-processor
 definition in case i manage to port it as a standalone library.
+
+Since 4.0.0, this has been moved into its own library:
+https://www.nuget.org/packages/OVSFileHandler/
+Works just fine if you dont have it installed, though.

@@ -1,6 +1,5 @@
-﻿namespace OVSSerializer
+﻿namespace OVS.XmlSerialization
 {
-	using OVSSerializer.IO;
 	using System;
 	using System.Collections.Generic;
 	using System.IO;
@@ -37,6 +36,7 @@
 			T output = serializer.Deserialize(filePath);
 			Inherit(inputReference, output);
 		}
+#if OSDIRECTORIES
 		/// <summary>
 		/// Takes info from <paramref name="filePath"/> and copies its fields
 		/// into the <paramref name="inputReference"/>; Effectively shallow copying.
@@ -44,11 +44,12 @@
 		/// <param name="serializer">The serializer to get the info to copy from.</param>
 		/// <param name="inputReference">The item to copy info to.</param>
 		/// <param name="filePath">The info is stored from in file path.</param>
-		public static void Inherit<T>(this OVSXmlSerializer<T> serializer, T inputReference, OSFile filePath) where T : class
+		public static void Inherit<T>(this OVSXmlSerializer<T> serializer, T inputReference, OVS.IO.OSFile filePath) where T : class
 		{
 			T output = serializer.Deserialize(filePath);
 			Inherit(inputReference, output);
 		}
+#endif
 		/// <summary>
 		/// Takes info from <paramref name="filePath"/> and copies its fields
 		/// into the <paramref name="inputReference"/>; Effectively shallow copying.
@@ -104,6 +105,7 @@
 			object output = serializer.Deserialize(filePath);
 			Inherit(inputReference, output);
 		}
+#if OSDIRECTORIES
 		/// <summary>
 		/// Takes info from <paramref name="filePath"/> and copies its fields
 		/// into the <paramref name="inputReference"/>; Effectively shallow copying.
@@ -111,11 +113,12 @@
 		/// <param name="serializer">The serializer to get the info to copy from.</param>
 		/// <param name="inputReference">The item to copy info to.</param>
 		/// <param name="filePath">The info is stored from in file path.</param>
-		public static void Inherit(this OVSXmlSerializer serializer, object inputReference, OSFile filePath)
+		public static void Inherit(this OVSXmlSerializer serializer, object inputReference, OVS.IO.OSFile filePath)
 		{
 			object output = serializer.Deserialize(filePath);
 			Inherit(inputReference, output);
 		}
+#endif
 		/// <summary>
 		/// Takes info from <paramref name="filePath"/> and copies its fields
 		/// into the <paramref name="inputReference"/>; Effectively shallow copying.

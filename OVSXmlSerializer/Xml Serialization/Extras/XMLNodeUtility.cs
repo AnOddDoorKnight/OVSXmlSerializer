@@ -1,6 +1,6 @@
-﻿namespace OVSSerializer.Extras
+﻿namespace OVS.XmlSerialization.Utility
 {
-	using global::OVSSerializer.Internals;
+	using global::OVS.XmlSerialization.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Text;

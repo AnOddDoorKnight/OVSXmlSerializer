@@ -1,6 +1,6 @@
-﻿namespace OVSSerializer.Xml
+﻿namespace OVS.XmlSerialization.Prefabs
 {
-	using global::OVSSerializer.Xml.Internals;
+	using global::OVS.XmlSerialization.Internals;
 	using System;
 	using System.Collections.Generic;
 	using System.Reflection;

@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer.IO.ZipFiles
+﻿namespace OVS.IO
 {
 	using System;
 	using System.Collections;

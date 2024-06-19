@@ -1,4 +1,4 @@
-﻿namespace OVSSerializer.Internals
+﻿namespace OVS.XmlSerialization.Internals
 {
 	using System.Reflection;
 	using System;
