@@ -1,9 +1,9 @@
 ﻿namespace OVSTester;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OVSSerializer;
-using OVSSerializer.Exceptions;
-using OVSSerializer.Extras;
+using OVS.XmlSerialization;
+using OVS.XmlSerialization.Utility;
+using OVS.XmlSerialization.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -182,12 +182,12 @@ public class ObjectSerialization
 	public void StandardSerialization()
 	{
 		StandardClass value = new();
-		value.value = null;
+		value.value = "yes";
 		OVSXmlSerializer<StandardClass> xmlSerializer = new();
 		xmlSerializer.IgnoreUndefinedValues = true;
 		using var stream = xmlSerializer.Serialize(value);
 		StandardClass result = xmlSerializer.Deserialize(stream);
-		Assert.AreEqual(new StandardClass().value, result.value);
+		Assert.AreEqual("yes", result.value);
 	}
 
 	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]

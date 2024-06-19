@@ -24,7 +24,7 @@
 				output = null;
 				return false;
 			}
-			OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
+			//OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
 			XmlElement enumerableElement = writer.CreateElement(parent, suggestedName, @object);
 			IEnumerator enumerator = ((IEnumerable)@object.Value).GetEnumerator();
 			while (enumerator.MoveNext())
@@ -79,7 +79,7 @@
 				return false;
 			}
 			Type baseType = GetBaseType(@object.ValueType);
-			OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
+			//OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
 			XmlElement enumerableElement = writer.CreateElement(parent, suggestedName, @object);
 			for (int i = 0; i < list.Count; i++)
 			{
@@ -148,7 +148,7 @@
 				output = null;
 				return false;
 			}
-			OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
+			//OVSXmlWriter.EnsureParameterlessConstructor(@object.ValueType);
 			XmlElement enumerableElement = writer.CreateElement(parent, suggestedName, @object);
 			// creating key element attribute
 			KeyValuePair<Type, Type> types = GetBaseTypes(@object.ValueType);

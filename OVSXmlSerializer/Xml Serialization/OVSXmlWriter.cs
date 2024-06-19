@@ -130,7 +130,7 @@
 					// - one. I don't this applies here at all anyways.
 					if (serializable.ShouldWrite == false)
 						return null;
-					EnsureParameterlessConstructor(obj.ValueType);
+					//EnsureParameterlessConstructor(obj.ValueType);
 					XmlElement serializableElement = CreateElement(parent, name);
 					serializable.Write(serializableElement);
 					return serializableElement;
@@ -149,7 +149,7 @@
 				if (OVSXmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 					throw new Exception($"{obj.Value} is not a primitive type!");
 
-				EnsureParameterlessConstructor(obj.ValueType);
+				//EnsureParameterlessConstructor(obj.ValueType);
 				XmlNode currentNode = CreateElement(parent, name, obj);
 				
 				FieldInfo[] infos = obj.ValueType.GetFields(OVSXmlSerializer.defaultFlags);
