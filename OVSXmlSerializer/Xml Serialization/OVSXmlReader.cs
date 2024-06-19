@@ -168,10 +168,7 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo currentField = allFields[i];
-				string key = keys[i] =
-					FieldObject.IsProbablyAutoImplementedProperty(currentField.Name)
-					? FieldObject.RemoveAutoPropertyTags(currentField.Name)
-					: currentField.Name;
+				string key = keys[i] = currentField.Name.RemoveCompilerTags();
 				fieldDictionary.Add(key, currentField);
 			}
 			// Getting Attributes
@@ -182,7 +179,7 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo field = allFields[i];
-				string fieldName = StructuredObject.TryRemoveAutoImplementedPropertyTags(field.Name);
+				string fieldName = field.Name.RemoveCompilerTags();
 				// Getting Named Arguments
 				if (OVSXmlNamedAsAttribute.HasName(field, out string name))
 					fieldName = name;

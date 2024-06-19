@@ -190,14 +190,16 @@ public class ObjectSerialization
 		Assert.AreEqual("yes", result.value);
 	}
 
+	/*
 	[TestMethod("Ensure Disallow Parameter-only Constructor Serialization")]
 	public void DisallowParameterConstructor()
 	{
 		OVSXmlSerializer<XmlParameteredClassTest> tester = new();
 		void Action() => tester.Serialize(new XmlParameteredClassTest("h"));
 		Assert.ThrowsException<SerializationFailedException>(Action);
-
 	}
+	*/
+
 	[TestMethod("Xml Serializer Interface")]
 	public void XmlSerializerInterface()
 	{

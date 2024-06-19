@@ -23,38 +23,13 @@
 				return "";
 			if (OVSXmlNamedAsAttribute.HasName(obj, out string namedAtt))
 				name = namedAtt;
-			if (obj is FieldObject fieldObj && fieldObj.IsAutoImplementedProperty)
-				name = RemoveAutoPropertyTags(name);
+			if (obj is FieldObject fieldObj)
+				name = name.RemoveCompilerTags();
 			name = name.Replace('`', '_');
 			name = name.TrimEnd('[', ']');
 			return name;
 		}
 
-		/// <summary>
-		/// Because auto-implemented properties are serialized a bit differently,
-		/// this attempts to check if it is a property.
-		/// </summary>
-		/// <param name="name">The name of the assumed property.</param>
-		/// <returns>if it is actually a property.</returns>
-		public static bool IsProbablyAutoImplementedProperty(string name)
-			=> name.Contains("<") && name.Contains(">");
-		/// <summary>
-		/// Removes the tags that makes it an auto-property so it can be properly
-		/// serialized.
-		/// </summary>
-		/// <param name="name">The name of the auto-property.</param>
-		/// <returns>The formatted string.</returns>
-		public static string RemoveAutoPropertyTags(string name) =>
-			name.Substring(1, name.IndexOf('>') - 1);
-		/// <summary>
-		/// Checks if it is an auto-property. If it is, then it will filter it.
-		/// </summary>
-		/// <param name="input">The assumed property name.</param>
-		/// <returns>The potentially filtered name.</returns>
-		public static string TryRemoveAutoImplementedPropertyTags(in string input)
-			=> IsProbablyAutoImplementedProperty(input) 
-			? RemoveAutoPropertyTags(input)
-			: input;
 
 		/// <summary>
 		/// The actual object it is trying to serialize.

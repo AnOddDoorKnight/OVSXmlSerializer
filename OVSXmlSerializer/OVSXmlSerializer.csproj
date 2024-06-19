@@ -36,7 +36,7 @@
 		<OutputType>Library</OutputType>
 		<RepositoryUrl>https://github.com/AnOddDoorKnight/OVSXmlSerializer</RepositoryUrl>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RootNamespace>OVSSerializer</RootNamespace>
+		<RootNamespace>OVS.XmlSerialization</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

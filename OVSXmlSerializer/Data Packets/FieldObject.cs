@@ -19,12 +19,6 @@
 		/// <exception cref="NullReferenceException"/>
 		public Type ParentType { get; }
 		/// <summary>
-		/// If the object is an auto-implemented property. Determined by if the
-		/// field name contains the requirements.
-		/// </summary>
-		public bool IsAutoImplementedProperty =>
-			IsProbablyAutoImplementedProperty(Field.Name);
-		/// <summary>
 		/// If the object from a field, then it will determine if it has a derived
 		/// class from the field. If it does, then <see langword="true"/>. Otherwise,
 		/// <see langword="false"/>.
