@@ -10,6 +10,7 @@
 	using System.Text;
 	using System.Xml;
 	using System.Xml.Linq;
+	using System.Data;
 
 	/// <summary>
 	/// Serializer that serializes linked lists.
@@ -44,7 +45,7 @@
 				return false;
 			}
 			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
-			object linkedList = Activator.CreateInstance(type, true);
+			object linkedList = reader.CreateNewObject(type);
 			MethodInfo addItem = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
 				.Where(meth => meth.Name == "AddLast")
 				.First(meth => !meth.GetParameters()[0].ParameterType.Name.StartsWith("LinkedListNode"));
@@ -99,7 +100,7 @@
 			}
 			Type baseType = GetBaseType(type);
 			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
-			IList list = (IList)Activator.CreateInstance(type, true);
+			IList list = (IList)reader.CreateNewObject(type);
 			for (int i = 0; i < xmlNodes.Count; i++)
 			{
 				object input = reader.ReadObject(xmlNodes[i], baseType);
@@ -130,7 +131,7 @@
 			}
 			XmlNodeList nodeList = node.ChildNodes;
 			KeyValuePair<Type, Type> types = GetBaseTypes(type);
-			IDictionary dictionary = (IDictionary)Activator.CreateInstance(type, true);
+			IDictionary dictionary = (IDictionary)reader.CreateNewObject(type);
 			for (int i = 0; i < nodeList.Count; i++)
 			{
 				XmlNode child = nodeList.Item(i);

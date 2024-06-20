@@ -43,13 +43,42 @@
 			}
 			throw new MissingMemberException(fullName);
 		}
-
+		
 		/// <summary>
-		/// Adds the auto-implementation tag to an existing name.
+		/// Creates the new object from scratch, using constructors or the special
+		/// method by itself.
 		/// </summary>
-		public static string AddAutoImplementedTag(string input)
+		/// <param name="type">The type to create</param>
+		/// <returns>The created object</returns>
+		/// <exception cref="InvalidCastException"></exception>
+		public object CreateNewObject(Type type)
 		{
-			return $"<{input}>k__BackingField";
+			switch (Config.ParameterlessConstructorSetting)
+			{
+				case ParameterlessConstructorLevel.AlwaysWithoutNew:
+					return FormatterServices.GetUninitializedObject(type);
+				default:
+				case ParameterlessConstructorLevel.OnlyWithReaderSpecific:
+					if (OVSXmlWriter.HasSpecialConstructor(type, out ConstructorInfo constructor))
+						return constructor.Invoke(new object[] { NewInput() });
+					return FormatterServices.GetUninitializedObject(type);
+				case ParameterlessConstructorLevel.ApplyWhenApplicable:
+					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
+						return constructor.Invoke(new object[] { NewInput() });
+					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
+						return constructor.Invoke(new object[] { NewInput() });
+					return FormatterServices.GetUninitializedObject(type);
+				case ParameterlessConstructorLevel.Always:
+					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
+						return constructor.Invoke(new object[] { NewInput() });
+					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
+						return constructor.Invoke(new object[] { NewInput() });
+					throw new InvalidCastException("what"); // This shouldn't happen
+			}
+			OVSXmlReaderInput NewInput() => new OVSXmlReaderInput()
+			{
+				Source = this,
+			};
 		}
 
 		/// <summary>
@@ -140,7 +169,7 @@
 			// Letting the jesus take the wheel
 			if (typeof(IOVSXmlSerializable).IsAssignableFrom(toType))
 			{
-				object serializableOutput = Activator.CreateInstance(toType, true);
+				object serializableOutput =	CreateNewObject(toType);
 				AddReferenceTypeToDictionary((XmlElement)targetNode, serializableOutput);
 				IOVSXmlSerializable xmlSerializable = (IOVSXmlSerializable)serializableOutput;
 				xmlSerializable.Read(targetNode);
@@ -155,8 +184,7 @@
 
 
 			// Standard class with regular serialization.
-			//object obj = Activator.CreateInstance(toType, true);
-			object obj = FormatterServices.GetUninitializedObject(toType);
+			object obj = CreateNewObject(toType);
 			AddReferenceTypeToDictionary((XmlElement)targetNode, obj);
 
 			// Serializes fields by getting fields by name, and matching it from

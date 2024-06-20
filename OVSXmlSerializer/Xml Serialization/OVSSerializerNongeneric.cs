@@ -86,6 +86,9 @@
 				NewLineOnAttributes = value.NewLineOnAttributes;
 			}
 		}
+		/// <inheritdoc/>
+		public ParameterlessConstructorLevel ParameterlessConstructorSetting { get; set; } =
+			ParameterlessConstructorLevel.OnlyWithReaderSpecific;
 		#endregion
 
 

@@ -31,13 +31,38 @@
 		/// constructor. Otherwise does nothing.
 		/// </summary>
 		/// <param name="type"> The type to check if it has one. </param>
-		internal static void EnsureParameterlessConstructor(Type type)
+		/// <param name="info"> The now checked constructor information to check.</param>
+		internal static bool HasParameterlessConstructor(Type type, out ConstructorInfo info)
 		{
-			if (type.GetConstructor(OVSXmlSerializer.defaultFlags, null, Array.Empty<Type>(), null) == null && type.IsClass)
-			{
-				string message = $"{type.Name} does not have an empty constructor!";
-				throw new ParameteredOnlyException(message);
-			}
+			info = type.GetConstructor(OVSXmlSerializer.defaultFlags, null, Array.Empty<Type>(), null);
+			return info != null || !type.IsClass;
+		}
+		/// <summary>
+		/// Throws an exception if the specified type does not have a parameterless
+		/// constructor. Otherwise does nothing.
+		/// </summary>
+		/// <param name="type"> The type to check if it has one. </param>
+		/// <param name="info"> The now checked constructor information to check.</param>
+		internal static bool HasSpecialConstructor(Type type, out ConstructorInfo info)
+		{
+			info = type.GetConstructor(OVSXmlSerializer.defaultFlags, null, new Type[] { typeof(OVSXmlReaderInput) }, null);
+			return info != null;
+		}
+		/// <summary>
+		/// Validates if it has the constructor only if the config says too.
+		/// </summary>
+		/// <param name="targetType">The checking type to.</param>
+		/// <exception cref="ParameteredOnlyException"></exception>
+		public void ValidateConstructor(Type targetType)
+		{
+			if (Config.ParameterlessConstructorSetting != ParameterlessConstructorLevel.Always)
+				return;
+			if (HasParameterlessConstructor(targetType, out _))
+				return;
+			if (HasSpecialConstructor(targetType, out _)) 
+				return;
+			string message = $"{targetType.Name} does not have an applicable constructor!";
+			throw new ParameteredOnlyException(message);
 		}
 
 		/// <summary>
@@ -130,7 +155,7 @@
 					// - one. I don't this applies here at all anyways.
 					if (serializable.ShouldWrite == false)
 						return null;
-					//EnsureParameterlessConstructor(obj.ValueType);
+					ValidateConstructor(obj.ValueType);
 					XmlElement serializableElement = CreateElement(parent, name);
 					serializable.Write(serializableElement);
 					return serializableElement;
@@ -149,7 +174,7 @@
 				if (OVSXmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
 					throw new Exception($"{obj.Value} is not a primitive type!");
 
-				//EnsureParameterlessConstructor(obj.ValueType);
+				ValidateConstructor(obj.ValueType);
 				XmlNode currentNode = CreateElement(parent, name, obj);
 				
 				FieldInfo[] infos = obj.ValueType.GetFields(OVSXmlSerializer.defaultFlags);

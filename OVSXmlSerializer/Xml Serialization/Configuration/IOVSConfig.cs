@@ -58,6 +58,12 @@
 		/// </summary>
 		bool NewLineOnAttributes { get; set; }
 		/// <summary>
+		/// Normally would just simply create a new object without any parameters.
+		/// When there is a constructor without any parameters is found, it will
+		/// be used instead.
+		/// </summary>
+		ParameterlessConstructorLevel ParameterlessConstructorSetting { get; set; }
+		/// <summary>
 		/// Gets or sets a value indicating whether to omit an XML declaration.
 		/// The declaration mentions the beginning element, that typically mentions
 		/// the encoding type and the version of the XML.

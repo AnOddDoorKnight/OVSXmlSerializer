@@ -74,6 +74,9 @@
 				NewLineOnAttributes = value.NewLineOnAttributes;
 			}
 		}
+		/// <inheritdoc/>
+		public ParameterlessConstructorLevel ParameterlessConstructorSetting { get; set; } =
+			ParameterlessConstructorLevel.OnlyWithReaderSpecific;
 		#endregion
 
 		/// <summary>
@@ -162,8 +165,8 @@
 		public void Serialize(FileInfo file, T item, string rootElementName)
 		{
 			using (MemoryStream stream = Serialize(item, rootElementName))
-				using (FileStream fileStream = file.Open(FileMode.Create))
-					stream.CopyTo(fileStream);
+			using (FileStream fileStream = file.Open(FileMode.Create))
+				stream.CopyTo(fileStream);
 		}
 
 #if OSDIRECTORIES
@@ -227,7 +230,7 @@
 			using (MemoryStream memoryStream = Serialize(item))
 				memoryStream.CopyTo(writeTo);
 		}
-#endregion
+		#endregion
 
 		#region Deserialization
 		/// <summary>
@@ -361,7 +364,7 @@
 			using (FileStream stream = File.OpenRead(fileLocation))
 				return Deserialize(stream, out rootElementName);
 		}
-#endregion
+		#endregion
 
 		/// <summary>
 		/// Uses <see cref="object.MemberwiseClone"/> to create a new object,
@@ -391,11 +394,11 @@
 		/// When the object is derived off the field, then it will write the
 		/// object type.
 		/// </summary>
-		SmartTypes = 8,
+		SmartTypes = 1,
 		/// <summary>
 		/// The XML file will always write the type of the object. 
 		/// </summary>
-		AlwaysIncludeTypes = 16,
+		AlwaysIncludeTypes = 2,
 	}
 	/// <summary>
 	/// How it should handle readonly fields.
@@ -409,10 +412,35 @@
 		/// <summary>
 		/// Allows the parser to continue serializing the field.
 		/// </summary>
-		Continue = 8,
+		Continue = 1,
 		/// <summary>
 		/// Throws an error if a readonly field is encountered.
 		/// </summary>
-		ThrowError = 16,
+		ThrowError = 2,
+	}
+	/// <summary>
+	/// How it should handle classes and such without constructors
+	/// </summary>
+	public enum ParameterlessConstructorLevel : byte
+	{
+		/// <summary>
+		/// Ignores any constructor and always creates a new blank object.
+		/// </summary>
+		AlwaysWithoutNew = 0,
+		/// <summary>
+		/// Allows constructors that ask for a <see cref="OVSXmlReader"/> to be
+		/// invoked. Default Setting.
+		/// </summary>
+		OnlyWithReaderSpecific = 1,
+		/// <summary>
+		/// Allows constructors that are blank OR preferably the same with 
+		/// <see cref="OnlyWithReaderSpecific"/>.
+		/// </summary>
+		ApplyWhenApplicable = 2,
+		/// <summary>
+		/// Always ask for constructors, and throw an error if there isn't one. 
+		/// This is the default setting for 3.0.2 and below.
+		/// </summary>
+		Always = 3,
 	}
 }
