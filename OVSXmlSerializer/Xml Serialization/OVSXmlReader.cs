@@ -2,6 +2,7 @@
 {
 	using global::OVS.XmlSerialization.Exceptions;
 	using global::OVS.XmlSerialization.Utility;
+	using OVS.XmlSerialization.Prefabs;
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -66,13 +67,13 @@
 					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
 						return constructor.Invoke(new object[] { NewInput() });
 					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
-						return constructor.Invoke(new object[] { NewInput() });
+						return constructor.Invoke(Array.Empty<object>());
 					return FormatterServices.GetUninitializedObject(type);
 				case ParameterlessConstructorLevel.Always:
 					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
 						return constructor.Invoke(new object[] { NewInput() });
 					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
-						return constructor.Invoke(new object[] { NewInput() });
+						return constructor.Invoke(Array.Empty<object>());
 					throw new InvalidCastException("what"); // This shouldn't happen
 			}
 			OVSXmlReaderInput NewInput() => new OVSXmlReaderInput()
@@ -176,9 +177,7 @@
 				return serializableOutput;
 			}
 
-			if (TryReadPrimitive(toType, targetNode, out object output))
-				return output;
-			if (TryReadCustom(toType, targetNode, out output))
+			if (TryReadCustom(toType, targetNode, out object output))
 				return output;
 
 
@@ -196,7 +195,7 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo currentField = allFields[i];
-				string key = keys[i] = currentField.Name.RemoveCompilerTags();
+				string key = keys[i] = currentField.Name.ValidateName();
 				fieldDictionary.Add(key, currentField);
 			}
 			// Getting Attributes
@@ -207,7 +206,7 @@
 			for (int i = 0; i < allFields.Length; i++)
 			{
 				FieldInfo field = allFields[i];
-				string fieldName = field.Name.RemoveCompilerTags();
+				string fieldName = field.Name.ValidateName();
 				// Getting Named Arguments
 				if (OVSXmlNamedAsAttribute.HasName(field, out string name))
 					fieldName = name;
@@ -233,7 +232,7 @@
 			// Reading elements
 			if (text.HasValue)
 			{
-				TryReadPrimitive(text.Value.Value.FieldType, targetNode, out object textOutput);
+				new PrimitiveSerializer().CheckAndRead(this, text.Value.Value.FieldType, targetNode, out object textOutput);
 				SetFieldValue(text.Value.Value, obj, textOutput);
 			}
 			else
@@ -253,23 +252,6 @@
 				}
 			return obj;
 
-			bool TryReadPrimitive(Type type, XmlNode node, out object primitiveOut)
-			{
-				// Since string is arguably a class or char array, its it own check.
-				if (type.IsPrimitive || type == typeof(string))
-				{
-					string unparsed = node.ReadValue();
-					primitiveOut = Convert.ChangeType(unparsed, type, Config.CurrentCulture);
-					return true;
-				}
-				if (type.IsEnum)
-				{
-					primitiveOut = Enum.Parse(toType, targetNode.InnerText);
-					return true;
-				}
-				primitiveOut = null;
-				return false;
-			}
 			bool TryReadReference(out object reference)
 			{
 				if (toType.IsValueType)

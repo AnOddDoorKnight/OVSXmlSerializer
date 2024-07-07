@@ -5,6 +5,7 @@
 	using System.Linq;
 	using System.Reflection;
 	using System.Runtime.InteropServices;
+	using System.Text.RegularExpressions;
 	using System.Xml.Serialization;
 
 	/// <summary>
@@ -22,12 +23,8 @@
 			if (obj.IsNull)
 				return "";
 			if (OVSXmlNamedAsAttribute.HasName(obj, out string namedAtt))
-				name = namedAtt;
-			if (obj is FieldObject fieldObj)
-				name = name.RemoveCompilerTags();
-			name = name.Replace('`', '_');
-			name = name.TrimEnd('[', ']');
-			return name;
+				return namedAtt;
+			return name.ValidateName();
 		}
 
 

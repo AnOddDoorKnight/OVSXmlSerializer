@@ -11,6 +11,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Newtonsoft.Json.Linq;
 
 [TestClass]
 public class ObjectSerialization
@@ -164,10 +165,10 @@ public class ObjectSerialization
 	[TestMethod("Empty Class Serialization")]
 	public void ClassSerialization()
 	{
-		Program value = new();
-		OVSXmlSerializer<Program> xmlSerializer = new();
+		EnumerableSerialization value = new();
+		OVSXmlSerializer<EnumerableSerialization> xmlSerializer = new();
 		using var stream = xmlSerializer.Serialize(value);
-		Program result = xmlSerializer.Deserialize(stream);
+		EnumerableSerialization result = xmlSerializer.Deserialize(stream);
 		Assert.AreEqual(value, result);
 	}
 	[TestMethod("Indent & Formatting")]
@@ -176,7 +177,7 @@ public class ObjectSerialization
 		string[] value = { "bruh" };
 		var stream = OVSXmlSerializer.Shared.Serialize(value);
 		string[] strings = new StreamReader(stream).ReadToEnd().Split('\n');
-		Assert.IsTrue(strings[2].StartsWith("\t"), $"'{strings[3]}' Does not match '{OVSXmlSerializer.Shared.IndentChars}'!");
+		Assert.IsTrue(strings[3].StartsWith("\t"), $"'{strings[3]}' Does not match '{OVSXmlSerializer.Shared.IndentChars}'!");
 	}
 	[TestMethod("Class Serialization")]
 	public void StandardSerialization()
@@ -241,6 +242,35 @@ public class ObjectSerialization
 		CircularSerialization output = serializer.Deserialize(stream);
 		Assert.IsTrue(ReferenceEquals(output, output.circularSerialization));
 	}
+	[TestMethod("System Enumerable Serialization")]
+	public void EnumerableSerialization()
+	{
+		var value = new EnumerableSerialization2();
+		value.enumerator.MoveNext();
+		OVSXmlSerializer serializer = new() { TypeHandling = IncludeTypes.SmartTypes };
+		Type type = value.GetType().GetField("enumerator").GetValue(value).GetType();
+		string name = type.Name;
+		var stream = serializer.Serialize(value);
+		stream.Position = 0;
+		string end = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		EnumerableSerialization2 output = (EnumerableSerialization2)serializer.Deserialize(stream);
+		Assert.AreEqual(value.enumerator.Current, output.enumerator.Current);
+		output.enumerator.MoveNext(); value.enumerator.MoveNext();
+		Assert.AreEqual(value.enumerator.Current, output.enumerator.Current);
+	}
+}
+internal class EnumerableSerialization2
+{
+	public EnumerableSerialization2() { }
+	public IEnumerator<object> enumerator = EnumeratorTest();
+
+	private static IEnumerator<object> EnumeratorTest()
+	{
+		yield return "1";
+		yield return 2;
+		yield return 3u;
+	}
 }
 internal class CircularSerialization
 {
@@ -294,12 +324,12 @@ internal class AutoProp
 {
 	public string bruh { get; set; } = "h";
 }
-internal class Program : IEquatable<Program>
+internal class EnumerableSerialization : IEquatable<EnumerableSerialization>
 {
-	public bool Equals(Program? other) => true;
+	public bool Equals(EnumerableSerialization? other) => true;
 	public override bool Equals(object? obj)
 	{
-		if (obj is Program program)
+		if (obj is EnumerableSerialization program)
 			return Equals(program);
 		return false;
 	}

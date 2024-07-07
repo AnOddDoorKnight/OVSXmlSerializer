@@ -167,8 +167,6 @@
 
 				if (ReferenceType(name, obj, parent, out XmlNode output))
 					return output;
-				if (TryWritePrimitive(name, obj, parent, out output))
-					return output;
 				if (TryWriteCustoms(name, obj, parent, out output))
 					return output;
 				if (OVSXmlAttributeAttribute.IsAttribute(obj, out _)) // Not primitive, but struct or class
@@ -230,7 +228,7 @@
 			{
 				var descriptor = new StringBuilder($"Failed to serialize '{obj.ValueType.FullName}'");
 				if (obj is FieldObject fieldObject)
-					descriptor.Append($" with field name '{fieldObject.Field.Name}' from '{fieldObject.ParentType.FullName}'");
+					descriptor.Append($" with field name '{fieldObject.Field.Name}' or more formally '{StructuredObject.EnsureName(fieldObject.Field.Name, obj)}' from '{fieldObject.ParentType.FullName}'");
 				throw new SerializationFailedException(descriptor.ToString(), ex);
 			}
 		}
@@ -269,30 +267,6 @@
 			List<XmlNode> children = newItem.GetAllChildren();
 			for (int i = 0; i < children.Count; i++)
 				output.AppendChild(children[i]);
-		}
-		/// <summary>
-		/// Tries to write a primitive, ensuring that it is a XML element or
-		/// XML attribute via class attribute.
-		/// </summary>
-		/// <param name="name">The name of the element or attribute.</param>
-		/// <param name="primitive">The object that is hopefully primitive to serialize.</param>
-		/// <param name="parent">The parent of the attribute or element.</param>
-		/// <param name="output">The returned node.</param>
-		/// <returns>If it successfully serialized it as primitive.</returns>
-		public bool TryWritePrimitive(string name, StructuredObject primitive, XmlNode parent, out XmlNode output)
-		{
-			if (primitive.IsPrimitive)
-			{
-				output = CreateNode(parent, name, ToStringPrimitive(primitive), primitive);
-				return true;
-			}
-			if (primitive.ValueType.IsEnum)
-			{
-				output = CreateNode(parent, name, primitive.Value.ToString(), primitive);
-				return true;
-			}
-			output = null;
-			return false;
 		}
 
 		/// <summary>

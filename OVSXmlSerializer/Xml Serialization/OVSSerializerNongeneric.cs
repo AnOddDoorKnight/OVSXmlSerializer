@@ -53,7 +53,7 @@
 		/// <inheritdoc/>
 		public bool NewLineOnAttributes { get; set; } = false;
 		/// <inheritdoc/>
-		public bool OmitXmlDelcaration { get; set; } = true;
+		public bool OmitXmlDelcaration { get; set; } = false;
 		/// <inheritdoc/>
 		public string IndentChars { get; set; } = "\t";
 		/// <inheritdoc/>
