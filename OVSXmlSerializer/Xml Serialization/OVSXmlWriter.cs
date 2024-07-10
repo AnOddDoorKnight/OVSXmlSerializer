@@ -149,6 +149,8 @@
 			{
 				if (OVSXmlIgnoreAttribute.Ignore(obj))
 					return null;
+				if (obj.Value is ContextBoundObject)
+					return null;
 				if (obj.Value is IOVSXmlSerializable serializable)
 				{
 					// Not sure how the actual scheme works at all since I never used
