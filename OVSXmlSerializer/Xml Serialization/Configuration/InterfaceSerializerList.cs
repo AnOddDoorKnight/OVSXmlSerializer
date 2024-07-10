@@ -33,6 +33,7 @@
 				new LinkedListSerializer(),
 				new DatetimeSerializer(),
 				new TimeSpanSerializer(),
+				//new DelegateSerializer(),
 				new PrimitiveSerializer(),
 			};
 			//serializer.Add(new SystemEnumerableSerializer());

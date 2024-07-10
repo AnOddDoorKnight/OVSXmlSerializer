@@ -19,7 +19,7 @@ public class ObjectSerialization
 	[TestMethod("Xml Text Structs")]
 	public void XmlTextStructs()
 	{
-		ChangableValue<AssHolder> color = new(new AssHolder() { Ass = new Ass(5, 5) });
+		ChangableStructure<AssHolder> color = new(new AssHolder() { Ass = new Ass(5, 5) });
 		Assert.ThrowsException<SerializationFailedException>(() => OVSXmlSerializer<AssHolder>.Shared.Serialize(color));
 		return;
 		using MemoryStream stream = OVSXmlSerializer<AssHolder>.Shared.Serialize(color);
@@ -258,6 +258,31 @@ public class ObjectSerialization
 		Assert.AreEqual(value.enumerator.Current, output.enumerator.Current);
 		output.enumerator.MoveNext(); value.enumerator.MoveNext();
 		Assert.AreEqual(value.enumerator.Current, output.enumerator.Current);
+	}
+	[TestMethod("Special Override")]
+	public void SpecialOverride()
+	{
+		var value = new CustomSerialization();
+		OVSXmlSerializer serializer = new();
+		var stream = serializer.Serialize(value);
+		stream.Position = 0;
+		string end = new StreamReader(stream).ReadToEnd();
+		stream.Position = 0;
+		CustomSerialization output = (CustomSerialization)serializer.Deserialize(stream);
+		Assert.IsTrue(output.readered == true);
+	}
+}
+internal class CustomSerialization
+{
+	public bool readered;
+	public CustomSerialization()
+	{
+		readered = false;
+	}
+	public CustomSerialization(OVS.XmlSerialization.OVSXmlReaderInput input)
+	{
+		input.CancelOverrides();
+		readered = true;
 	}
 }
 internal class EnumerableSerialization2

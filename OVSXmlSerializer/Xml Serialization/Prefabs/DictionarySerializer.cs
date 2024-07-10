@@ -22,7 +22,12 @@
 			}
 			XmlNodeList nodeList = node.ChildNodes;
 			KeyValuePair<Type, Type> types = GetBaseTypes(type);
-			IDictionary dictionary = (IDictionary)reader.CreateNewObject(type);
+			IDictionary dictionary = (IDictionary)reader.CreateNewObject(type, node, out bool dontOverride);
+			if (dontOverride)
+			{
+				output = dictionary;
+				return true;
+			}
 			for (int i = 0; i < nodeList.Count; i++)
 			{
 				XmlNode child = nodeList.Item(i);

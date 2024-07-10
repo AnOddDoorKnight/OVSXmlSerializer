@@ -7,6 +7,9 @@
 	using System.Xml;
 	using System.Xml.Linq;
 
+	/// <summary>
+	/// Serializer that exclusively serializes system primitives and strings.
+	/// </summary>
 	public class PrimitiveSerializer : ICustomSerializer
 	{
 		/// <inheritdoc/>

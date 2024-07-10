@@ -42,7 +42,12 @@
 			}
 			Type baseType = GetBaseType(type);
 			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
-			IList list = (IList)reader.CreateNewObject(type);
+			IList list = (IList)reader.CreateNewObject(type, node, out bool dontOverride);
+			if (dontOverride)
+			{
+				output = list;
+				return true;
+			}
 			for (int i = 0; i < xmlNodes.Count; i++)
 			{
 				object input = reader.ReadObject(xmlNodes[i], baseType);

@@ -39,8 +39,8 @@
 		/// </summary>
 		bool IgnoreUndefinedValues { get; set; }
 		/// <summary>
-		/// A list that overrides the traditional field system, sometimes for
-		/// readability. Uses <see cref="InterfaceSerializer.GetDefault"/> as default.
+		/// A list that gives special serialization techniques for things like primitives
+		/// and <see cref="TimeSpan"/>s. Uses <see cref="InterfaceSerializer.GetDefault"/> as default.
 		/// </summary>
 		InterfaceSerializer CustomSerializers { get; set; }
 		/// <summary>

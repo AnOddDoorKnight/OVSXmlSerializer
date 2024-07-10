@@ -11,6 +11,7 @@
 	using System.Text.RegularExpressions;
 	using System.Xml;
 
+	/*
 	/// <summary>
 	/// Serializes <see cref="IList"/>, can take generic types if it is <see cref="List{T}"/>
 	/// </summary>
@@ -71,5 +72,5 @@
 			return output;
 		}
 		*/
-	}
+	//}
 }

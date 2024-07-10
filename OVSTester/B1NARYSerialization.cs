@@ -123,8 +123,8 @@ public class B1NARYSerialization
 
 	public class Storer
 	{
-		public ChangableValue<float> bruh = new(4f);
-		public ChangableValue<float> sex = new(12f);
+		public ChangablePrimitive<float> bruh = new(4f);
+		public ChangablePrimitive<float> sex = new(12f);
 		public string no = "brih";
 	}
 	public class PlayerConfig
@@ -165,7 +165,7 @@ public class B1NARYSerialization
 			public float cameraBobLookMaxMultiplier = 5f;
 			[OVSXmlNamedAs("bobCap")]
 			public float movementBobCap = 3f;
-			public ChangableValue<float> fieldOfView = new(78f);
+			public ChangablePrimitive<float> fieldOfView = new(78f);
 		}
 		[Serializable]
 		public sealed class Input
@@ -179,7 +179,7 @@ public class B1NARYSerialization
 			[Serializable]
 			public sealed class KeyboardMouse
 			{
-				public ChangableValue<float> mouseSensitivity = new(25f);
+				public ChangablePrimitive<float> mouseSensitivity = new(25f);
 			}
 			[Serializable]
 			public sealed class Controller

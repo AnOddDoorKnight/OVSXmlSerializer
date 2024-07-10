@@ -45,7 +45,12 @@
 				return false;
 			}
 			List<XmlNode> xmlNodes = node.ChildNodes.ToList();
-			object linkedList = reader.CreateNewObject(type);
+			object linkedList = reader.CreateNewObject(type, node, out bool dontOverride);
+			if (dontOverride)
+			{
+				output = linkedList;
+				return true;
+			}
 			MethodInfo addItem = type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
 				.Where(meth => meth.Name == "AddLast")
 				.First(meth => !meth.GetParameters()[0].ParameterType.Name.StartsWith("LinkedListNode"));

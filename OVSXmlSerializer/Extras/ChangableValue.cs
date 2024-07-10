@@ -2,18 +2,17 @@
 {
 	using System;
 
-#warning TODO: Add a IConvertible to limit to primitives! (And change it to a ChangablePrimitive).
 	/// <summary>
 	/// A value that alerts other classes and fields when modified.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public sealed class ChangableValue<T>
+	public sealed class ChangablePrimitive<T> where T : IConvertible
 	{
 		/// <summary>
 		/// Allows to seamlessly get the values inside of the value.
 		/// </summary>
 		/// <param name="input"></param>
-		public static implicit operator T(ChangableValue<T> input)
+		public static implicit operator T(ChangablePrimitive<T> input)
 		{
 			return input.Value;
 		}
@@ -39,7 +38,7 @@
 		/// <summary>
 		/// Creates a new value, using default values as initializer.
 		/// </summary>
-		public ChangableValue()
+		public ChangablePrimitive()
 		{
 			value = default;
 		}
@@ -47,7 +46,7 @@
 		/// Creates a new value.
 		/// </summary>
 		/// <param name="default"> The starting value. Usually as initial value. </param>
-		public ChangableValue(T @default)
+		public ChangablePrimitive(T @default)
 		{
 			value = @default;
 		}

@@ -160,8 +160,8 @@
 					serializable.Write(serializableElement);
 					return serializableElement;
 				}
-				if (obj.Value is Delegate)
-					return null;
+				//if (obj.Value is Delegate)
+				//	return null;
 
 
 

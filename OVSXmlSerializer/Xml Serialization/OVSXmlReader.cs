@@ -12,6 +12,7 @@
 	using System.Runtime.InteropServices;
 	using System.Runtime.Serialization;
 	using System.Text;
+	using System.Threading;
 	using System.Xml;
 	using System.Xml.Linq;
 	using System.Xml.Serialization;
@@ -50,35 +51,51 @@
 		/// method by itself.
 		/// </summary>
 		/// <param name="type">The type to create</param>
+		/// <param name="targetNode">Node to pass through to the constructor.</param>
+		/// <param name="dontOverride">When true, it shouldn't have its parameters overrided, 
+		/// often used by <see cref="OVSXmlReaderInput.CancelReaderOverrides"/>.</param>
 		/// <returns>The created object</returns>
 		/// <exception cref="InvalidCastException"></exception>
-		public object CreateNewObject(Type type)
+		public object CreateNewObject(Type type, XmlNode targetNode, out bool dontOverride)
 		{
+			object output = null;
+			bool setParam = false;
 			switch (Config.ParameterlessConstructorSetting)
 			{
 				case ParameterlessConstructorLevel.AlwaysWithoutNew:
-					return FormatterServices.GetUninitializedObject(type);
+					output = FormatterServices.GetUninitializedObject(type);
+					break;
 				default:
 				case ParameterlessConstructorLevel.OnlyWithReaderSpecific:
 					if (OVSXmlWriter.HasSpecialConstructor(type, out ConstructorInfo constructor))
-						return constructor.Invoke(new object[] { NewInput() });
-					return FormatterServices.GetUninitializedObject(type);
+						output = constructor.Invoke(new object[] { NewInput() });
+					else
+						output = FormatterServices.GetUninitializedObject(type);
+					break;
 				case ParameterlessConstructorLevel.ApplyWhenApplicable:
 					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
-						return constructor.Invoke(new object[] { NewInput() });
-					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
-						return constructor.Invoke(Array.Empty<object>());
-					return FormatterServices.GetUninitializedObject(type);
+						output = constructor.Invoke(new object[] { NewInput() });
+					else if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
+						output = constructor.Invoke(Array.Empty<object>());
+					else
+						output = FormatterServices.GetUninitializedObject(type);
+					break;
 				case ParameterlessConstructorLevel.Always:
 					if (OVSXmlWriter.HasSpecialConstructor(type, out constructor))
-						return constructor.Invoke(new object[] { NewInput() });
-					if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
-						return constructor.Invoke(Array.Empty<object>());
+						output = constructor.Invoke(new object[] { NewInput() });
+					else if (OVSXmlWriter.HasParameterlessConstructor(type, out constructor))
+						output = constructor.Invoke(Array.Empty<object>());
+					if (output != null)
+						break;
 					throw new InvalidCastException("what"); // This shouldn't happen
 			}
+			dontOverride = setParam;
+			return output;
 			OVSXmlReaderInput NewInput() => new OVSXmlReaderInput()
 			{
 				Source = this,
+				CancelReaderOverrides = () => setParam = true,
+				SourceNode = targetNode,
 			};
 		}
 
@@ -141,9 +158,7 @@
 			{
 				if (targetNode is XmlAttribute)
 					throw new InvalidCastException($"{targetNode.Name} is an attribute with a null type!");
-				XmlAttribute attributeNode = (XmlAttribute)targetNode.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE);
-				if (attributeNode is null)
-					throw new MissingFieldException();
+				XmlAttribute attributeNode = (XmlAttribute)targetNode.Attributes.GetNamedItem(OVSXmlSerializer.ATTRIBUTE) ?? throw new MissingFieldException();
 				toType = ByName(attributeNode.Value);
 			}
 			else if (!toType.IsValueType && !OVSXmlAttributeAttribute.IsAttribute(toType, out _) && targetNode.Attributes != null)
@@ -170,22 +185,28 @@
 			// Letting the jesus take the wheel
 			if (typeof(IOVSXmlSerializable).IsAssignableFrom(toType))
 			{
-				object serializableOutput =	CreateNewObject(toType);
-				AddReferenceTypeToDictionary((XmlElement)targetNode, serializableOutput);
-				IOVSXmlSerializable xmlSerializable = (IOVSXmlSerializable)serializableOutput;
-				xmlSerializable.Read(targetNode);
-				return serializableOutput;
+				object givenOutput = CreateNewObject(toType, targetNode, out bool cancelOverride);
+				AddReferenceTypeToDictionary(targetNode, givenOutput);
+				if (cancelOverride)
+					return givenOutput;
+				((IOVSXmlSerializable)givenOutput).Read(targetNode);
+				return givenOutput;
 			}
 
-			if (TryReadCustom(toType, targetNode, out object output))
-				return output;
+			// if this succeeds, then the object created will be irrelevant, but oh well.
+			if (TryReadCustom(toType, targetNode, out object customOutput))
+			{
+				AddReferenceTypeToDictionary(targetNode, customOutput);
+				return customOutput;
+			}
 
 
 
 			// Standard class with regular serialization.
-			object obj = CreateNewObject(toType);
-			AddReferenceTypeToDictionary((XmlElement)targetNode, obj);
-
+			object normalOutput = CreateNewObject(toType, targetNode, out bool dontOverride);
+			AddReferenceTypeToDictionary(targetNode, normalOutput);
+			if (dontOverride)
+				return normalOutput;
 			// Serializes fields by getting fields by name, and matching it from
 			// - the node list.
 			FieldInfo[] allFields = toType.GetFields(OVSXmlSerializer.defaultFlags);
@@ -227,13 +248,13 @@
 				string key = attributes[i].Key;
 				XmlNode attribute = targetNode.Attributes.GetNamedItem(key);
 				FieldInfo field = attributes[i].Value;
-				SetFieldValue(field, obj, ReadObject(attribute, field.FieldType));
+				SetFieldValue(field, normalOutput, ReadObject(attribute, field.FieldType));
 			}
 			// Reading elements
 			if (text.HasValue)
 			{
 				new PrimitiveSerializer().CheckAndRead(this, text.Value.Value.FieldType, targetNode, out object textOutput);
-				SetFieldValue(text.Value.Value, obj, textOutput);
+				SetFieldValue(text.Value.Value, normalOutput, textOutput);
 			}
 			else
 				for (int i = 0; i < elements.Count; i++)
@@ -248,9 +269,9 @@
 						{
 							continue;
 						}
-					SetFieldValue(field, obj, outputField);
+					SetFieldValue(field, normalOutput, outputField);
 				}
-			return obj;
+			return normalOutput;
 
 			bool TryReadReference(out object reference)
 			{
@@ -278,11 +299,13 @@
 		/// Adds a reference type to its internal dictionary, assuming it is enabled
 		/// and has attributes to find such data.
 		/// </summary>
-		/// <param name="element">The element to search through and mark.</param>
+		/// <param name="node">The element to search through and mark.</param>
 		/// <param name="value">The created class to reference to.</param>
-		public void AddReferenceTypeToDictionary(XmlElement element, object value)
+		public void AddReferenceTypeToDictionary(XmlNode node, object value)
 		{
 			if (Config.UseSingleInstanceInsteadOfMultiple == false)
+				return;
+			if (!(node is XmlElement element))
 				return;
 			if (element.Attributes == null || element.Attributes.Count == 0)
 				return;

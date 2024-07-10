@@ -23,7 +23,6 @@
 			return newName;
 		}
 
-		private static readonly Regex removedigits = new Regex(@"\d");
 		public static string ValidateName(this string name)
 		{
 			name = name.RemoveCompilerTags();
