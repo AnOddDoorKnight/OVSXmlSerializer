@@ -34,6 +34,7 @@
 			- Properly implemented specified constructors with its own input struct.
 			- Changed names of changedvalues to changedprimitives for the proper effect.
 			- Delegates are now a proper serialized interface stump, instead of being hardcoded.
+			- Probably a few other things im missing.
 		</PackageReleaseNotes>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<OutputType>Library</OutputType>

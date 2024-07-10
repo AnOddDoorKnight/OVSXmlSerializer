@@ -7,11 +7,13 @@ into a file or such in around 1-2 lines of code. Additionally, is meant to be
 worked with the `object` or more 'undefined' data that the ordinary XML serializer 
 have difficulty handling, along with simulating reference types via ID.
 
-
 Unlike the traditional XML Serializer, this will use the type parameters in the
 class to automatically differentiate enums and arrays, which will remove the 
 need to mark fields as `[XmlArray]` or `[XmlEnum]`. In place, there are custom 
 serializers that you can insert in the config.
+
+These also have the Preprocessors also implemented for versions as well for 
+specific scenarios.
 
 ## Explicit Types
 
@@ -31,12 +33,6 @@ There are 3 options you can enable:
 
 ## Serializing
 
-Like the default system XML serializer, they pose the same requirements such as:
-1. Requiring to have a public or private parameterless constructor.
-2. Having all fields follow the same constraint as above.
-3. During certain restrictions like a limited environment may cause issues; Modifying
-the readonly handle option in the config seems to fix this.
-
 There are two serializers, the generic and the non-generic. The non-generic derives
 from the generic as object for simplicity, and is typically created as instances
 due to configurations. Though, there is a shared static parameter for both generic
@@ -45,9 +41,13 @@ and non-generic serializers.
 When done serializing as an XML, it typically returns a stream, or applies to a
 new or existing file or stream.
 
-Note that it does removes the initial xml version and encoding at the top, as it
-always to be assumed UTF-8 and on version 1.0. This can be changed in the config
-of course.
+It will also recognize that if an object class or a reference type in general is being
+referenced multiple times in the targeted object to save, then it will try to reference
+it via the special references you can find on the files. You can disable this behaviour
+in the config serializers.
+
+Important to note that during certain restrictions like a limited environment 
+may cause issues; Modifying the readonly handle option in the config seems to fix this.
 
 ## Deserializing
 
@@ -57,7 +57,7 @@ and it will de-parse it easily, assuming that you know the derived types.
 
 ## Attributes
 
-Here are a few attributes that uses in its own `OVSXmlSerializer` namespace.
+Here are a few attributes that uses in its own `OVS.XmlSerialization` namespace.
 Note that `System.Xml.Serialization` will be converted automatically if needed.
 
 1. `[XmlIgnore]` Ignores the field completely
@@ -90,8 +90,11 @@ added first:
 3. `DictionarySerializer` Serializes the dictionary using the IDictionary 
    interface, serializing the keys and values with types as the IDictionary doesn't
    provide generics.
-4. `DatetimeSerializer` Serializes datetime as normal
-5. `TimeSpanSerializer` First, and serializes timespan as normal
+4. `LinkedListSerializer` Serializes the linked list as a.. list?
+5. `DatetimeSerializer` Serializes datetime as normal
+6. `TimeSpanSerializer` First, and serializes timespan as normal
+7. `PrimitiveSerializer` Starting at the list, serializes objects that can be 
+   considered as numbers and such.
 
 ## OSDirectories
 
