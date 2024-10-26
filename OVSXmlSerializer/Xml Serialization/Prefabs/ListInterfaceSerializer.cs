@@ -9,7 +9,7 @@
 	using OVS.XmlSerialization.Utility;
 
 	/// <summary>
-	/// Serializes <see cref="IList"/>, can take generic types if it is <see cref="List{T}"/>
+	/// Serializes <see cref="IList"/>
 	/// </summary>
 	public class ListInterfaceSerializer : ICustomSerializer
 	{

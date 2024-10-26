@@ -106,6 +106,16 @@ public class ObjectSerialization
 		List<string> result = OVSXmlSerializer<List<string>>.Shared.Deserialize(stream);
 		Assert.IsTrue(value.Zip(value).Count(pair => pair.First == pair.Second) == value.Count);
 	}
+	[TestMethod("Inline List Serialization")]
+	public void InlineListSerialization()
+	{
+		List<string> value = new();
+		for (int i = 0; i < 10; i++)
+			value.Add("bruh");
+		var stream = OVSXmlSerializer<Inline>.Shared.Serialize(new() { list = value });
+		string[] output = new StreamReader(stream).ReadToEnd().Split("\n"); stream.Position = 0;
+		Assert.IsTrue(output.Length == 16); // Approx lines expected
+	}
 	[TestMethod("Dictionary Serialization")]
 	public void DictionarySerialization()
 	{
@@ -296,6 +306,10 @@ internal class EnumerableSerialization2
 		yield return 2;
 		yield return 3u;
 	}
+}
+internal class Inline
+{
+	public List<string> list;
 }
 internal class CircularSerialization
 {

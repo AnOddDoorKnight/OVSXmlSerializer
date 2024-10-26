@@ -44,7 +44,7 @@
 		{
 			//for (int i = 0; i < Count; i++)
 			
-			for (int i = Count - 1; i > 0; i--)
+			for (int i = Count - 1; i >= 0; i--)
 			{
 				if (this[i].CheckAndWrite(writer, parentNode, structuredObject, name, out output))
 					return true;
@@ -54,7 +54,7 @@
 		}
 		internal bool Read(OVSXmlReader reader, in Type type, in XmlNode node, out object output)
 		{
-			for (int i = Count - 1; i > 0; i--)
+			for (int i = Count - 1; i >= 0; i--)
 			{
 				if (this[i].CheckAndRead(reader, type, node, out output))
 					return true;
